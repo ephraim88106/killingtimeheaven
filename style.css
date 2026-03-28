@@ -1,1 +1,190 @@
-/* Add styles here */
+:root {
+  /* Modern OKLCH Colors */
+  --bg-color: oklch(15% 0.02 260);
+  --text-primary: oklch(98% 0.01 260);
+  --text-secondary: oklch(85% 0.02 260);
+  
+  /* Game 1: Hero's Adventure (Gold/Red) */
+  --hero-gradient: linear-gradient(135deg, oklch(75% 0.18 70), oklch(60% 0.2 40));
+  --hero-glow: oklch(70% 0.2 60 / 40%);
+  
+  /* Game 2: SSS-Class Challenge (Purple/Blue) */
+  --sss-gradient: linear-gradient(135deg, oklch(65% 0.25 300), oklch(55% 0.25 260));
+  --sss-glow: oklch(60% 0.25 280 / 40%);
+
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
+  --font-main: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  /* Subtle Noise Texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  background-attachment: fixed;
+}
+
+.app-container {
+  max-width: 1000px;
+  width: 90%;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.hero-section {
+  margin-bottom: 60px;
+}
+
+.main-title {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.main-title span {
+  background: var(--sss-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.game-selection {
+  display: grid;
+  gap: 40px;
+}
+
+.game-group {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.game-title {
+  font-size: 1.5rem;
+  margin-bottom: 25px;
+  text-align: left;
+  border-left: 4px solid white;
+  padding-left: 15px;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.game-btn {
+  position: relative;
+  height: 80px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.game-btn:active {
+  transform: scale(0.95);
+}
+
+.btn-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  z-index: 2;
+}
+
+.btn-tag {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+  z-index: 2;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-tag.mobile {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Specific Button Styles */
+.hero-pc, .hero-mobile {
+  background: var(--hero-gradient);
+  box-shadow: 0 10px 20px -5px var(--hero-glow);
+}
+
+.hero-pc:hover, .hero-mobile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--hero-glow);
+}
+
+.sss-pc, .sss-mobile {
+  background: var(--sss-gradient);
+  box-shadow: 0 10px 20px -5px var(--sss-glow);
+}
+
+.sss-pc:hover, .sss-mobile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--sss-glow);
+}
+
+/* Glass Shine Effect on Hover */
+.game-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  transition: 0.5s;
+  pointer-events: none;
+}
+
+.game-btn:hover::after {
+  left: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 20px 10px;
+  }
+  .button-grid {
+    grid-template-columns: 1fr;
+  }
+}
