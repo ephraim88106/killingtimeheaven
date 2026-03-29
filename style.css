@@ -329,15 +329,15 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
-  min-height: 300px; /* 배너와 문구가 모두 보이도록 최소 높이 확보 */
+  gap: 20px;
+  min-height: 220px;
 }
 
 .ad-container {
   width: 100%;
   max-width: 680px;
-  min-height: 140px; /* 배너 높이에 맞춘 최소 높이 */
-  overflow: visible; /* 스크립트 생성 요소가 잘리지 않도록 변경 */
+  min-height: 140px;
+  overflow: visible;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   padding: 10px;
@@ -349,7 +349,7 @@ body {
 
 .ad-disclaimer {
   max-width: 800px;
-  text-align: left;
+  text-align: center;
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.75rem;
   line-height: 1.6;
@@ -358,26 +358,9 @@ body {
 .disclaimer-main {
   font-weight: 700;
   color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 15px;
-  text-align: center;
-  font-size: 0.85rem;
   padding: 10px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-}
-
-.disclaimer-details strong {
-  color: rgba(255, 255, 255, 0.9);
-  display: block;
-  margin-bottom: 8px;
-}
-
-.disclaimer-details ol {
-  padding-left: 18px;
-}
-
-.disclaimer-details li {
-  margin-bottom: 10px;
 }
 
 /* Responsive adjustments */
