@@ -12,6 +12,10 @@
   --sss-gradient: linear-gradient(135deg, oklch(65% 0.25 300), oklch(55% 0.25 260));
   --sss-glow: oklch(60% 0.25 280 / 40%);
 
+  /* Game 3: Kingdom's Prosperity (Green/Teal) */
+  --kingdom-gradient: linear-gradient(135deg, oklch(70% 0.15 150), oklch(55% 0.18 160));
+  --kingdom-glow: oklch(65% 0.15 155 / 40%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   
@@ -251,6 +255,16 @@ body {
 .sss-pc:hover, .sss-mobile:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px -5px var(--sss-glow);
+}
+
+.kingdom-pc, .kingdom-mobile {
+  background: var(--kingdom-gradient);
+  box-shadow: 0 10px 20px -5px var(--kingdom-glow);
+}
+
+.kingdom-pc:hover, .kingdom-mobile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--kingdom-glow);
 }
 
 /* Glass Shine Effect on Hover */

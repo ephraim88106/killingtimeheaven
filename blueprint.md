@@ -22,6 +22,7 @@
 ### 2. Design the Buttons
 - **Hero's Adventure (용사의 모험)**: Gold and Red gradient buttons.
 - **SSS-Class Challenge (SSS급 도전하기)**: Purple and Electric Blue gradient buttons.
+- **Kingdom's Prosperity (왕국의 번영)**: Green and Emerald gradient buttons.
 - Separate buttons for "PC" (standard) and "Mobile" versions.
 - Apply high-end CSS effects: `box-shadow` glow, `backdrop-filter`, and hover scaling.
 

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>왕국의 번영 - 킬링타임천국</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFD700;--gold-dark:#B8860B;
+  --bg-dark:#0a0806;--bg-panel:#12100a;--bg-card:#1a1610;
+  --border:#3a2f1a;--border-gold:#5a4520;
+  --text:#e8d5a0;--text-dim:#8a7050;--green:#27ae60;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg-dark);color:var(--text);font-family:'Noto Serif KR',serif;min-height:100dvh;display:flex;flex-direction:column;overflow:hidden;background-image:radial-gradient(ellipse at 50% 30%,rgba(184,134,11,0.06) 0%,transparent 60%);}
+
+/* HEADER */
+#header{background:linear-gradient(180deg,#1a1208 0%,#0f0c06 100%);border-bottom:1px solid var(--border-gold);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
+#header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.h-logo{font-family:'Cinzel',serif;font-size:9px;color:var(--text-dim);letter-spacing:1px;}
+.h-title{font-family:'Cinzel Decorative',cursive;font-size:16px;color:var(--gold);letter-spacing:2px;text-shadow:0 0 15px rgba(255,215,0,0.4);}
+.h-back{font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);text-decoration:none;}
+
+/* RESOURCES */
+#resources{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 10px;flex-shrink:0;background:rgba(10,8,4,0.5);border-bottom:1px solid var(--border);}
+.res-box{background:var(--bg-card);border:1px solid var(--border-gold);border-radius:8px;padding:7px 6px;text-align:center;}
+.res-label{font-family:'Cinzel',serif;font-size:8px;color:var(--text-dim);letter-spacing:1px;margin-bottom:2px;}
+.res-value{font-family:'Cinzel Decorative',cursive;font-size:15px;color:var(--gold);text-shadow:0 0 8px rgba(255,215,0,0.4);}
+.res-sub{font-size:9px;color:var(--green);margin-top:1px;}
+
+/* TABS */
+#tabs{display:flex;background:var(--bg-panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{flex:1;padding:9px 4px;text-align:center;font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.3s;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* CONTENT */
+#content{flex:1;overflow:hidden;position:relative;}
+.tab-pane{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;}
+.tab-pane::-webkit-scrollbar{display:none;}
+.tab-pane.hidden{display:none;}
+
+/* KINGDOM TAB */
+#tab-kingdom{align-items:center;justify-content:center;padding:10px;gap:12px;}
+
+#kingdom-art{position:relative;cursor:pointer;user-select:none;touch-action:manipulation;}
+.kingdom-svg{width:240px;height:240px;filter:drop-shadow(0 0 25px rgba(255,200,50,0.3));}
+.click-ripple{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,0.6) 0%,transparent 70%);pointer-events:none;animation:rippleOut 0.6s ease-out forwards;transform:translate(-50%,-50%);}
+@keyframes rippleOut{0%{width:0;height:0;opacity:1}100%{width:100px;height:100px;opacity:0}}
+.gold-particle{position:fixed;pointer-events:none;font-family:'Cinzel Decorative',cursive;font-size:18px;color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,0.8);animation:floatUp 1s ease-out forwards;z-index:100;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-70px) scale(1.4)}}
+.click-hint{font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);letter-spacing:2px;text-align:center;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* LEVEL */
+#level-display{text-align:center;background:rgba(10,8,4,0.8);border:1px solid var(--border-gold);border-radius:20px;padding:8px 20px;width:100%;max-width:280px;}
+.level-text{font-family:'Cinzel',serif;font-size:9px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;}
+.level-num{font-family:'Cinzel Decorative',cursive;font-size:14px;color:var(--gold);margin:3px 0;}
+.level-bar-wrap{height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;}
+.level-bar{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:3px;transition:width 0.5s;box-shadow:0 0 6px rgba(255,215,0,0.5);}
+
+/* BUILD TAB */
+#tab-build{padding:8px;gap:6px;}
+.building-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;transition:all 0.2s;position:relative;overflow:hidden;}
+.building-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,215,0,0.04) 0%,transparent 50%);}
+.building-card.affordable{border-color:var(--border-gold);}
+.building-card.affordable:active{transform:scale(0.98);}
+.building-card.unaffordable{opacity:0.45;}
+.building-icon{width:44px;height:44px;background:rgba(255,215,0,0.08);border:1px solid var(--border-gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.building-name{font-family:'Cinzel',serif;font-size:12px;color:var(--text);font-weight:600;}
+.building-desc{font-size:10px;color:var(--text-dim);margin-top:1px;}
+.building-income{font-size:10px;color:var(--green);margin-top:2px;font-family:'Cinzel',serif;}
+.building-count{font-family:'Cinzel Decorative',cursive;font-size:20px;color:var(--gold-dark);text-align:right;}
+.building-cost{font-size:10px;color:var(--text-dim);text-align:right;font-family:'Cinzel',serif;}
+.building-cost.can-afford{color:var(--gold);}
+@keyframes buyPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+.building-card.buying{animation:buyPop 0.3s ease;}
+
+/* UPGRADE TAB */
+#tab-upgrade{padding:8px;gap:6px;}
+.upgrade-row{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;transition:all 0.2s;}
+.upgrade-row.affordable{border-color:var(--border-gold);}
+.upgrade-row.affordable:active{transform:scale(0.98);}
+.upgrade-row.bought{opacity:0.5;}
+.upgrade-icon{font-size:24px;}
+.upgrade-name{font-family:'Cinzel',serif;font-size:12px;color:var(--text);font-weight:600;}
+.upgrade-desc{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.upgrade-cost{font-family:'Cinzel',serif;font-size:11px;color:var(--gold);margin-top:3px;}
+.upgrade-status{margin-left:auto;font-size:18px;}
+
+/* HOF TAB */
+#tab-hof{padding:8px;gap:8px;}
+.hof-header{font-family:'Cinzel Decorative',cursive;font-size:14px;color:var(--gold);text-align:center;padding:10px;letter-spacing:2px;text-shadow:0 0 10px rgba(255,215,0,0.3);}
+.hof-register-btn{padding:12px;background:linear-gradient(135deg,rgba(184,134,11,0.2),rgba(255,215,0,0.1));border:1px solid var(--gold-dark);border-radius:10px;color:var(--gold);font-family:'Cinzel',serif;font-size:12px;letter-spacing:1px;text-align:center;cursor:pointer;}
+.hof-register-btn:active{transform:scale(0.98);}
+.hof-row{display:grid;grid-template-columns:28px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);font-family:'Cinzel',serif;font-size:12px;}
+.hof-row.rank-1{border-color:var(--gold);background:rgba(255,215,0,0.06);}
+.hof-row.rank-2{border-color:#aaa;background:rgba(200,200,200,0.04);}
+.hof-row.rank-3{border-color:#cd7f32;background:rgba(205,127,50,0.04);}
+.hof-medal{font-size:18px;text-align:center;}
+.hof-name{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
+.hof-gold{color:var(--gold);font-size:11px;text-align:right;}
+.hof-lv{color:var(--text-dim);font-size:11px;text-align:right;}
+.hof-empty{color:var(--text-dim);font-size:12px;text-align:center;padding:30px;font-family:'Cinzel',serif;}
+
+/* BOTTOM */
+#bottom-bar{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);background:var(--bg-panel);flex-shrink:0;}
+.action-btn{flex:1;padding:8px;border:1px solid var(--border-gold);border-radius:8px;background:rgba(184,134,11,0.1);color:var(--text-dim);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;cursor:pointer;text-align:center;}
+.action-btn:active{background:rgba(184,134,11,0.2);color:var(--gold);transform:scale(0.97);}
+.btn-icon{font-size:14px;display:block;margin-bottom:2px;}
+
+/* OVERLAYS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.overlay.show{display:flex;}
+.popup-box{background:var(--bg-panel);border:2px solid var(--gold-dark);border-radius:15px;padding:28px 22px;text-align:center;width:100%;max-width:320px;box-shadow:0 0 50px rgba(255,215,0,0.2);animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.popup-title{font-family:'Cinzel Decorative',cursive;font-size:17px;color:var(--gold);margin-bottom:6px;}
+.popup-sub{font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);letter-spacing:1px;}
+.popup-reward{font-family:'Cinzel Decorative',cursive;font-size:30px;color:var(--gold);margin:16px 0;text-shadow:0 0 20px rgba(255,215,0,0.6);}
+.popup-btn{background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:8px;color:#1a1200;font-family:'Cinzel',serif;font-size:13px;font-weight:700;padding:11px 24px;cursor:pointer;letter-spacing:2px;margin-top:8px;}
+.popup-btn:active{transform:scale(0.97);}
+.nick-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;}
+.nick-stat{background:rgba(255,215,0,0.07);border:1px solid var(--border-gold);border-radius:8px;padding:9px;}
+.nick-stat-label{font-family:'Cinzel',serif;font-size:9px;color:var(--text-dim);letter-spacing:1px;}
+.nick-stat-val{font-family:'Cinzel Decorative',cursive;font-size:18px;color:var(--gold);margin-top:2px;}
+.nick-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-gold);border-radius:8px;color:var(--text);font-family:'Cinzel',serif;font-size:14px;padding:10px;text-align:center;letter-spacing:2px;margin-bottom:12px;outline:none;transition:border-color 0.3s;}
+.nick-input:focus{border-color:var(--gold);}
+.nick-skip{display:block;margin-top:10px;font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);cursor:pointer;}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(10,8,4,0.95);border:1px solid var(--gold-dark);border-radius:20px;padding:8px 20px;font-family:'Cinzel',serif;font-size:12px;color:var(--gold);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:2000;white-space:nowrap;}
+#toast.show{opacity:1;}
+
+@keyframes kingdomGlow{0%,100%{filter:drop-shadow(0 0 25px rgba(255,200,50,0.3))}50%{filter:drop-shadow(0 0 50px rgba(255,200,50,0.7))}}
+.kingdom-glow{animation:kingdomGlow 0.3s ease-out;}
+@keyframes newRecord{0%,100%{box-shadow:0 0 0 rgba(255,215,0,0)}50%{box-shadow:0 0 25px rgba(255,215,0,0.6)}}
+.record-flash{animation:newRecord 0.6s ease 3;}
+</style>
+</head>
+<body>
+
+<!-- OFFLINE -->
+<div id="offline-popup" class="overlay">
+  <div class="popup-box">
+    <div class="popup-title">⚔️ 왕이여, 돌아오셨군요!</div>
+    <p class="popup-sub">왕국이 열심히 일했습니다</p>
+    <div style="color:var(--text-dim);font-size:11px;margin-top:8px;" id="offline-time"></div>
+    <div class="popup-reward" id="offline-reward">🪙 0</div>
+    <button class="popup-btn" onclick="collectOffline()">✨ 수령하기</button>
+  </div>
+</div>
+
+<!-- NICKNAME -->
+<div id="nickname-popup" class="overlay">
+  <div class="popup-box">
+    <div class="popup-title">🏆 명예의 전당</div>
+    <p class="popup-sub">기록을 남기시겠습니까?</p>
+    <div class="nick-stats">
+      <div class="nick-stat"><div class="nick-stat-label">🪙 누적 골드</div><div class="nick-stat-val" id="nick-gold">0</div></div>
+      <div class="nick-stat"><div class="nick-stat-label">🏰 최고 레벨</div><div class="nick-stat-val" id="nick-lv">Lv.1</div></div>
+    </div>
+    <input class="nick-input" id="nick-input" type="text" maxlength="10" placeholder="닉네임 (최대 10자)">
+    <button class="popup-btn" onclick="submitRecord()">✨ 기록 등록</button>
+    <span class="nick-skip" onclick="closeNickPopup()">건너뛰기</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="header">
+  <div class="h-logo">KILLINGTIMEHEAVEN</div>
+  <div class="h-title">왕국의 번영</div>
+  <a href="index.html" class="h-back">← 홈</a>
+</div>
+
+<div id="resources">
+  <div class="res-box"><div class="res-label">🪙 골드</div><div class="res-value" id="gold-display">0</div><div class="res-sub" id="gps-display">+0/초</div></div>
+  <div class="res-box"><div class="res-label">👆 클릭</div><div class="res-value" id="click-display">1</div><div class="res-sub">클릭당</div></div>
+  <div class="res-box"><div class="res-label">📊 총계</div><div class="res-value" id="total-display">0</div><div class="res-sub">누적</div></div>
+</div>
+
+<div id="tabs">
+  <div class="tab active" onclick="switchTab('kingdom')">🏰 왕국</div>
+  <div class="tab" onclick="switchTab('build')">🏗 건설</div>
+  <div class="tab" onclick="switchTab('upgrade')">✨ 업그레이드</div>
+  <div class="tab" onclick="switchTab('hof')">🏆 명예</div>
+</div>
+
+<div id="content">
+  <div id="tab-kingdom" class="tab-pane">
+    <div id="kingdom-art" ontouchstart="handleTouch(event)" onclick="handleClick(event)">
+      <svg class="kingdom-svg" id="kingdom-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="skyGrad" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#1a0f2e"/><stop offset="100%" stop-color="#0a0806"/></radialGradient>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff9e6" stop-opacity="0.9"/><stop offset="100%" stop-color="#ffd700" stop-opacity="0.2"/></radialGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="320" height="320" fill="url(#skyGrad)" rx="16"/>
+        <circle cx="260" cy="55" r="28" fill="url(#moonGlow)" filter="url(#glow)"/><circle cx="252" cy="50" r="20" fill="#1a0f2e"/>
+        <circle cx="30" cy="30" r="1.5" fill="#fff" opacity="0.8"/><circle cx="80" cy="20" r="1" fill="#fff" opacity="0.6"/>
+        <circle cx="130" cy="40" r="1.5" fill="#fff" opacity="0.7"/><circle cx="200" cy="25" r="1" fill="#fff" opacity="0.9"/>
+        <circle cx="170" cy="15" r="2" fill="#ffd700" opacity="0.6"/>
+        <polygon points="0,220 60,120 120,220" fill="#1a1010" opacity="0.8"/>
+        <polygon points="80,220 160,90 240,220" fill="#150e0e" opacity="0.9"/>
+        <polygon points="200,220 280,130 320,220" fill="#1a1010" opacity="0.8"/>
+        <rect x="0" y="210" width="320" height="110" fill="#1a1308"/>
+        <rect x="30" y="185" width="260" height="40" fill="#2a1f0e" rx="3"/>
+        <rect x="30" y="180" width="18" height="12" fill="#352410" rx="2"/><rect x="56" y="180" width="18" height="12" fill="#352410" rx="2"/>
+        <rect x="108" y="180" width="18" height="12" fill="#352410" rx="2"/><rect x="166" y="180" width="18" height="12" fill="#352410" rx="2"/>
+        <rect x="218" y="180" width="18" height="12" fill="#352410" rx="2"/><rect x="270" y="180" width="18" height="12" fill="#352410" rx="2"/>
+        <rect x="135" y="195" width="50" height="30" fill="#1a0e04"/>
+        <path d="M135,210 Q160,195 185,210" fill="#2a1a08"/>
+        <rect x="40" y="130" width="55" height="80" fill="#2a1f0e" rx="3"/><polygon points="40,130 67,100 95,130" fill="#3a2a12"/>
+        <rect x="53" y="148" width="14" height="18" fill="#1a0e04" rx="2" filter="url(#glow)"/>
+        <rect x="67" y="100" width="2" height="20" fill="#8B6914"/><polygon points="69,100 84,107 69,114" fill="#c0392b"/>
+        <rect x="225" y="130" width="55" height="80" fill="#2a1f0e" rx="3"/><polygon points="225,130 252,100 280,130" fill="#3a2a12"/>
+        <rect x="234" y="148" width="14" height="18" fill="#1a0e04" rx="2" filter="url(#glow)"/>
+        <rect x="252" y="100" width="2" height="20" fill="#8B6914"/><polygon points="254,100 269,107 254,114" fill="#c0392b"/>
+        <rect x="108" y="100" width="104" height="110" fill="#352810" rx="3"/>
+        <rect x="108" y="93" width="20" height="14" fill="#3d2f12" rx="2"/><rect x="134" y="93" width="20" height="14" fill="#3d2f12" rx="2"/>
+        <rect x="160" y="93" width="20" height="14" fill="#3d2f12" rx="2"/><rect x="186" y="93" width="20" height="14" fill="#3d2f12" rx="2"/>
+        <rect x="140" y="55" width="40" height="55" fill="#3d2f12" rx="3"/><polygon points="140,55 160,25 180,55" fill="#4a3815"/>
+        <rect x="159" y="25" width="2" height="25" fill="#8B6914"/><polygon points="161,25 178,33 161,41" fill="#FFD700"/>
+        <rect x="148" y="70" width="10" height="14" fill="#ffd700" opacity="0.6" rx="1" filter="url(#glow)"/>
+        <rect x="163" y="70" width="10" height="14" fill="#ffd700" opacity="0.6" rx="1" filter="url(#glow)"/>
+        <rect x="125" y="118" width="12" height="16" fill="#ffa500" opacity="0.5" rx="1" filter="url(#glow)"/>
+        <rect x="183" y="118" width="12" height="16" fill="#ffa500" opacity="0.5" rx="1" filter="url(#glow)"/>
+        <rect x="151" y="118" width="18" height="22" fill="#1a0e04" rx="2"/>
+      </svg>
+    </div>
+    <div class="click-hint">⚔ 왕국을 탭하여 골드 획득</div>
+    <div id="level-display">
+      <div class="level-text">KINGDOM LEVEL</div>
+      <div class="level-num" id="level-num">Lv.1 — 작은 마을</div>
+      <div class="level-bar-wrap"><div class="level-bar" id="level-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div id="tab-build" class="tab-pane hidden"></div>
+  <div id="tab-upgrade" class="tab-pane hidden"></div>
+
+  <div id="tab-hof" class="tab-pane hidden">
+    <div class="hof-header">🏆 명예의 전당</div>
+    <div class="hof-register-btn" onclick="openNickPopup()">✨ 내 기록 등록하기</div>
+    <div id="hof-list"></div>
+  </div>
+</div>
+
+<div id="bottom-bar">
+  <button class="action-btn" onclick="openNickPopup()"><span class="btn-icon">🏆</span>기록등록</button>
+  <button class="action-btn" onclick="shareGame()"><span class="btn-icon">🔗</span>공유</button>
+  <button class="action-btn" onclick="resetGame()"><span class="btn-icon">🔄</span>초기화</button>
+</div>
+
+<script>
+const BUILDINGS=[
+  {id:'farm',name:'농장',icon:'🌾',desc:'농부들이 열심히 일합니다',baseCost:15,baseGps:0.1,clickBonus:0},
+  {id:'market',name:'시장',icon:'🏪',desc:'상인들이 교역합니다',baseCost:100,baseGps:0.5,clickBonus:1},
+  {id:'inn',name:'여관',icon:'🍺',desc:'여행자들이 머뭅니다',baseCost:500,baseGps:2,clickBonus:0},
+  {id:'barracks',name:'병영',icon:'⚔️',desc:'용사를 훈련시킵니다',baseCost:2000,baseGps:8,clickBonus:5},
+  {id:'tower',name:'마법탑',icon:'🔮',desc:'마법사가 골드를 소환합니다',baseCost:8000,baseGps:30,clickBonus:10},
+  {id:'temple',name:'신전',icon:'⛪',desc:'신의 축복이 내립니다',baseCost:30000,baseGps:100,clickBonus:0},
+  {id:'castle',name:'대성',icon:'🏰',desc:'왕국의 중심입니다',baseCost:100000,baseGps:300,clickBonus:50},
+  {id:'dungeon',name:'던전',icon:'🐉',desc:'드래곤에게서 보물을 빼앗습니다',baseCost:400000,baseGps:1000,clickBonus:100},
+];
+const UPGRADES=[
+  {id:'u1',name:'쟁기 개량',icon:'🔨',cost:100,target:'farm',mult:2,desc:'농장 생산 2배'},
+  {id:'u2',name:'무역로 확장',icon:'🗺️',cost:500,target:'market',mult:2,desc:'시장 생산 2배'},
+  {id:'u3',name:'왕검 연마',icon:'⚔️',cost:1000,target:'click',mult:2,desc:'클릭 파워 2배'},
+  {id:'u4',name:'마법 강화',icon:'✨',cost:5000,target:'tower',mult:2,desc:'마법탑 생산 2배'},
+  {id:'u5',name:'신성한 축복',icon:'✝️',cost:20000,target:'all',mult:1.5,desc:'전체 생산 1.5배'},
+  {id:'u6',name:'황금 촉감',icon:'🤚',cost:50000,target:'click',mult:3,desc:'클릭 파워 3배'},
+  {id:'u7',name:'용의 가호',icon:'🐉',cost:200000,target:'all',mult:2,desc:'전체 생산 2배'},
+];
+const LEVELS=[
+  {name:'작은 마을',need:0},{name:'번영하는 마을',need:100},{name:'소도시',need:500},
+  {name:'대도시',need:2000},{name:'왕국',need:10000},{name:'제국',need:50000},
+  {name:'전설의 왕국',need:200000},{name:'신화의 제국',need:1000000},
+];
+const SAVE_KEY='ktg_kingdom_v1',HOF_KEY='ktg_kingdom_hof_v1';
+let state={gold:0,totalGold:0,buildings:{},upgrades:{},lastSave:Date.now()};
+let currentTab='kingdom';
+
+function loadState(){
+  try{
+    const s=localStorage.getItem(SAVE_KEY);if(!s)return;
+    const saved=JSON.parse(s),elapsed=Math.floor((Date.now()-saved.lastSave)/1000);
+    state=saved;state.lastSave=Date.now();
+    const og=Math.floor(calcGps()*Math.min(elapsed,3600*8));
+    if(og>0&&elapsed>30)showOfflinePopup(og,elapsed);
+  }catch(e){}
+}
+function saveState(){state.lastSave=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
+
+function getBuildingCount(id){return state.buildings[id]||0;}
+function calcCost(b,cnt){return Math.floor(b.baseCost*Math.pow(1.15,cnt));}
+function getAllMult(){let m=1;UPGRADES.forEach(u=>{if(state.upgrades[u.id]&&u.target==='all')m*=u.mult;});return m;}
+function calcGps(){
+  const am=getAllMult();let gps=0;
+  BUILDINGS.forEach(b=>{let bm=1;UPGRADES.forEach(u=>{if(state.upgrades[u.id]&&u.target===b.id)bm*=u.mult;});gps+=b.baseGps*getBuildingCount(b.id)*bm;});
+  return gps*am;
+}
+function calcClickPower(){
+  let p=1;UPGRADES.forEach(u=>{if(state.upgrades[u.id]&&u.target==='click')p*=u.mult;});
+  BUILDINGS.forEach(b=>{p+=b.clickBonus*getBuildingCount(b.id);});
+  return Math.floor(p*getAllMult());
+}
+function getCurrentLv(){
+  let lv=0;for(let i=LEVELS.length-1;i>=0;i--){if(state.totalGold>=LEVELS[i].need){lv=i;break;}}
+  return{num:lv+1,name:LEVELS[lv].name,cur:LEVELS[lv],next:LEVELS[lv+1]};
+}
+function fmt(n){if(n<1000)return Math.floor(n).toLocaleString();if(n<1e6)return(n/1000).toFixed(1)+'K';if(n<1e9)return(n/1e6).toFixed(1)+'M';if(n<1e12)return(n/1e9).toFixed(1)+'B';return(n/1e12).toFixed(1)+'T';}
+function fmtTime(s){if(s<60)return s+'초';if(s<3600)return Math.floor(s/60)+'분';return Math.floor(s/3600)+'시간 '+Math.floor((s%3600)/60)+'분';}
+
+function switchTab(tab){
+  currentTab=tab;
+  ['kingdom','build','upgrade','hof'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab);});
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['kingdom','build','upgrade','hof'][i]===tab);});
+  if(tab==='build')renderBuildings();
+  if(tab==='upgrade')renderUpgrades();
+  if(tab==='hof')renderHof();
+}
+
+function renderBuildings(){
+  const list=document.getElementById('tab-build');list.innerHTML='';
+  const am=getAllMult();
+  BUILDINGS.forEach(b=>{
+    const cnt=getBuildingCount(b.id),cost=calcCost(b,cnt),can=state.gold>=cost;
+    let bm=1;UPGRADES.forEach(u=>{if(state.upgrades[u.id]&&u.target===b.id)bm*=u.mult;});
+    const gps=(b.baseGps*bm*am).toFixed(1);
+    const div=document.createElement('div');
+    div.className='building-card '+(can?'affordable':'unaffordable');div.id='bc-'+b.id;
+    div.innerHTML=`<div class="building-icon">${b.icon}</div><div><div class="building-name">${b.name}</div><div class="building-desc">${b.desc}</div><div class="building-income">+${gps}/초</div></div><div><div class="building-count">${cnt}</div><div class="building-cost ${can?'can-afford':''}">🪙${fmt(cost)}</div></div>`;
+    if(can)div.onclick=()=>buyBuilding(b.id);
+    list.appendChild(div);
+  });
+}
+function renderUpgrades(){
+  const list=document.getElementById('tab-upgrade');list.innerHTML='';
+  UPGRADES.forEach(u=>{
+    const bought=!!state.upgrades[u.id],can=!bought&&state.gold>=u.cost;
+    const div=document.createElement('div');
+    div.className='upgrade-row '+(bought?'bought':can?'affordable':'');
+    div.innerHTML=`<div class="upgrade-icon">${u.icon}</div><div><div class="upgrade-name">${u.name}</div><div class="upgrade-desc">${u.desc}</div><div class="upgrade-cost">${bought?'완료':'🪙 '+fmt(u.cost)}</div></div><div class="upgrade-status">${bought?'✅':can?'💰':'🔒'}</div>`;
+    if(can)div.onclick=()=>buyUpgrade(u.id);
+    list.appendChild(div);
+  });
+}
+function renderHof(){
+  const list=document.getElementById('hof-list'),hof=getHof();
+  if(!hof.length){list.innerHTML='<div class="hof-empty">아직 기록이 없습니다<br>🏆 기록 등록 버튼을 눌러보세요!</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  list.innerHTML=hof.slice(0,5).map((r,i)=>`<div class="hof-row rank-${i+1}"><div class="hof-medal">${medals[i]}</div><div class="hof-name">${r.name}</div><div class="hof-gold">🪙${fmt(r.gold)}</div><div class="hof-lv">Lv.${r.lv}</div></div>`).join('');
+}
+function updateHUD(){
+  document.getElementById('gold-display').textContent=fmt(state.gold);
+  document.getElementById('gps-display').textContent='+'+fmt(calcGps())+'/초';
+  document.getElementById('click-display').textContent=fmt(calcClickPower());
+  document.getElementById('total-display').textContent=fmt(state.totalGold);
+  const lv=getCurrentLv();
+  document.getElementById('level-num').textContent=`Lv.${lv.num} — ${lv.name}`;
+  const pct=lv.next?Math.min(100,((state.totalGold-lv.cur.need)/(lv.next.need-lv.cur.need))*100):100;
+  document.getElementById('level-bar').style.width=pct+'%';
+}
+
+function buyBuilding(id){
+  const b=BUILDINGS.find(x=>x.id===id),cnt=getBuildingCount(id),cost=calcCost(b,cnt);
+  if(state.gold<cost)return;
+  state.gold-=cost;state.buildings[id]=cnt+1;
+  const card=document.getElementById('bc-'+id);if(card){card.classList.add('buying');setTimeout(()=>card.classList.remove('buying'),300);}
+  showToast(`${b.icon} ${b.name} 구매!`);updateHUD();if(currentTab==='build')renderBuildings();
+}
+function buyUpgrade(id){
+  const u=UPGRADES.find(x=>x.id===id);if(!u||state.upgrades[id]||state.gold<u.cost)return;
+  state.gold-=u.cost;state.upgrades[id]=true;
+  showToast(`✨ ${u.name} 적용!`);updateHUD();if(currentTab==='upgrade')renderUpgrades();
+}
+
+function handleTouch(e){e.preventDefault();const t=e.touches[0];spawnEffects(t.clientX,t.clientY);}
+function handleClick(e){spawnEffects(e.clientX,e.clientY);}
+function spawnEffects(cx,cy){
+  const power=calcClickPower();state.gold+=power;state.totalGold+=power;
+  const art=document.getElementById('kingdom-art'),rect=art.getBoundingClientRect();
+  const ripple=document.createElement('div');ripple.className='click-ripple';
+  ripple.style.left=(cx-rect.left)+'px';ripple.style.top=(cy-rect.top)+'px';
+  art.appendChild(ripple);setTimeout(()=>ripple.remove(),600);
+  const p=document.createElement('div');p.className='gold-particle';
+  p.textContent='+'+fmt(power);p.style.left=cx+'px';p.style.top=(cy-10)+'px';
+  document.body.appendChild(p);setTimeout(()=>p.remove(),1000);
+  const svg=document.getElementById('kingdom-svg');svg.classList.add('kingdom-glow');setTimeout(()=>svg.classList.remove('kingdom-glow'),300);
+  updateHUD();if(currentTab==='build')renderBuildings();if(currentTab==='upgrade')renderUpgrades();
+}
+
+let offlineAmount=0;
+function showOfflinePopup(gold,elapsed){
+  offlineAmount=gold;
+  document.getElementById('offline-time').textContent='부재 시간: '+fmtTime(elapsed);
+  document.getElementById('offline-reward').textContent='🪙 '+fmt(gold);
+  document.getElementById('offline-popup').classList.add('show');
+}
+function collectOffline(){state.gold+=offlineAmount;state.totalGold+=offlineAmount;document.getElementById('offline-popup').classList.remove('show');updateHUD();}
+
+function getHof(){try{return JSON.parse(localStorage.getItem(HOF_KEY))||[];}catch(e){return[];}}
+function saveHof(list){localStorage.setItem(HOF_KEY,JSON.stringify(list));}
+function openNickPopup(){
+  const lv=getCurrentLv();
+  document.getElementById('nick-gold').textContent=fmt(state.totalGold);
+  document.getElementById('nick-lv').textContent='Lv.'+lv.num;
+  document.getElementById('nick-input').value='';
+  document.getElementById('nickname-popup').classList.add('show');
+  setTimeout(()=>document.getElementById('nick-input').focus(),300);
+}
+function closeNickPopup(){document.getElementById('nickname-popup').classList.remove('show');}
+function submitRecord(){
+  const name=document.getElementById('nick-input').value.trim()||'무명의 왕';
+  const lv=getCurrentLv(),hof=getHof();
+  hof.push({name,gold:state.totalGold,lv:lv.num});
+  hof.sort((a,b)=>b.gold-a.gold);saveHof(hof.slice(0,5));
+  closeNickPopup();renderHof();
+  const hofEl=document.getElementById('tab-hof');hofEl.classList.add('record-flash');setTimeout(()=>hofEl.classList.remove('record-flash'),2000);
+  showToast('🏆 명예의 전당에 등록됐습니다!');
+  switchTab('hof');
+}
+
+function shareGame(){
+  const lv=getCurrentLv();
+  const txt=`🏰 왕국의 번영!\n누적 골드: ${fmt(state.totalGold)} · Lv.${lv.num} ${lv.name}\n🎮 killingtimeheaven.pages.dev`;
+  if(navigator.share)navigator.share({title:'왕국의 번영',text:txt,url:location.href});
+  else navigator.clipboard.writeText(txt).then(()=>showToast('📋 클립보드에 복사됐습니다!'));
+}
+function resetGame(){
+  if(!confirm('정말 초기화하시겠습니까?\n모든 진행상황이 사라집니다.\n(명예의 전당 기록은 유지됩니다)'))return;
+  localStorage.removeItem(SAVE_KEY);location.reload();
+}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+let lastTick=Date.now();
+function tick(){
+  const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;
+  const earned=calcGps()*dt;state.gold+=earned;state.totalGold+=earned;
+  if(now%5000<100)saveState();
+  updateHUD();
+  requestAnimationFrame(tick);
+}
+
+loadState();updateHUD();renderHof();requestAnimationFrame(tick);
+</script>
+</body>
+</html>
