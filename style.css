@@ -330,16 +330,21 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 30px;
+  min-height: 300px; /* 배너와 문구가 모두 보이도록 최소 높이 확보 */
 }
 
 .ad-container {
   width: 100%;
   max-width: 680px;
-  overflow-x: auto;
+  min-height: 140px; /* 배너 높이에 맞춘 최소 높이 */
+  overflow: visible; /* 스크립트 생성 요소가 잘리지 않도록 변경 */
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.05);
   padding: 10px;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .ad-disclaimer {
