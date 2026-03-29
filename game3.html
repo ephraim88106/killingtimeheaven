@@ -460,7 +460,9 @@ function tick(){
   const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;
   const earned=calcGps()*dt;state.gold+=earned;state.totalGold+=earned;
   if(now%5000<100)saveState();
-  updateHUD();renderBuildings();renderUpgrades();
+  updateHUD();
+  // Only re-render if we are in a state that might change affordability
+  // or just render manually after actions to be safe and efficient.
   requestAnimationFrame(tick);
 }
 function makeStars(){
