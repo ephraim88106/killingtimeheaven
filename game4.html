@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마왕의 침공 - 킬링타임천국</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson: #9e1b1b; --crimson-glow: #ff4d4d;
+  --obsidian: #0f0f12; --panel-bg: #1a1a1f; --card-bg: #25252b;
+  --text: #e0e0e0; --text-dim: #999999; --gold: #ffd700;
+  --border: #3d3d45; --border-glow: #6e6e7a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--obsidian); color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  height: 100vh; overflow: hidden;
+  background-image: radial-gradient(circle at 50% 50%, #1e1e26 0%, #0f0f12 100%);
+}
+
+/* HEADER */
+#header {
+  background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--crimson);
+  padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 4px 30px rgba(158,27,27,0.3); z-index: 100; position: relative;
+}
+.header-logo { font-family: 'Cinzel Decorative', cursive; font-size: 14px; color: var(--text-dim); letter-spacing: 2px; }
+.header-title { font-family: 'Cinzel Decorative', cursive; font-size: 24px; color: var(--crimson-glow); text-shadow: 0 0 15px var(--crimson); }
+.header-nav { display: flex; gap: 15px; }
+.header-nav a { color: var(--text-dim); text-decoration: none; font-size: 13px; transition: color 0.3s; }
+.header-nav a:hover { color: var(--crimson-glow); }
+
+/* MAIN LAYOUT */
+#game-container {
+  display: grid; grid-template-columns: 1fr 400px;
+  height: calc(100vh - 60px);
+}
+
+/* BATTLEFIELD */
+#battle-field {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%231a1a1f' fill-opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* BASE / CASTLE */
+#base {
+  position: relative; z-index: 10; cursor: pointer;
+  transition: transform 0.1s; user-select: none;
+}
+#base:active { transform: scale(0.95); }
+.castle-svg { width: 350px; height: 350px; filter: drop-shadow(0 0 40px rgba(0,0,0,0.8)); }
+
+/* MONSTERS */
+.monster {
+  position: absolute; pointer-events: none; z-index: 5;
+  transition: transform 0.1s;
+}
+.monster-body { font-size: 40px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+
+/* UI ELEMENTS */
+#stats-overlay {
+  position: absolute; top: 20px; left: 20px; right: 20px;
+  display: flex; justify-content: space-between; pointer-events: none;
+}
+.stat-box {
+  background: rgba(0,0,0,0.7); border: 1px solid var(--crimson);
+  border-radius: 12px; padding: 12px 20px; backdrop-filter: blur(5px);
+  min-width: 150px; text-align: center;
+}
+.stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.stat-value { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); }
+.stat-hp { color: var(--crimson-glow); }
+
+#wave-info {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  text-align: center;
+}
+.wave-title { font-family: 'Cinzel Decorative', cursive; font-size: 18px; color: var(--text); margin-bottom: 5px; }
+.wave-bar-bg { width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+.wave-bar-fill { height: 100%; background: var(--crimson); width: 0%; transition: width 0.3s; }
+
+/* SIDEBAR */
+#sidebar {
+  background: var(--panel-bg); border-left: 2px solid var(--crimson);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.side-header { padding: 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+.side-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 18px; letter-spacing: 1px; }
+
+#upgrade-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+.upgrade-item {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 15px; cursor: pointer;
+  display: grid; grid-template-columns: 50px 1fr auto; gap: 15px; align-items: center;
+  transition: all 0.3s;
+}
+.upgrade-item.affordable { border-color: var(--border-glow); }
+.upgrade-item.affordable:hover { background: #2f2f38; border-color: var(--crimson); transform: translateX(5px); }
+.upgrade-item.unaffordable { opacity: 0.5; cursor: not-allowed; }
+
+.up-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.up-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+.up-desc { font-size: 12px; color: var(--text-dim); }
+.up-cost { font-family: 'Cinzel', serif; color: var(--gold); font-size: 14px; text-align: right; }
+.up-lv { font-size: 11px; color: var(--text-dim); text-align: right; margin-top: 4px; }
+
+#log-panel {
+  height: 150px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border);
+  padding: 15px; overflow-y: auto; font-size: 12px; color: var(--text-dim);
+}
+.log-entry { margin-bottom: 5px; border-left: 2px solid transparent; padding-left: 8px; }
+.log-entry.important { color: var(--crimson-glow); border-left-color: var(--crimson); }
+
+/* EFFECTS */
+.damage-text {
+  position: absolute; font-weight: 900; pointer-events: none;
+  animation: floatUp 0.8s ease-out forwards; z-index: 100;
+}
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100px); opacity: 0; }
+}
+.hit-effect {
+  position: absolute; border-radius: 50%; background: radial-gradient(circle, var(--crimson-glow) 0%, transparent 70%);
+  pointer-events: none; animation: burst 0.4s ease-out forwards;
+}
+@keyframes burst {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 150px; height: 150px; opacity: 0; }
+}
+
+/* TOAST */
+#toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--crimson); color: white; padding: 12px 30px; border-radius: 30px;
+  font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  opacity: 0; transition: opacity 0.3s; z-index: 2000; pointer-events: none;
+}
+#toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="header-logo">KILLINGTIMEHEAVEN</div>
+  <div class="header-title">마왕의 침공</div>
+  <nav class="header-nav">
+    <a href="index.html">홈</a>
+    <a href="index.html#games">게임</a>
+    <a href="blog.html">블로그</a>
+  </nav>
+</div>
+
+<div id="game-container">
+  <div id="battle-field">
+    <div id="stats-overlay">
+      <div class="stat-box">
+        <div class="stat-label">성벽 내구도</div>
+        <div class="stat-value stat-hp" id="hp-display">1,000 / 1,000</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">보유 영혼석</div>
+        <div class="stat-value" id="gold-display">0</div>
+      </div>
+    </div>
+
+    <div id="base" onclick="handleAttack()">
+      <svg class="castle-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="80" width="120" height="100" fill="#2c2c34" />
+        <rect x="30" y="70" width="30" height="110" fill="#1e1e24" />
+        <rect x="140" y="70" width="30" height="110" fill="#1e1e24" />
+        <polygon points="30,70 45,40 60,70" fill="#9e1b1b" />
+        <polygon points="140,70 155,40 170,70" fill="#9e1b1b" />
+        <rect x="85" y="130" width="30" height="50" fill="#0f0f12" rx="5" />
+        <circle cx="100" cy="50" r="25" fill="#1a1a1f" stroke="#9e1b1b" stroke-width="2" />
+        <path d="M90,50 L110,50 M100,40 L100,60" stroke="#ffd700" stroke-width="3" />
+      </svg>
+    </div>
+
+    <div id="wave-info">
+      <div class="wave-title" id="wave-display">WAVE 1</div>
+      <div class="wave-bar-bg"><div class="wave-bar-fill" id="wave-progress"></div></div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="side-header">
+      <div class="side-title">⚔️ 방어 업그레이드</div>
+    </div>
+    <div id="upgrade-list"></div>
+    <div id="log-panel" id="game-log">
+      <div class="log-entry">마왕의 군대가 접근하고 있습니다...</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const UPGRADES = [
+  { id:'atk', name:'성벽 반격', icon:'⚔️', desc:'클릭 공격력 강화', baseCost:10, growth:1.5 },
+  { id:'hp', name:'성벽 보강', icon:'🛡️', desc:'최대 내구도 증가', baseCost:20, growth:1.6 },
+  { id:'auto', name:'궁수 배치', icon:'🏹', desc:'자동 공격 수행', baseCost:50, growth:1.7 },
+  { id:'repair', name:'마법 수리', icon:'✨', desc:'초당 내구도 회복', baseCost:100, growth:1.8 },
+  { id:'crit', name:'치명적 일격', icon:'💥', desc:'치명타 확률 및 위력 증가', baseCost:200, growth:2.0 }
+];
+
+let state = {
+  hp: 1000, maxHp: 1000,
+  gold: 0, totalGold: 0,
+  wave: 1, monstersInWave: 10, monstersKilled: 0,
+  upgrades: { atk:1, hp:1, auto:0, repair:0, crit:0 },
+  lastTick: Date.now()
+};
+
+function save() { localStorage.setItem('ktg_invasion_v1', JSON.stringify(state)); }
+function load() {
+  const saved = localStorage.getItem('ktg_invasion_v1');
+  if(saved) state = {...state, ...JSON.parse(saved)};
+}
+
+function getAtk() { return Math.floor(state.upgrades.atk * (1 + state.upgrades.crit * 0.1)); }
+function getAutoAtk() { return state.upgrades.auto * 2; }
+function getRepair() { return state.upgrades.repair * 1; }
+function getCost(id) {
+  const u = UPGRADES.find(x => x.id === id);
+  return Math.floor(u.baseCost * Math.pow(u.growth, state.upgrades[id]));
+}
+
+function handleAttack() {
+  spawnHitEffect();
+  const dmg = getAtk();
+  const crit = Math.random() < (state.upgrades.crit * 0.05);
+  const finalDmg = crit ? dmg * 3 : dmg;
+  
+  // Find nearest monster
+  const monsters = document.querySelectorAll('.monster');
+  if(monsters.length > 0) {
+    let target = monsters[0];
+    let mId = target.dataset.id;
+    killMonster(target, finalDmg, crit);
+  }
+}
+
+function killMonster(el, dmg, isCrit) {
+  const reward = Math.floor(state.wave * 1.5);
+  state.gold += reward;
+  state.totalGold += reward;
+  state.monstersKilled++;
+  
+  const rect = el.getBoundingClientRect();
+  showDmg(rect.left + 20, rect.top, dmg, isCrit);
+  
+  el.remove();
+  if(state.monstersKilled >= state.monstersInWave) {
+    startNextWave();
+  }
+  render();
+}
+
+function startNextWave() {
+  state.wave++;
+  state.monstersKilled = 0;
+  state.monstersInWave = 10 + state.wave * 2;
+  addLog(`WAVE ${state.wave} 시작! 더 강력한 적들이 몰려옵니다.`, true);
+  showToast(`WAVE ${state.wave} 돌입!`);
+}
+
+function spawnMonster() {
+  if(document.querySelectorAll('.monster').length >= 5) return;
+  if(state.monstersKilled + document.querySelectorAll('.monster').length >= state.monstersInWave) return;
+
+  const m = document.createElement('div');
+  m.className = 'monster';
+  const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+  let x, y;
+  if(side === 0) { x = Math.random() * 100; y = -10; }
+  else if(side === 1) { x = 110; y = Math.random() * 100; }
+  else if(side === 2) { x = Math.random() * 100; y = 110; }
+  else { x = -10; y = Math.random() * 100; }
+  
+  m.style.left = x + '%';
+  m.style.top = y + '%';
+  
+  const types = ['💀', '🧟', '👻', '🦇', '👹'];
+  m.innerHTML = `<div class="monster-body">${types[Math.floor(Math.random()*types.length)]}</div>`;
+  document.getElementById('battle-field').appendChild(m);
+  
+  // Move toward center
+  animateMonster(m);
+}
+
+function animateMonster(el) {
+  let posX = parseFloat(el.style.left);
+  let posY = parseFloat(el.style.top);
+  
+  const speed = 0.2 + (state.wave * 0.02);
+  const interval = setInterval(() => {
+    if(!el.parentNode) { clearInterval(interval); return; }
+    
+    const dx = 50 - posX;
+    const dy = 50 - posY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    
+    if(dist < 15) {
+      // Attack castle
+      clearInterval(interval);
+      damageCastle(el);
+    } else {
+      posX += (dx/dist) * speed;
+      posY += (dy/dist) * speed;
+      el.style.left = posX + '%';
+      el.style.top = posY + '%';
+    }
+  }, 50);
+}
+
+function damageCastle(el) {
+  const dmg = 5 + state.wave * 2;
+  state.hp -= dmg;
+  el.remove();
+  
+  const castle = document.getElementById('base');
+  castle.style.filter = 'brightness(2) sepia(1) saturate(5) hue-rotate(-50deg)';
+  setTimeout(() => castle.style.filter = '', 100);
+  
+  if(state.hp <= 0) {
+    state.hp = 0;
+    gameOver();
+  }
+  render();
+}
+
+function gameOver() {
+  alert(`성벽이 무너졌습니다! 최종 WAVE: ${state.wave}`);
+  state.hp = state.maxHp;
+  state.gold = Math.floor(state.gold * 0.5); // Lose half gold
+  state.wave = 1;
+  state.monstersKilled = 0;
+  state.monstersInWave = 10;
+  document.querySelectorAll('.monster').forEach(m => m.remove());
+  render();
+}
+
+function buyUpgrade(id) {
+  const cost = getCost(id);
+  if(state.gold >= cost) {
+    state.gold -= cost;
+    state.upgrades[id]++;
+    if(id === 'hp') {
+      const bonus = 200;
+      state.maxHp += bonus;
+      state.hp += bonus;
+    }
+    addLog(`${UPGRADES.find(x=>x.id===id).name} 레벨 업! (Lv.${state.upgrades[id]})`);
+    render();
+  }
+}
+
+function render() {
+  document.getElementById('hp-display').textContent = `${state.hp.toLocaleString()} / ${state.maxHp.toLocaleString()}`;
+  document.getElementById('gold-display').textContent = state.gold.toLocaleString();
+  document.getElementById('wave-display').textContent = `WAVE ${state.wave}`;
+  
+  const progress = (state.monstersKilled / state.monstersInWave) * 100;
+  document.getElementById('wave-progress').style.width = progress + '%';
+  
+  const upList = document.getElementById('upgrade-list');
+  upList.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const cost = getCost(u.id);
+    const can = state.gold >= cost;
+    const item = document.createElement('div');
+    item.className = `upgrade-item ${can ? 'affordable' : 'unaffordable'}`;
+    item.onclick = () => buyUpgrade(u.id);
+    item.innerHTML = `
+      <div class="up-icon">${u.icon}</div>
+      <div class="up-info">
+        <div class="up-name">${u.name}</div>
+        <div class="up-desc">${u.desc}</div>
+      </div>
+      <div>
+        <div class="up-cost">💎 ${cost.toLocaleString()}</div>
+        <div class="up-lv">Lv.${state.upgrades[u.id]}</div>
+      </div>
+    `;
+    upList.appendChild(item);
+  });
+}
+
+function showDmg(x, y, dmg, crit) {
+  const d = document.createElement('div');
+  d.className = 'damage-text';
+  d.textContent = dmg;
+  if(crit) {
+    d.style.color = '#ffd700';
+    d.style.fontSize = '30px';
+    d.textContent = 'CRITICAL! ' + dmg;
+  } else {
+    d.style.color = 'white';
+  }
+  d.style.left = x + 'px';
+  d.style.top = y + 'px';
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 800);
+}
+
+function spawnHitEffect() {
+  const eff = document.createElement('div');
+  eff.className = 'hit-effect';
+  eff.style.left = '50%'; eff.style.top = '50%';
+  eff.style.transform = 'translate(-50%, -50%)';
+  document.getElementById('battle-field').appendChild(eff);
+  setTimeout(() => eff.remove(), 400);
+}
+
+function addLog(msg, important = false) {
+  const log = document.getElementById('log-panel');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry' + (important ? ' important' : '');
+  entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.prepend(entry);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Tick system
+setInterval(() => {
+  const now = Date.now();
+  const dt = (now - state.lastTick) / 1000;
+  state.lastTick = now;
+  
+  // Repair
+  if(state.hp < state.maxHp) {
+    state.hp = Math.min(state.maxHp, state.hp + getRepair() * dt);
+  }
+  
+  // Auto attack logic
+  const autoDmg = getAutoAtk() * dt;
+  if(autoDmg > 0) {
+    const monsters = document.querySelectorAll('.monster');
+    if(monsters.length > 0) {
+      // Simplification: auto dmg kills one monster if enough time passes
+      // In a real tick we'd need health bars for monsters.
+      // For this clicker, let's just spawn a kill occasionally.
+    }
+  }
+  
+  render();
+}, 100);
+
+// Monster spawn timer
+setInterval(spawnMonster, 2000);
+
+load();
+render();
+setInterval(save, 5000);
+</script>
+</body>
+</html>

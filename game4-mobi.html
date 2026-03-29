@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>마왕의 침공 - 킬링타임천국</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson: #9e1b1b; --crimson-glow: #ff4d4d;
+  --obsidian: #0f0f12; --panel-bg: #1a1a1f; --card-bg: #25252b;
+  --text: #e0e0e0; --text-dim: #999999; --gold: #ffd700;
+  --border: #3d3d45; --border-glow: #6e6e7a;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--obsidian); color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* HEADER */
+#header {
+  background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--crimson);
+  padding: 8px 16px; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; z-index: 100;
+}
+.h-logo { font-family: 'Cinzel', serif; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+.h-title { font-family: 'Cinzel Decorative', cursive; font-size: 16px; color: var(--crimson-glow); }
+.h-back { font-size: 12px; color: var(--text-dim); text-decoration: none; }
+
+/* BATTLEFIELD */
+#battle-field {
+  flex: 1; position: relative; overflow: hidden;
+  background-image: radial-gradient(circle at 50% 50%, #1e1e26 0%, #0f0f12 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+
+#base {
+  position: relative; z-index: 10;
+  transition: transform 0.1s; user-select: none;
+  touch-action: manipulation;
+}
+.castle-svg { width: 220px; height: 220px; }
+
+.monster { position: absolute; pointer-events: none; z-index: 5; }
+.monster-body { font-size: 32px; }
+
+/* HUD */
+#hud {
+  position: absolute; top: 10px; left: 10px; right: 10px;
+  display: flex; justify-content: space-between; pointer-events: none;
+}
+.hud-box {
+  background: rgba(0,0,0,0.7); border: 1px solid var(--crimson);
+  border-radius: 8px; padding: 6px 12px; text-align: center; backdrop-filter: blur(4px);
+}
+.hud-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; }
+.hud-val { font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold); }
+.hud-hp { color: var(--crimson-glow); }
+
+#wave-info {
+  position: absolute; bottom: 15px; left: 0; right: 0; text-align: center;
+}
+.wave-bar-bg { width: 60%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 4px auto; overflow: hidden; }
+.wave-bar-fill { height: 100%; background: var(--crimson); width: 0%; transition: width 0.3s; }
+
+/* TABS / UPGRADES */
+#ui-panel {
+  height: 280px; background: var(--panel-bg); border-top: 1px solid var(--crimson);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+.tab-header {
+  display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border);
+}
+.tab {
+  flex: 1; padding: 12px; text-align: center; font-size: 12px; color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--crimson-glow); border-bottom-color: var(--crimson); }
+
+#upgrade-list {
+  flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;
+}
+.upgrade-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 12px;
+}
+.upgrade-card.affordable { border-color: var(--border-glow); }
+.upgrade-card.unaffordable { opacity: 0.5; }
+.up-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.up-info { flex: 1; }
+.up-name { font-size: 13px; font-weight: 700; }
+.up-desc { font-size: 10px; color: var(--text-dim); }
+.up-cost-box { text-align: right; }
+.up-cost { font-family: 'Cinzel', serif; color: var(--gold); font-size: 12px; }
+.up-lv { font-size: 9px; color: var(--text-dim); }
+
+/* LOG */
+#log-list { flex: 1; overflow-y: auto; padding: 10px; font-size: 11px; color: var(--text-dim); }
+.log-item { margin-bottom: 4px; }
+
+/* EFFECTS */
+.dmg-txt { position: absolute; font-weight: 900; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; font-size: 14px; }
+@keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-60px); opacity: 0; } }
+
+/* TOAST */
+#toast {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  background: var(--crimson); color: white; padding: 8px 20px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; opacity: 0; transition: opacity 0.3s; z-index: 2000;
+}
+#toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="h-logo">KILLINGTIMEHEAVEN</div>
+  <div class="h-title">마왕의 침공</div>
+  <a href="index.html" class="h-back">← 홈</a>
+</div>
+
+<div id="battle-field">
+  <div id="hud">
+    <div class="hud-box">
+      <div class="hud-label">HP</div>
+      <div class="hud-val hud-hp" id="hp-display">1000</div>
+    </div>
+    <div class="hud-box">
+      <div class="hud-label">SOULS</div>
+      <div class="hud-val" id="gold-display">0</div>
+    </div>
+  </div>
+
+  <div id="base" onclick="handleAttack()">
+    <svg class="castle-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="50" y="80" width="100" height="80" fill="#2c2c34" />
+      <rect x="40" y="70" width="25" height="90" fill="#1e1e24" />
+      <rect x="135" y="70" width="25" height="90" fill="#1e1e24" />
+      <polygon points="40,70 52,45 65,70" fill="#9e1b1b" />
+      <polygon points="135,70 147,45 160,70" fill="#9e1b1b" />
+      <rect x="88" y="125" width="24" height="35" fill="#0f0f12" rx="3" />
+      <circle cx="100" cy="55" r="20" fill="#1a1a1f" stroke="#9e1b1b" stroke-width="1.5" />
+    </svg>
+  </div>
+
+  <div id="wave-info">
+    <div id="wave-display" style="font-size: 12px; font-weight: 700;">WAVE 1</div>
+    <div class="wave-bar-bg"><div class="wave-bar-fill" id="wave-progress"></div></div>
+  </div>
+</div>
+
+<div id="ui-panel">
+  <div class="tab-header">
+    <div class="tab active" onclick="switchTab('up')">강화</div>
+    <div class="tab" onclick="switchTab('log')">기록</div>
+  </div>
+  <div id="upgrade-list"></div>
+  <div id="log-list" style="display: none;"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const UPGRADES = [
+  { id:'atk', name:'공격력', icon:'⚔️', desc:'클릭 데미지 증가', baseCost:10, growth:1.4 },
+  { id:'hp', name:'내구도', icon:'🛡️', desc:'최대 HP 증가', baseCost:20, growth:1.5 },
+  { id:'auto', name:'자동궁수', icon:'🏹', desc:'자동 공격 추가', baseCost:50, growth:1.6 },
+  { id:'crit', name:'치명타', icon:'💥', desc:'치명타 위력 강화', baseCost:150, growth:1.8 }
+];
+
+let state = {
+  hp: 1000, maxHp: 1000,
+  gold: 0, wave: 1, monstersKilled: 0, monstersInWave: 10,
+  upgrades: { atk:1, hp:1, auto:0, crit:0 },
+  lastTick: Date.now()
+};
+
+function save() { localStorage.setItem('ktg_invasion_mobi_v1', JSON.stringify(state)); }
+function load() {
+  const saved = localStorage.getItem('ktg_invasion_mobi_v1');
+  if(saved) state = {...state, ...JSON.parse(saved)};
+}
+
+function getAtk() { return state.upgrades.atk; }
+function getCost(id) {
+  const u = UPGRADES.find(x => x.id === id);
+  return Math.floor(u.baseCost * Math.pow(u.growth, state.upgrades[id]));
+}
+
+function handleAttack() {
+  const dmg = getAtk();
+  const monsters = document.querySelectorAll('.monster');
+  if(monsters.length > 0) {
+    killMonster(monsters[0], dmg);
+  }
+}
+
+function killMonster(el, dmg) {
+  state.gold += state.wave;
+  state.monstersKilled++;
+  const rect = el.getBoundingClientRect();
+  showDmg(rect.left, rect.top, dmg);
+  el.remove();
+  if(state.monstersKilled >= state.monstersInWave) startNextWave();
+  render();
+}
+
+function startNextWave() {
+  state.wave++;
+  state.monstersKilled = 0;
+  state.monstersInWave = 10 + state.wave * 2;
+  showToast(`WAVE ${state.wave} 돌입!`);
+  addLog(`WAVE ${state.wave} 시작!`);
+}
+
+function spawnMonster() {
+  if(document.querySelectorAll('.monster').length >= 4) return;
+  const m = document.createElement('div');
+  m.className = 'monster';
+  const side = Math.floor(Math.random() * 4);
+  let x, y;
+  if(side === 0) { x = Math.random() * 100; y = -10; }
+  else if(side === 1) { x = 110; y = Math.random() * 100; }
+  else if(side === 2) { x = Math.random() * 100; y = 110; }
+  else { x = -10; y = Math.random() * 100; }
+  m.style.left = x + '%'; m.style.top = y + '%';
+  m.innerHTML = `<div class="monster-body">${['💀','🧟','👻','👹'][Math.floor(Math.random()*4)]}</div>`;
+  document.getElementById('battle-field').appendChild(m);
+  animateMonster(m);
+}
+
+function animateMonster(el) {
+  let px = parseFloat(el.style.left), py = parseFloat(el.style.top);
+  const speed = 0.3 + state.wave * 0.03;
+  const interval = setInterval(() => {
+    if(!el.parentNode) { clearInterval(interval); return; }
+    const dx = 50-px, dy = 50-py;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist < 18) { clearInterval(interval); damageCastle(el); }
+    else { px+=(dx/dist)*speed; py+=(dy/dist)*speed; el.style.left=px+'%'; el.style.top=py+'%'; }
+  }, 50);
+}
+
+function damageCastle(el) {
+  state.hp -= 5 + state.wave;
+  el.remove();
+  if(state.hp <= 0) { alert('패배!'); state.hp=state.maxHp; state.wave=1; state.monstersKilled=0; }
+  render();
+}
+
+function buyUpgrade(id) {
+  const cost = getCost(id);
+  if(state.gold >= cost) {
+    state.gold -= cost; state.upgrades[id]++;
+    if(id==='hp') { state.maxHp+=200; state.hp+=200; }
+    render();
+  }
+}
+
+function switchTab(t) {
+  document.getElementById('upgrade-list').style.display = t==='up'?'flex':'none';
+  document.getElementById('log-list').style.display = t==='log'?'block':'none';
+  document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.textContent.includes(t==='up'?'강화':'기록')));
+}
+
+function render() {
+  document.getElementById('hp-display').textContent = state.hp;
+  document.getElementById('gold-display').textContent = state.gold;
+  document.getElementById('wave-display').textContent = `WAVE ${state.wave}`;
+  document.getElementById('wave-progress').style.width = (state.monstersKilled/state.monstersInWave)*100 + '%';
+  const upList = document.getElementById('upgrade-list');
+  upList.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const cost = getCost(u.id);
+    const can = state.gold >= cost;
+    const item = document.createElement('div');
+    item.className = `upgrade-card ${can?'affordable':'unaffordable'}`;
+    item.onclick = () => buyUpgrade(u.id);
+    item.innerHTML = `
+      <div class="up-icon">${u.icon}</div>
+      <div class="up-info"><div class="up-name">${u.name}</div><div class="up-desc">${u.desc}</div></div>
+      <div class="up-cost-box"><div class="up-cost">💎 ${cost}</div><div class="up-lv">Lv.${state.upgrades[u.id]}</div></div>
+    `;
+    upList.appendChild(item);
+  });
+}
+
+function showDmg(x, y, dmg) {
+  const d = document.createElement('div');
+  d.className = 'dmg-txt'; d.textContent = dmg; d.style.color='white'; d.style.left=x+'px'; d.style.top=y+'px';
+  document.body.appendChild(d); setTimeout(()=>d.remove(), 800);
+}
+
+function addLog(msg) {
+  const log = document.getElementById('log-list');
+  const div = document.createElement('div');
+  div.className = 'log-item'; div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.prepend(div);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+setInterval(spawnMonster, 2500);
+load(); render();
+setInterval(save, 5000);
+</script>
+</body>
+</html>

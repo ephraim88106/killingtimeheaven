@@ -16,6 +16,10 @@
   --kingdom-gradient: linear-gradient(135deg, oklch(70% 0.15 150), oklch(55% 0.18 160));
   --kingdom-glow: oklch(65% 0.15 155 / 40%);
 
+  /* Game 4: Demon King's Invasion (Dark Red/Crimson) */
+  --invasion-gradient: linear-gradient(135deg, oklch(50% 0.2 25), oklch(40% 0.25 20));
+  --invasion-glow: oklch(45% 0.2 20 / 50%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   
@@ -265,6 +269,16 @@ body {
 .kingdom-pc:hover, .kingdom-mobile:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px -5px var(--kingdom-glow);
+}
+
+.invasion-pc, .invasion-mobile {
+  background: var(--invasion-gradient);
+  box-shadow: 0 10px 20px -5px var(--invasion-glow);
+}
+
+.invasion-pc:hover, .invasion-mobile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--invasion-glow);
 }
 
 /* Glass Shine Effect on Hover */
