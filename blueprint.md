@@ -12,6 +12,7 @@
 - **Components**:
   - **Game Selection Section**: A beautifully styled container for game access.
   - **Action Buttons**: Custom-designed buttons with unique gradients and hover animations for each game.
+  - **Disqus Comments**: Integrated comment system for community interaction on the main page.
 - **Responsiveness**: Fully adaptive layout for mobile and desktop viewports.
 
 ## Implementation Plan (Current Task)
