@@ -4,465 +4,1051 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>마왕의 침공 - 킬링타임천국</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --crimson: #9e1b1b; --crimson-glow: #ff4d4d;
-  --obsidian: #0f0f12; --panel-bg: #1a1a1f; --card-bg: #25252b;
-  --text: #e0e0e0; --text-dim: #999999; --gold: #ffd700;
-  --border: #3d3d45; --border-glow: #6e6e7a;
+:root{
+  --gold:#FFD700;--gold-dark:#B8860B;
+  --bg:#0a0806;--bg-panel:#12100a;--bg-card:#1a1610;
+  --border:#3a2f1a;--border-gold:#5a4520;
+  --text:#e8d5a0;--text-dim:#8a7050;
+  --green:#27ae60;--red:#c0392b;--blue:#2980b9;--purple:#8e44ad;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background: var(--obsidian); color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
-  height: 100vh; overflow: hidden;
-  background-image: radial-gradient(circle at 50% 50%, #1e1e26 0%, #0f0f12 100%);
-}
-
-/* HEADER */
-#header {
-  background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--crimson);
-  padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 4px 30px rgba(158,27,27,0.3); z-index: 100; position: relative;
-}
-.header-logo { font-family: 'Cinzel Decorative', cursive; font-size: 14px; color: var(--text-dim); letter-spacing: 2px; }
-.header-title { font-family: 'Cinzel Decorative', cursive; font-size: 24px; color: var(--crimson-glow); text-shadow: 0 0 15px var(--crimson); }
-.header-nav { display: flex; gap: 15px; }
-.header-nav a { color: var(--text-dim); text-decoration: none; font-size: 13px; transition: color 0.3s; }
-.header-nav a:hover { color: var(--crimson-glow); }
-
-/* MAIN LAYOUT */
-#game-container {
-  display: grid; grid-template-columns: 1fr 400px;
-  height: calc(100vh - 60px);
-}
-
-/* BATTLEFIELD */
-#battle-field {
-  position: relative; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30z' fill='%231a1a1f' fill-opacity='0.4'/%3E%3C/svg%3E");
-}
-
-/* BASE / CASTLE */
-#base {
-  position: relative; z-index: 10; cursor: pointer;
-  transition: transform 0.1s; user-select: none;
-}
-#base:active { transform: scale(0.95); }
-.castle-svg { width: 350px; height: 350px; filter: drop-shadow(0 0 40px rgba(0,0,0,0.8)); }
-
-/* MONSTERS */
-.monster {
-  position: absolute; pointer-events: none; z-index: 5;
-  transition: transform 0.1s;
-}
-.monster-body { font-size: 40px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
-
-/* UI ELEMENTS */
-#stats-overlay {
-  position: absolute; top: 20px; left: 20px; right: 20px;
-  display: flex; justify-content: space-between; pointer-events: none;
-}
-.stat-box {
-  background: rgba(0,0,0,0.7); border: 1px solid var(--crimson);
-  border-radius: 12px; padding: 12px 20px; backdrop-filter: blur(5px);
-  min-width: 150px; text-align: center;
-}
-.stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-.stat-value { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); }
-.stat-hp { color: var(--crimson-glow); }
-
-#wave-info {
-  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-  text-align: center;
-}
-.wave-title { font-family: 'Cinzel Decorative', cursive; font-size: 18px; color: var(--text); margin-bottom: 5px; }
-.wave-bar-bg { width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-.wave-bar-fill { height: 100%; background: var(--crimson); width: 0%; transition: width 0.3s; }
-
-/* SIDEBAR */
-#sidebar {
-  background: var(--panel-bg); border-left: 2px solid var(--crimson);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.side-header { padding: 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-.side-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 18px; letter-spacing: 1px; }
-
-#upgrade-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-.upgrade-item {
-  background: var(--card-bg); border: 1px solid var(--border);
-  border-radius: 12px; padding: 15px; cursor: pointer;
-  display: grid; grid-template-columns: 50px 1fr auto; gap: 15px; align-items: center;
-  transition: all 0.3s;
-}
-.upgrade-item.affordable { border-color: var(--border-glow); }
-.upgrade-item.affordable:hover { background: #2f2f38; border-color: var(--crimson); transform: translateX(5px); }
-.upgrade-item.unaffordable { opacity: 0.5; cursor: not-allowed; }
-
-.up-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-.up-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
-.up-desc { font-size: 12px; color: var(--text-dim); }
-.up-cost { font-family: 'Cinzel', serif; color: var(--gold); font-size: 14px; text-align: right; }
-.up-lv { font-size: 11px; color: var(--text-dim); text-align: right; margin-top: 4px; }
-
-#log-panel {
-  height: 150px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border);
-  padding: 15px; overflow-y: auto; font-size: 12px; color: var(--text-dim);
-}
-.log-entry { margin-bottom: 5px; border-left: 2px solid transparent; padding-left: 8px; }
-.log-entry.important { color: var(--crimson-glow); border-left-color: var(--crimson); }
-
-/* EFFECTS */
-.damage-text {
-  position: absolute; font-weight: 900; pointer-events: none;
-  animation: floatUp 0.8s ease-out forwards; z-index: 100;
-}
-@keyframes floatUp {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(-100px); opacity: 0; }
-}
-.hit-effect {
-  position: absolute; border-radius: 50%; background: radial-gradient(circle, var(--crimson-glow) 0%, transparent 70%);
-  pointer-events: none; animation: burst 0.4s ease-out forwards;
-}
-@keyframes burst {
-  0% { width: 0; height: 0; opacity: 1; }
-  100% { width: 150px; height: 150px; opacity: 0; }
-}
-
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;height:100vh;overflow:hidden;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(184,134,11,0.04) 0%,transparent 60%);}
+#header{background:linear-gradient(180deg,#1a1208,#0f0c06);border-bottom:2px solid var(--border-gold);
+  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;}
+#header::before{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.h-logo{font-family:'Cinzel Decorative',cursive;font-size:13px;color:var(--text-dim);letter-spacing:2px;}
+.h-title{font-family:'Cinzel Decorative',cursive;font-size:20px;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,0.5);letter-spacing:3px;}
+.h-nav{display:flex;gap:10px;}
+.h-nav a{color:var(--text-dim);text-decoration:none;font-size:12px;font-family:'Cinzel',serif;letter-spacing:1px;transition:color 0.3s;}
+.h-nav a:hover{color:var(--gold);}
+#game-wrap{display:flex;height:calc(100vh - 50px);overflow:hidden;}
+#sidebar{width:230px;background:var(--bg-panel);border-right:1px solid var(--border-gold);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+#sidebar::-webkit-scrollbar{width:3px;}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border-gold);}
+.sb-section{padding:10px 12px;border-bottom:1px solid var(--border);}
+.sb-title{font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.stat-label{font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);letter-spacing:1px;}
+.stat-val{font-family:'Cinzel Decorative',cursive;font-size:15px;color:var(--gold);}
+.stat-val.red{color:var(--red);}
+.stat-val.green{color:var(--green);}
+.hp-bar-wrap{height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;margin-top:3px;}
+.hp-bar{height:100%;background:linear-gradient(90deg,#c0392b,#e74c3c);border-radius:4px;transition:width 0.3s;box-shadow:0 0 6px rgba(192,57,43,0.5);}
+/* TOWER CARDS */
+.tower-card{background:var(--bg-card);border:2px solid var(--border);border-radius:8px;padding:7px 9px;margin-bottom:5px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:7px;position:relative;}
+.tower-card:hover{border-color:var(--border-gold);transform:translateX(2px);}
+.tower-card.selected{border-color:var(--gold);background:rgba(255,215,0,0.08);box-shadow:0 0 10px rgba(255,215,0,0.2);}
+.tower-card.unaffordable{opacity:0.4;cursor:not-allowed;}
+.tower-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0;}
+.tower-info{flex:1;min-width:0;}
+.tower-name{font-family:'Cinzel',serif;font-size:10px;color:var(--text);font-weight:600;letter-spacing:1px;}
+.tower-stats{font-size:9px;color:var(--text-dim);margin-top:1px;}
+.tower-cost{font-family:'Cinzel Decorative',cursive;font-size:12px;color:var(--gold);}
+.skill-badge{font-size:8px;background:rgba(142,68,173,0.3);border:1px solid #8e44ad;border-radius:3px;padding:1px 4px;color:#d7bde2;margin-top:2px;display:inline-block;}
+/* SELECTED INFO */
+#selected-info{background:rgba(255,215,0,0.05);border:1px solid var(--border-gold);border-radius:8px;padding:9px;margin-bottom:5px;}
+.si-name{font-family:'Cinzel',serif;font-size:12px;color:var(--gold);margin-bottom:5px;text-align:center;}
+.si-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;}
+.si-label{color:var(--text-dim);}
+.si-val{color:var(--text);}
+.si-btn{flex:1;padding:5px;border:1px solid;border-radius:5px;font-family:'Cinzel',serif;font-size:9px;cursor:pointer;text-align:center;transition:all 0.2s;margin:2px;}
+.si-upgrade{border-color:var(--gold-dark);color:var(--gold);background:rgba(184,134,11,0.1);}
+.si-upgrade:hover{background:rgba(184,134,11,0.25);}
+.si-skill{border-color:#8e44ad;color:#d7bde2;background:rgba(142,68,173,0.1);}
+.si-skill:hover{background:rgba(142,68,173,0.25);}
+.si-sell{border-color:#8B4513;color:#cd7f32;background:rgba(139,69,19,0.1);}
+.si-sell:hover{background:rgba(139,69,19,0.2);}
+.si-btn-row{display:flex;flex-wrap:wrap;}
+/* ACHIEVEMENTS */
+.ach-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:5px;margin-bottom:3px;font-size:10px;font-family:'Cinzel',serif;}
+.ach-item.done{background:rgba(255,215,0,0.06);border:1px solid var(--gold-dark);}
+.ach-item.locked{opacity:0.4;border:1px solid var(--border);}
+.ach-icon{font-size:14px;width:18px;text-align:center;}
+.ach-name{color:var(--text);flex:1;}
+.ach-reward{color:var(--gold);font-size:9px;}
+/* HOF */
+.hof-row{display:grid;grid-template-columns:20px 1fr auto;gap:5px;align-items:center;padding:4px 6px;border-radius:5px;margin-bottom:3px;border:1px solid transparent;font-family:'Cinzel',serif;font-size:10px;}
+.hof-row.rank-1{border-color:var(--gold);background:rgba(255,215,0,0.06);}
+.hof-row.rank-2{border-color:#aaa;background:rgba(200,200,200,0.04);}
+.hof-row.rank-3{border-color:#cd7f32;}
+.hof-medal{text-align:center;font-size:12px;}
+.hof-name{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hof-wave{color:var(--gold);text-align:right;}
+.hof-empty{font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);text-align:center;padding:5px;}
+/* CTRL */
+.ctrl-btn{width:100%;padding:7px;border:1px solid var(--border-gold);border-radius:6px;background:rgba(184,134,11,0.1);color:var(--text-dim);font-family:'Cinzel',serif;font-size:10px;cursor:pointer;transition:all 0.2s;margin-bottom:5px;letter-spacing:1px;}
+.ctrl-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(184,134,11,0.2);}
+.ctrl-btn.primary{border-color:var(--green);color:var(--green);background:rgba(39,174,96,0.1);}
+.ctrl-btn.primary:hover{background:rgba(39,174,96,0.2);}
+.ctrl-btn.danger{border-color:var(--red);color:var(--red);}
+/* CANVAS */
+#canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+#wave-bar{background:rgba(10,8,4,0.9);border-bottom:1px solid var(--border-gold);padding:5px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.wave-title{font-family:'Cinzel Decorative',cursive;font-size:13px;color:var(--gold);letter-spacing:2px;}
+.wave-progress{flex:1;margin:0 16px;height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;}
+.wave-prog-bar{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:4px;transition:width 0.1s;}
+.wave-hint{font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:1px;}
+#canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+#gameCanvas{display:block;cursor:crosshair;}
+#speed-indicator{position:absolute;top:7px;right:10px;font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);}
+/* OVERLAYS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.popup-box{background:var(--bg-panel);border:2px solid var(--gold-dark);border-radius:15px;padding:30px 36px;text-align:center;max-width:440px;width:90%;box-shadow:0 0 60px rgba(255,215,0,0.2);animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.popup-title{font-family:'Cinzel Decorative',cursive;font-size:20px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 20px rgba(255,215,0,0.5);}
+.popup-sub{font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);letter-spacing:1px;margin-bottom:14px;}
+.popup-stat{font-family:'Cinzel Decorative',cursive;font-size:30px;color:var(--gold);margin:10px 0;text-shadow:0 0 15px rgba(255,215,0,0.6);}
+.popup-btn{background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;border-radius:8px;color:#1a1200;font-family:'Cinzel',serif;font-size:13px;font-weight:700;padding:11px 26px;cursor:pointer;letter-spacing:2px;transition:all 0.3s;margin:4px;}
+.popup-btn:hover{transform:scale(1.05);box-shadow:0 5px 20px rgba(255,215,0,0.4);}
+.popup-btn.sec{background:rgba(184,134,11,0.15);color:var(--gold);border:1px solid var(--gold-dark);}
+.nick-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-gold);border-radius:8px;color:var(--text);font-family:'Cinzel',serif;font-size:14px;padding:10px 14px;text-align:center;letter-spacing:2px;margin:10px 0;outline:none;transition:border-color 0.3s;}
+.nick-input:focus{border-color:var(--gold);}
+/* ACHIEVEMENT POPUP */
+#ach-popup{position:fixed;top:70px;right:20px;background:var(--bg-panel);border:2px solid var(--gold);border-radius:10px;padding:12px 16px;z-index:300;display:none;animation:slideIn 0.4s ease;}
+@keyframes slideIn{0%{transform:translateX(120%);opacity:0}100%{transform:translateX(0);opacity:1}}
+.ach-popup-title{font-family:'Cinzel Decorative',cursive;font-size:11px;color:var(--gold);letter-spacing:2px;}
+.ach-popup-name{font-family:'Cinzel',serif;font-size:13px;color:var(--text);margin-top:3px;}
+.ach-popup-reward{font-family:'Cinzel',serif;font-size:11px;color:var(--green);margin-top:2px;}
 /* TOAST */
-#toast {
-  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-  background: var(--crimson); color: white; padding: 12px 30px; border-radius: 30px;
-  font-weight: 700; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-  opacity: 0; transition: opacity 0.3s; z-index: 2000; pointer-events: none;
-}
-#toast.show { opacity: 1; }
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(10,8,4,0.95);border:1px solid var(--gold-dark);border-radius:20px;padding:8px 20px;font-family:'Cinzel',serif;font-size:12px;color:var(--gold);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:400;white-space:nowrap;}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
 
-<div id="header">
-  <div class="header-logo">KILLINGTIMEHEAVEN</div>
-  <div class="header-title">마왕의 침공</div>
-  <nav class="header-nav">
-    <a href="index.html">홈</a>
-    <a href="index.html#games">게임</a>
-    <a href="blog.html">블로그</a>
-  </nav>
+<!-- ACHIEVEMENT POPUP -->
+<div id="ach-popup">
+  <div class="ach-popup-title">🏅 업적 달성!</div>
+  <div class="ach-popup-name" id="ach-popup-name"></div>
+  <div class="ach-popup-reward" id="ach-popup-reward"></div>
 </div>
 
-<div id="game-container">
-  <div id="battle-field">
-    <div id="stats-overlay">
-      <div class="stat-box">
-        <div class="stat-label">성벽 내구도</div>
-        <div class="stat-value stat-hp" id="hp-display">1,000 / 1,000</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">보유 영혼석</div>
-        <div class="stat-value" id="gold-display">0</div>
-      </div>
-    </div>
-
-    <div id="base" onclick="handleAttack()">
-      <svg class="castle-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <rect x="40" y="80" width="120" height="100" fill="#2c2c34" />
-        <rect x="30" y="70" width="30" height="110" fill="#1e1e24" />
-        <rect x="140" y="70" width="30" height="110" fill="#1e1e24" />
-        <polygon points="30,70 45,40 60,70" fill="#9e1b1b" />
-        <polygon points="140,70 155,40 170,70" fill="#9e1b1b" />
-        <rect x="85" y="130" width="30" height="50" fill="#0f0f12" rx="5" />
-        <circle cx="100" cy="50" r="25" fill="#1a1a1f" stroke="#9e1b1b" stroke-width="2" />
-        <path d="M90,50 L110,50 M100,40 L100,60" stroke="#ffd700" stroke-width="3" />
-      </svg>
-    </div>
-
-    <div id="wave-info">
-      <div class="wave-title" id="wave-display">WAVE 1</div>
-      <div class="wave-bar-bg"><div class="wave-bar-fill" id="wave-progress"></div></div>
+<!-- GAMEOVER -->
+<div id="gameover-popup" class="overlay">
+  <div class="popup-box">
+    <div class="popup-title">💀 왕국 함락!</div>
+    <p class="popup-sub">마왕의 군대가 성문을 뚫었습니다</p>
+    <div class="popup-stat" id="go-wave">웨이브 0</div>
+    <p style="color:var(--text-dim);font-size:11px;margin-bottom:12px;">도달한 웨이브 · 처치: <span id="go-kills">0</span></p>
+    <input class="nick-input" id="nick-input" type="text" maxlength="10" placeholder="닉네임 입력 (최대 10자)">
+    <div>
+      <button class="popup-btn" onclick="submitRecord()">🏆 기록 등록</button>
+      <button class="popup-btn sec" onclick="restartGame()">🔄 다시 도전</button>
     </div>
   </div>
+</div>
 
-  <div id="sidebar">
-    <div class="side-header">
-      <div class="side-title">⚔️ 방어 업그레이드</div>
+<!-- START -->
+<div id="start-popup" class="overlay show">
+  <div class="popup-box">
+    <div class="popup-title">⚔️ 마왕의 침공</div>
+    <p class="popup-sub">왕국을 지켜라! 몬스터가 성문에 닿으면 HP가 감소합니다.</p>
+    <div style="text-align:left;margin:14px 0;font-family:'Cinzel',serif;font-size:11px;color:var(--text-dim);line-height:1.9;">
+      🏹 타워 선택 후 맵 클릭으로 배치<br>
+      🛤️ 몬스터는 A* 경로탐색으로 자동 우회<br>
+      ⚡ 타워 클릭 → 특수 스킬 발동 가능<br>
+      🏦 이자탑은 매 웨이브마다 골드 이자 지급<br>
+      🌿 지형 타일 (숲·바위)이 범위·방어에 영향<br>
+      🏅 업적 달성 시 보너스 골드 획득
     </div>
-    <div id="upgrade-list"></div>
-    <div id="log-panel" id="game-log">
-      <div class="log-entry">마왕의 군대가 접근하고 있습니다...</div>
-    </div>
+    <button class="popup-btn" onclick="startGame()">⚔️ 전투 시작</button>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<div id="header">
+  <div class="h-logo">KILLINGTIMEHEAVEN</div>
+  <div class="h-title">마왕의 침공</div>
+  <nav class="h-nav">
+    <a href="index.html">홈</a>
+    <a href="index.html#games">게임</a>
+  </nav>
+</div>
+
+<div id="game-wrap">
+  <div id="sidebar">
+
+    <!-- HUD -->
+    <div class="sb-section">
+      <div class="sb-title">왕국 현황</div>
+      <div class="stat-row"><span class="stat-label">🪙 골드</span><span class="stat-val" id="hud-gold">200</span></div>
+      <div class="stat-row"><span class="stat-label">❤️ HP</span><span class="stat-val red" id="hud-hp">20</span></div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="hp-bar" style="width:100%"></div></div>
+      <div class="stat-row" style="margin-top:7px;"><span class="stat-label">🌊 웨이브</span><span class="stat-val green" id="hud-wave">0</span></div>
+      <div class="stat-row"><span class="stat-label">💀 처치</span><span class="stat-val" id="hud-kills">0</span></div>
+      <div class="stat-row"><span class="stat-label">🏦 이자/웨이브</span><span class="stat-val" id="hud-interest">0</span></div>
+    </div>
+
+    <!-- TOWERS -->
+    <div class="sb-section">
+      <div class="sb-title">타워 선택</div>
+      <div id="tower-list"></div>
+    </div>
+
+    <!-- SELECTED -->
+    <div class="sb-section" id="selected-section" style="display:none;">
+      <div class="sb-title">선택된 타워</div>
+      <div id="selected-info">
+        <div class="si-name" id="si-name">-</div>
+        <div class="si-row"><span class="si-label">레벨</span><span class="si-val" id="si-lv">1</span></div>
+        <div class="si-row"><span class="si-label">공격력</span><span class="si-val" id="si-dmg">-</span></div>
+        <div class="si-row"><span class="si-label">공속</span><span class="si-val" id="si-spd">-</span></div>
+        <div class="si-row"><span class="si-label">사거리</span><span class="si-val" id="si-rng">-</span></div>
+        <div class="si-row" id="si-skill-row"><span class="si-label">스킬</span><span class="si-val" id="si-skill-cd">-</span></div>
+        <div class="si-btn-row">
+          <button class="si-btn si-upgrade" id="si-upgrade-btn" onclick="upgradeSelected()">⬆️ 업그레이드</button>
+          <button class="si-btn si-skill" id="si-skill-btn" onclick="useSkill()">⚡ 스킬</button>
+          <button class="si-btn si-sell" onclick="sellSelected()">💰 판매</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div class="sb-section">
+      <div class="sb-title">🏅 업적</div>
+      <div id="ach-list"></div>
+    </div>
+
+    <!-- HOF -->
+    <div class="sb-section">
+      <div class="sb-title">🏆 명예의 전당</div>
+      <div id="hof-list"></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="sb-section">
+      <div class="sb-title">컨트롤</div>
+      <button class="ctrl-btn primary" id="wave-btn" onclick="startWave()">▶ 다음 웨이브</button>
+      <button class="ctrl-btn" onclick="toggleSpeed()">⚡ <span id="speed-txt">속도 x1</span></button>
+      <button class="ctrl-btn danger" onclick="confirmReset()">🔄 처음부터</button>
+    </div>
+
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div id="canvas-area">
+    <div id="wave-bar">
+      <div class="wave-title" id="wave-title">준비</div>
+      <div class="wave-progress"><div class="wave-prog-bar" id="wave-prog" style="width:0%"></div></div>
+      <div class="wave-hint" id="wave-hint">타워를 배치하고 웨이브를 시작하세요</div>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas"></canvas>
+      <div id="speed-indicator">x1</div>
+    </div>
+  </div>
+</div>
+
 <script>
-const UPGRADES = [
-  { id:'atk', name:'성벽 반격', icon:'⚔️', desc:'클릭 공격력 강화', baseCost:10, growth:1.5 },
-  { id:'hp', name:'성벽 보강', icon:'🛡️', desc:'최대 내구도 증가', baseCost:20, growth:1.6 },
-  { id:'auto', name:'궁수 배치', icon:'🏹', desc:'자동 공격 수행', baseCost:50, growth:1.7 },
-  { id:'repair', name:'마법 수리', icon:'✨', desc:'초당 내구도 회복', baseCost:100, growth:1.8 },
-  { id:'crit', name:'치명적 일격', icon:'💥', desc:'치명타 확률 및 위력 증가', baseCost:200, growth:2.0 }
+// ============================================================
+// CONFIG
+// ============================================================
+const COLS=20,ROWS=12,CELL=44;
+const CANVAS_W=COLS*CELL,CANVAS_H=ROWS*CELL;
+const SPAWN={col:0,row:5},GOAL={col:COLS-1,row:5};
+const MAX_HP=20;
+const HOF_KEY='ktg_td_hof_v1';
+
+// ============================================================
+// TERRAIN — 0=plain,1=tower,2=spawn,3=goal,4=forest,5=rock,6=river
+// Forest: +20% range for towers on/near it
+// Rock: blocks movement but can't place towers
+// River: slows monsters by 30%
+// ============================================================
+const TERRAIN_MAP = [
+  // row 0-11, col 0-19
+  // hand-crafted layout
+  [0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0],
+  [0,0,0,5,0,4,4,0,0,0,0,4,4,0,0,5,0,0,0,0],
+  [0,0,0,0,0,4,4,0,0,0,0,4,4,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,6,6,6,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,6,0,6,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,6,0,6,0,0,0,0,0,0,0,0,0], // SPAWN row
+  [0,0,0,0,0,0,0,0,6,0,6,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,6,6,6,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,4,4,0,0,0,0,4,4,0,0,0,0,0,0,0],
+  [0,0,0,0,0,4,4,0,0,0,0,4,4,0,0,0,0,0,0,0],
+  [0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0],
+  [0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0],
 ];
 
-let state = {
-  hp: 1000, maxHp: 1000,
-  gold: 0, totalGold: 0,
-  wave: 1, monstersInWave: 10, monstersKilled: 0,
-  upgrades: { atk:1, hp:1, auto:0, repair:0, crit:0 },
-  lastTick: Date.now()
+// ============================================================
+// TOWER DEFS (added: interest tower + skill info)
+// ============================================================
+const TOWER_DEFS={
+  archer:{
+    name:'궁수탑',icon:'🏹',color:'#8B6914',cost:50,range:3.5,damage:15,fireRate:1.2,aoe:0,slow:0,dot:0,
+    desc:'빠른 공격·단일 타겟',
+    skill:{name:'다연사',icon:'⚡',desc:'3초간 공격속도 3배',cooldown:20,duration:3,type:'multishot'},
+    upgrades:[{cost:60,damage:22,fireRate:1.4,range:3.5},{cost:100,damage:35,fireRate:1.8,range:4.0},{cost:150,damage:60,fireRate:2.2,range:4.5}]
+  },
+  mage:{
+    name:'마법탑',icon:'🔮',color:'#8e44ad',cost:120,range:3.0,damage:40,fireRate:0.5,aoe:1.2,slow:0,dot:0,
+    desc:'범위 공격 (AOE)',
+    skill:{name:'번개 연쇄',icon:'⚡',desc:'범위 내 최대 5적에게 번개 연쇄',cooldown:25,duration:0,type:'chain'},
+    upgrades:[{cost:140,damage:60,fireRate:0.6,range:3.2,aoe:1.4},{cost:200,damage:90,fireRate:0.7,range:3.5,aoe:1.6},{cost:300,damage:150,fireRate:0.9,range:4.0,aoe:2.0}]
+  },
+  ice:{
+    name:'얼음탑',icon:'❄️',color:'#2980b9',cost:80,range:3.0,damage:8,fireRate:0.8,aoe:0,slow:0.4,dot:0,
+    desc:'이동속도 감소 (40%)',
+    skill:{name:'빙결',icon:'❄️',desc:'범위 내 모든 적 2초 완전 정지',cooldown:30,duration:2,type:'freeze'},
+    upgrades:[{cost:90,damage:12,fireRate:0.9,range:3.2,slow:0.5},{cost:140,damage:18,fireRate:1.0,range:3.5,slow:0.6},{cost:200,damage:28,fireRate:1.2,range:4.0,slow:0.7}]
+  },
+  fire:{
+    name:'화염탑',icon:'🔥',color:'#c0392b',cost:100,range:2.5,damage:5,fireRate:1.5,aoe:0,slow:0,dot:12,
+    desc:'지속 데미지 (DoT)',
+    skill:{name:'화염 폭발',icon:'💥',desc:'범위 내 전체 대상에게 강력한 폭발',cooldown:20,duration:0,type:'explode'},
+    upgrades:[{cost:120,damage:8,fireRate:1.8,range:2.8,dot:18},{cost:180,damage:12,fireRate:2.0,range:3.0,dot:28},{cost:260,damage:18,fireRate:2.5,range:3.5,dot:45}]
+  },
+  interest:{
+    name:'이자탑',icon:'🏦',color:'#27ae60',cost:150,range:0,damage:0,fireRate:0,aoe:0,slow:0,dot:0,
+    desc:'매 웨이브마다 이자 골드',
+    skill:{name:'황금 비',icon:'💰',desc:'즉시 50G 획득',cooldown:40,duration:0,type:'goldrush'},
+    upgrades:[{cost:180,interestRate:0.04},{cost:250,interestRate:0.06},{cost:350,interestRate:0.08}]
+  }
 };
 
-function save() { localStorage.setItem('ktg_invasion_v1', JSON.stringify(state)); }
-function load() {
-  const saved = localStorage.getItem('ktg_invasion_v1');
-  if(saved) state = {...state, ...JSON.parse(saved)};
+// ============================================================
+// MONSTER DEFS
+// ============================================================
+function getMonsterDef(wave){
+  const s=Math.pow(1.15,wave-1),types=[];
+  types.push({name:'고블린',icon:'👺',color:'#27ae60',hp:Math.floor(60*s),speed:1.2,reward:5,size:14});
+  if(wave>=3)types.push({name:'오크',icon:'👹',color:'#e67e22',hp:Math.floor(180*s),speed:0.7,reward:12,size:18});
+  if(wave>=6)types.push({name:'어둠기사',icon:'🧟',color:'#8e44ad',hp:Math.floor(350*s),speed:0.9,reward:20,size:16});
+  if(wave>=10)types.push({name:'리치',icon:'💀',color:'#2c3e50',hp:Math.floor(600*s),speed:1.1,reward:30,size:15});
+  if(wave>=15)types.push({name:'악마',icon:'😈',color:'#c0392b',hp:Math.floor(1200*s),speed:1.3,reward:50,size:17});
+  return types;
+}
+function getBossDef(wave){
+  const s=Math.pow(1.2,wave-1);
+  return{name:'드래곤',icon:'🐉',color:'#c0392b',hp:Math.floor(2000*s),speed:0.5,reward:100,size:24,isBoss:true};
 }
 
-function getAtk() { return Math.floor(state.upgrades.atk * (1 + state.upgrades.crit * 0.1)); }
-function getAutoAtk() { return state.upgrades.auto * 2; }
-function getRepair() { return state.upgrades.repair * 1; }
-function getCost(id) {
-  const u = UPGRADES.find(x => x.id === id);
-  return Math.floor(u.baseCost * Math.pow(u.growth, state.upgrades[id]));
-}
+// ============================================================
+// ACHIEVEMENTS
+// ============================================================
+const ACHIEVEMENTS=[
+  {id:'kill100',icon:'⚔️',name:'첫 백 처치',desc:'몬스터 100마리 처치',cond:s=>s.kills>=100,reward:50,done:false},
+  {id:'kill500',icon:'💀',name:'학살자',desc:'몬스터 500마리 처치',cond:s=>s.kills>=500,reward:150,done:false},
+  {id:'wave10', icon:'🌊',name:'10웨이브 돌파',desc:'웨이브 10 클리어',cond:s=>s.wave>=10,reward:100,done:false},
+  {id:'wave20', icon:'🔱',name:'20웨이브 돌파',desc:'웨이브 20 클리어',cond:s=>s.wave>=20,reward:300,done:false},
+  {id:'wave30', icon:'👑',name:'전설의 수호자',desc:'웨이브 30 클리어',cond:s=>s.wave>=30,reward:500,done:false},
+  {id:'tower5', icon:'🏰',name:'건설 붐',desc:'타워 5개 이상 건설',cond:s=>s.towerCount>=5,reward:80,done:false},
+  {id:'gold1000',icon:'💰',name:'황금 왕국',desc:'골드 1000 이상 보유',cond:s=>s.gold>=1000,reward:100,done:false},
+  {id:'boss3',  icon:'🐉',name:'용 사냥꾼',desc:'보스 3마리 처치',cond:s=>s.bossKills>=3,reward:200,done:false},
+  {id:'nohit5', icon:'🛡️',name:'철벽 방어',desc:'5웨이브 연속 HP 피해 없음',cond:s=>s.noDmgStreak>=5,reward:250,done:false},
+  {id:'interest',icon:'🏦',name:'금융의 달인',desc:'이자탑 3개 이상 건설',cond:s=>s.interestTowers>=3,reward:200,done:false},
+];
 
-function handleAttack() {
-  spawnHitEffect();
-  const dmg = getAtk();
-  const crit = Math.random() < (state.upgrades.crit * 0.05);
-  const finalDmg = crit ? dmg * 3 : dmg;
-  
-  // Find nearest monster
-  const monsters = document.querySelectorAll('.monster');
-  if(monsters.length > 0) {
-    let target = monsters[0];
-    let mId = target.dataset.id;
-    killMonster(target, finalDmg, crit);
+// ============================================================
+// STATE
+// ============================================================
+let grid=[],towers=[],monsters=[],projectiles=[],floatingTexts=[],skillFx=[];
+let wave=0,gold=200,hp=MAX_HP,kills=0,bossKills=0,noDmgStreak=0,waveHpLost=0;
+let waveActive=false,gameOver=false;
+let selectedTowerType=null,selectedTowerObj=null;
+let spawnQueue=[],spawnTimer=0;
+let gameSpeed=1,lastTime=0,animFrameId=null;
+let mouseCol=-1,mouseRow=-1;
+let interestTimer=0;
+let achDone=new Set();
+
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+
+// ============================================================
+// INIT
+// ============================================================
+function initGrid(){
+  grid=[];
+  for(let r=0;r<ROWS;r++){
+    const row=[];
+    for(let c=0;c<COLS;c++)row.push({type:TERRAIN_MAP[r][c],tower:0});
+    grid.push(row);
   }
+  grid[SPAWN.row][SPAWN.col].type=2;
+  grid[GOAL.row][GOAL.col].type=3;
+  // rock cells are impassable (type 5)
 }
 
-function killMonster(el, dmg, isCrit) {
-  const reward = Math.floor(state.wave * 1.5);
-  state.gold += reward;
-  state.totalGold += reward;
-  state.monstersKilled++;
-  
-  const rect = el.getBoundingClientRect();
-  showDmg(rect.left + 20, rect.top, dmg, isCrit);
-  
-  el.remove();
-  if(state.monstersKilled >= state.monstersInWave) {
-    startNextWave();
-  }
-  render();
+function startGame(){
+  document.getElementById('start-popup').classList.remove('show');
+  canvas.width=CANVAS_W;canvas.height=CANVAS_H;
+  initGrid();renderTowerList();renderAchievements();renderHof();updateHUD();
+  canvas.addEventListener('click',onCanvasClick);
+  canvas.addEventListener('mousemove',onCanvasMouseMove);
+  canvas.addEventListener('mouseleave',()=>{mouseCol=-1;mouseRow=-1;});
+  if(animFrameId)cancelAnimationFrame(animFrameId);
+  lastTime=performance.now();
+  animFrameId=requestAnimationFrame(gameLoop);
+  resizeCanvas();
 }
 
-function startNextWave() {
-  state.wave++;
-  state.monstersKilled = 0;
-  state.monstersInWave = 10 + state.wave * 2;
-  addLog(`WAVE ${state.wave} 시작! 더 강력한 적들이 몰려옵니다.`, true);
-  showToast(`WAVE ${state.wave} 돌입!`);
+function restartGame(){
+  document.getElementById('gameover-popup').classList.remove('show');
+  towers=[];monsters=[];projectiles=[];floatingTexts=[];skillFx=[];
+  wave=0;gold=200;hp=MAX_HP;kills=0;bossKills=0;noDmgStreak=0;waveHpLost=0;
+  waveActive=false;gameOver=false;
+  selectedTowerType=null;selectedTowerObj=null;
+  gameSpeed=1;interestTimer=0;
+  achDone=new Set();
+  ACHIEVEMENTS.forEach(a=>a.done=false);
+  document.getElementById('speed-txt').textContent='속도 x1';
+  document.getElementById('speed-indicator').textContent='x1';
+  document.getElementById('wave-btn').disabled=false;
+  initGrid();updateHUD();showSelectedInfo(null);
+  document.getElementById('wave-title').textContent='준비';
+  document.getElementById('wave-hint').textContent='타워를 배치하고 웨이브를 시작하세요';
+  document.getElementById('wave-prog').style.width='0%';
+  renderAchievements();renderHof();
 }
 
-function spawnMonster() {
-  if(document.querySelectorAll('.monster').length >= 5) return;
-  if(state.monstersKilled + document.querySelectorAll('.monster').length >= state.monstersInWave) return;
-
-  const m = document.createElement('div');
-  m.className = 'monster';
-  const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
-  let x, y;
-  if(side === 0) { x = Math.random() * 100; y = -10; }
-  else if(side === 1) { x = 110; y = Math.random() * 100; }
-  else if(side === 2) { x = Math.random() * 100; y = 110; }
-  else { x = -10; y = Math.random() * 100; }
-  
-  m.style.left = x + '%';
-  m.style.top = y + '%';
-  
-  const types = ['💀', '🧟', '👻', '🦇', '👹'];
-  m.innerHTML = `<div class="monster-body">${types[Math.floor(Math.random()*types.length)]}</div>`;
-  document.getElementById('battle-field').appendChild(m);
-  
-  // Move toward center
-  animateMonster(m);
+// ============================================================
+// A* PATHFINDING
+// ============================================================
+function cellBlocked(r,c){
+  const t=grid[r][c].type;
+  return t===1||t===5; // tower or rock
 }
-
-function animateMonster(el) {
-  let posX = parseFloat(el.style.left);
-  let posY = parseFloat(el.style.top);
-  
-  const speed = 0.2 + (state.wave * 0.02);
-  const interval = setInterval(() => {
-    if(!el.parentNode) { clearInterval(interval); return; }
-    
-    const dx = 50 - posX;
-    const dy = 50 - posY;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    
-    if(dist < 15) {
-      // Attack castle
-      clearInterval(interval);
-      damageCastle(el);
-    } else {
-      posX += (dx/dist) * speed;
-      posY += (dy/dist) * speed;
-      el.style.left = posX + '%';
-      el.style.top = posY + '%';
+function astar(start,goal){
+  const key=(c,r)=>r*COLS+c;
+  const h=(a,b)=>Math.abs(a.col-b.col)+Math.abs(a.row-b.row);
+  const open=[{col:start.col,row:start.row,g:0,f:h(start,goal),parent:null}];
+  const closed=new Set(),gMap={[key(start.col,start.row)]:0};
+  while(open.length){
+    open.sort((a,b)=>a.f-b.f);
+    const cur=open.shift(),ck=key(cur.col,cur.row);
+    if(cur.col===goal.col&&cur.row===goal.row){
+      const path=[];let n=cur;while(n){path.unshift({col:n.col,row:n.row});n=n.parent;}return path;
     }
-  }, 50);
-}
-
-function damageCastle(el) {
-  const dmg = 5 + state.wave * 2;
-  state.hp -= dmg;
-  el.remove();
-  
-  const castle = document.getElementById('base');
-  castle.style.filter = 'brightness(2) sepia(1) saturate(5) hue-rotate(-50deg)';
-  setTimeout(() => castle.style.filter = '', 100);
-  
-  if(state.hp <= 0) {
-    state.hp = 0;
-    gameOver();
-  }
-  render();
-}
-
-function gameOver() {
-  alert(`성벽이 무너졌습니다! 최종 WAVE: ${state.wave}`);
-  state.hp = state.maxHp;
-  state.gold = Math.floor(state.gold * 0.5); // Lose half gold
-  state.wave = 1;
-  state.monstersKilled = 0;
-  state.monstersInWave = 10;
-  document.querySelectorAll('.monster').forEach(m => m.remove());
-  render();
-}
-
-function buyUpgrade(id) {
-  const cost = getCost(id);
-  if(state.gold >= cost) {
-    state.gold -= cost;
-    state.upgrades[id]++;
-    if(id === 'hp') {
-      const bonus = 200;
-      state.maxHp += bonus;
-      state.hp += bonus;
+    closed.add(ck);
+    for(const{dc,dr}of[{dc:1,dr:0},{dc:-1,dr:0},{dc:0,dr:1},{dc:0,dr:-1}]){
+      const nc=cur.col+dc,nr=cur.row+dr;
+      if(nc<0||nc>=COLS||nr<0||nr>=ROWS)continue;
+      const nk=key(nc,nr);if(closed.has(nk))continue;
+      if(cellBlocked(nr,nc))continue;
+      const ng=cur.g+1;if(gMap[nk]!==undefined&&gMap[nk]<=ng)continue;
+      gMap[nk]=ng;open.push({col:nc,row:nr,g:ng,f:ng+h({col:nc,row:nr},goal),parent:cur});
     }
-    addLog(`${UPGRADES.find(x=>x.id===id).name} 레벨 업! (Lv.${state.upgrades[id]})`);
-    render();
   }
+  return null;
+}
+function canPlace(col,row){
+  if(col===SPAWN.col&&row===SPAWN.row)return false;
+  if(col===GOAL.col&&row===GOAL.row)return false;
+  const t=grid[row][col].type;
+  if(t!==0&&t!==4&&t!==6)return false; // can place on plain/forest/river
+  if(t===5)return false; // rock blocks
+  const old=grid[row][col].type;
+  grid[row][col].type=1;
+  const path=astar(SPAWN,GOAL);
+  grid[row][col].type=old;
+  return path!==null;
 }
 
-function render() {
-  document.getElementById('hp-display').textContent = `${state.hp.toLocaleString()} / ${state.maxHp.toLocaleString()}`;
-  document.getElementById('gold-display').textContent = state.gold.toLocaleString();
-  document.getElementById('wave-display').textContent = `WAVE ${state.wave}`;
-  
-  const progress = (state.monstersKilled / state.monstersInWave) * 100;
-  document.getElementById('wave-progress').style.width = progress + '%';
-  
-  const upList = document.getElementById('upgrade-list');
-  upList.innerHTML = '';
-  UPGRADES.forEach(u => {
-    const cost = getCost(u.id);
-    const can = state.gold >= cost;
-    const item = document.createElement('div');
-    item.className = `upgrade-item ${can ? 'affordable' : 'unaffordable'}`;
-    item.onclick = () => buyUpgrade(u.id);
-    item.innerHTML = `
-      <div class="up-icon">${u.icon}</div>
-      <div class="up-info">
-        <div class="up-name">${u.name}</div>
-        <div class="up-desc">${u.desc}</div>
-      </div>
-      <div>
-        <div class="up-cost">💎 ${cost.toLocaleString()}</div>
-        <div class="up-lv">Lv.${state.upgrades[u.id]}</div>
-      </div>
-    `;
-    upList.appendChild(item);
+// ============================================================
+// TERRAIN BONUS
+// ============================================================
+function getTerrainRangeBonus(col,row){
+  // Forest nearby gives +20% range
+  let bonus=1;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=row+dr,nc=col+dc;
+    if(nr<0||nr>=ROWS||nc<0||nc>=COLS)continue;
+    if(grid[nr][nc].type===4){bonus=1.2;break;}
+  }
+  return bonus;
+}
+function getTerrainMonsterSlow(col,row){
+  // River slows monsters by 30%
+  if(row<0||row>=ROWS||col<0||col>=COLS)return 1;
+  return grid[row][col].type===6?0.7:1;
+}
+
+// ============================================================
+// TOWER PLACEMENT & ACTIONS
+// ============================================================
+function placeTower(col,row,typeKey){
+  const def=TOWER_DEFS[typeKey];
+  if(gold<def.cost){showToast('💰 골드가 부족합니다!');return;}
+  if(!canPlace(col,row)){showToast('❌ 이 위치에는 배치할 수 없습니다!');return;}
+  grid[row][col].type=1;
+  const terrainBonus=getTerrainRangeBonus(col,row);
+  const t={
+    id:Date.now()+Math.random(),type:typeKey,col,row,level:1,
+    damage:def.damage,fireRate:def.fireRate,
+    range:def.range*(typeKey==='interest'?0:terrainBonus),
+    aoe:def.aoe,slow:def.slow,dot:def.dot,
+    interestRate:typeKey==='interest'?0.03:0,
+    fireTimer:0,skillCooldown:0,skillActive:false,skillTimer:0,
+  };
+  towers.push(t);
+  gold-=def.cost;
+  monsters.forEach(m=>{
+    const mc=Math.round(m.x/CELL),mr=Math.round(m.y/CELL);
+    m.path=astar({col:mc,row:mr},GOAL)||m.path;
+  });
+  checkAchievements();updateHUD();showToast(`${def.icon} ${def.name} 배치!`);
+}
+
+function upgradeTower(t){
+  const def=TOWER_DEFS[t.type];
+  if(t.level>def.upgrades.length){showToast('최대 레벨입니다!');return;}
+  const upg=def.upgrades[t.level-1];
+  if(gold<upg.cost){showToast('💰 골드가 부족합니다!');return;}
+  gold-=upg.cost;t.level++;
+  if(upg.damage)t.damage=upg.damage;
+  if(upg.fireRate)t.fireRate=upg.fireRate;
+  if(upg.range){const tb=getTerrainRangeBonus(t.col,t.row);t.range=upg.range*tb;}
+  if(upg.aoe!==undefined)t.aoe=upg.aoe;
+  if(upg.slow!==undefined)t.slow=upg.slow;
+  if(upg.dot!==undefined)t.dot=upg.dot;
+  if(upg.interestRate!==undefined)t.interestRate=upg.interestRate;
+  updateHUD();showSelectedTower(t);showToast(`⬆️ ${def.name} Lv.${t.level}!`);
+}
+
+function sellTower(t){
+  const def=TOWER_DEFS[t.type];
+  let sv=Math.floor(def.cost*0.6);
+  for(let i=0;i<t.level-1;i++)sv+=Math.floor(def.upgrades[i].cost*0.6);
+  grid[t.row][t.col].type=TERRAIN_MAP[t.row][t.col]; // restore original terrain
+  towers=towers.filter(x=>x.id!==t.id);
+  gold+=sv;updateHUD();showSelectedInfo(null);showToast(`💰 판매 (+${sv}G)`);
+}
+
+function upgradeSelected(){if(selectedTowerObj)upgradeTower(selectedTowerObj);}
+function sellSelected(){if(selectedTowerObj)sellTower(selectedTowerObj);}
+
+// ============================================================
+// SKILLS
+// ============================================================
+function useSkill(){
+  const t=selectedTowerObj;if(!t)return;
+  const def=TOWER_DEFS[t.type];
+  if(t.skillCooldown>0){showToast(`⏳ 쿨타임: ${t.skillCooldown.toFixed(1)}초`);return;}
+  const sk=def.skill;
+  const cx=t.col*CELL+CELL/2,cy=t.row*CELL+CELL/2;
+
+  if(sk.type==='multishot'){
+    // 다연사: fireRate x3 for duration
+    t.skillActive=true;t.skillTimer=sk.duration;t.fireRate*=3;
+    skillFx.push({type:'buff',x:cx,y:cy,life:sk.duration,color:'#FFD700'});
+    showToast('⚡ 다연사 발동!');
+  } else if(sk.type==='chain'){
+    // 번개 연쇄: hit up to 5 monsters in range
+    const inRange=monsters.filter(m=>{if(m.dead||m.frozen)return false;const dx=m.x-cx,dy=m.y-cy;return Math.sqrt(dx*dx+dy*dy)<=t.range*CELL;});
+    const targets=inRange.slice(0,5);
+    let prev=null;
+    targets.forEach(m=>{
+      applyDamage(t,m,t.damage*2);
+      if(prev)skillFx.push({type:'lightning',x1:prev.x,y1:prev.y,x2:m.x,y2:m.y,life:0.4,color:'#f1c40f'});
+      else skillFx.push({type:'lightning',x1:cx,y1:cy,x2:m.x,y2:m.y,life:0.4,color:'#f1c40f'});
+      prev=m;
+    });
+    showToast(`⚡ 번개 연쇄 ${targets.length}마리 적중!`);
+  } else if(sk.type==='freeze'){
+    // 빙결: 모든 적 정지
+    monsters.forEach(m=>{if(m.dead)return;m.frozen=true;m.frozenTimer=sk.duration;});
+    skillFx.push({type:'freeze',x:cx,y:cy,r:t.range*CELL,life:sk.duration,color:'#3498db'});
+    showToast('❄️ 전체 빙결!');
+  } else if(sk.type==='explode'){
+    // 화염 폭발
+    monsters.forEach(m=>{
+      if(m.dead)return;
+      const dx=m.x-cx,dy=m.y-cy;
+      if(Math.sqrt(dx*dx+dy*dy)<=t.range*CELL)applyDamage(t,m,t.damage*5);
+    });
+    skillFx.push({type:'explode',x:cx,y:cy,r:t.range*CELL,life:0.6,color:'#e74c3c'});
+    showToast('💥 화염 폭발!');
+  } else if(sk.type==='goldrush'){
+    gold+=50;updateHUD();
+    skillFx.push({type:'goldrush',x:cx,y:cy,life:0.8,color:'#FFD700'});
+    showToast('💰 황금 비! +50G');
+  }
+
+  t.skillCooldown=sk.cooldown;
+  showSelectedTower(t);
+}
+
+// ============================================================
+// WAVE
+// ============================================================
+function startWave(){
+  if(waveActive||gameOver)return;
+  wave++;waveActive=true;waveHpLost=0;
+  spawnQueue=buildSpawnQueue(wave);spawnTimer=0;
+  // Interest tower payout
+  const interestTotal=calcInterest();
+  if(interestTotal>0){gold+=interestTotal;addFloat('+'+interestTotal+'G 이자',CANVAS_W/2,30,'#27ae60',15);showToast(`🏦 이자 수령 +${interestTotal}G`);}
+  document.getElementById('wave-btn').disabled=true;
+  document.getElementById('wave-title').textContent=`웨이브 ${wave}`;
+  document.getElementById('wave-hint').textContent=`몬스터 ${spawnQueue.length}마리`;
+  updateHUD();checkAchievements();
+}
+
+function calcInterest(){
+  let total=0;
+  towers.forEach(t=>{if(t.type==='interest'&&t.interestRate>0)total+=Math.floor(gold*t.interestRate);});
+  return total;
+}
+
+function buildSpawnQueue(w){
+  const q=[],types=getMonsterDef(w),count=Math.floor(8+w*2.5);
+  for(let i=0;i<count;i++){const t=types[Math.floor(Math.random()*types.length)];q.push({...t});}
+  if(w%5===0)q.push({...getBossDef(w)});
+  return q;
+}
+
+function spawnMonster(def){
+  const path=astar(SPAWN,GOAL);if(!path)return;
+  monsters.push({
+    id:Date.now()+Math.random(),name:def.name,icon:def.icon,color:def.color,
+    hp:def.hp,maxHp:def.hp,speed:def.speed*CELL,reward:def.reward,size:def.size,
+    isBoss:def.isBoss||false,path,pathIdx:0,
+    x:SPAWN.col*CELL+CELL/2,y:SPAWN.row*CELL+CELL/2,
+    slowTimer:0,slowFactor:1,dotDmg:0,dotTimer:0,
+    frozen:false,frozenTimer:0,dead:false,
   });
 }
 
-function showDmg(x, y, dmg, crit) {
-  const d = document.createElement('div');
-  d.className = 'damage-text';
-  d.textContent = dmg;
-  if(crit) {
-    d.style.color = '#ffd700';
-    d.style.fontSize = '30px';
-    d.textContent = 'CRITICAL! ' + dmg;
-  } else {
-    d.style.color = 'white';
+// ============================================================
+// GAME LOOP
+// ============================================================
+function gameLoop(ts){
+  const raw=(ts-lastTime)/1000;lastTime=ts;
+  const dt=Math.min(raw,0.1)*gameSpeed;
+  if(!gameOver){
+    updateSpawn(dt);updateMonsters(dt);updateTowers(dt);
+    updateProjectiles(dt);updateFloatingTexts(dt);updateSkillFx(dt);
+    checkWaveEnd();checkAchievements();
   }
-  d.style.left = x + 'px';
-  d.style.top = y + 'px';
-  document.body.appendChild(d);
-  setTimeout(() => d.remove(), 800);
+  draw();
+  animFrameId=requestAnimationFrame(gameLoop);
 }
 
-function spawnHitEffect() {
-  const eff = document.createElement('div');
-  eff.className = 'hit-effect';
-  eff.style.left = '50%'; eff.style.top = '50%';
-  eff.style.transform = 'translate(-50%, -50%)';
-  document.getElementById('battle-field').appendChild(eff);
-  setTimeout(() => eff.remove(), 400);
-}
-
-function addLog(msg, important = false) {
-  const log = document.getElementById('log-panel');
-  const entry = document.createElement('div');
-  entry.className = 'log-entry' + (important ? ' important' : '');
-  entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-  log.prepend(entry);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
-
-// Tick system
-setInterval(() => {
-  const now = Date.now();
-  const dt = (now - state.lastTick) / 1000;
-  state.lastTick = now;
-  
-  // Repair
-  if(state.hp < state.maxHp) {
-    state.hp = Math.min(state.maxHp, state.hp + getRepair() * dt);
+function updateSpawn(dt){
+  if(!waveActive||spawnQueue.length===0)return;
+  spawnTimer-=dt;
+  if(spawnTimer<=0){
+    spawnMonster(spawnQueue.shift());spawnTimer=1.4;
+    const total=Math.floor(8+wave*2.5)+(wave%5===0?1:0);
+    const spawned=total-spawnQueue.length;
+    document.getElementById('wave-prog').style.width=(spawned/total*100)+'%';
   }
-  
-  // Auto attack logic
-  const autoDmg = getAutoAtk() * dt;
-  if(autoDmg > 0) {
-    const monsters = document.querySelectorAll('.monster');
-    if(monsters.length > 0) {
-      // Simplification: auto dmg kills one monster if enough time passes
-      // In a real tick we'd need health bars for monsters.
-      // For this clicker, let's just spawn a kill occasionally.
+}
+
+function updateMonsters(dt){
+  for(const m of monsters){
+    if(m.dead)continue;
+    // frozen
+    if(m.frozen){m.frozenTimer-=dt;if(m.frozenTimer<=0){m.frozen=false;}else continue;}
+    // slow
+    if(m.slowTimer>0){m.slowTimer-=dt;if(m.slowTimer<=0)m.slowFactor=1;}
+    // dot
+    if(m.dotTimer>0){m.dotTimer-=dt;m.hp-=m.dotDmg*dt;if(m.hp<=0){killMonster(m);continue;}}
+    // river terrain slow
+    const mc=Math.floor(m.x/CELL),mr=Math.floor(m.y/CELL);
+    const terrSlow=getTerrainMonsterSlow(mc,mr);
+    // move
+    if(m.pathIdx>=m.path.length-1){
+      waveHpLost++;hp-=m.isBoss?3:1;m.dead=true;
+      addFloat('-'+(m.isBoss?3:1)+' HP',GOAL.col*CELL+CELL/2,GOAL.row*CELL,'#e74c3c',18);
+      updateHUD();if(hp<=0){triggerGameOver();return;}
+      continue;
+    }
+    const spd=m.speed*m.slowFactor*terrSlow;
+    const tgt=m.path[m.pathIdx+1];
+    const tx=tgt.col*CELL+CELL/2,ty=tgt.row*CELL+CELL/2;
+    const dx=tx-m.x,dy=ty-m.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<2)m.pathIdx++;
+    else{m.x+=(dx/dist)*spd*dt;m.y+=(dy/dist)*spd*dt;}
+  }
+  monsters=monsters.filter(m=>!m.dead);
+}
+
+function killMonster(m){
+  m.dead=true;gold+=m.reward;kills++;
+  if(m.isBoss)bossKills++;
+  addFloat('+'+m.reward+'G',m.x,m.y-12,'#FFD700',13);
+  updateHUD();
+}
+
+function updateTowers(dt){
+  for(const t of towers){
+    // skill cooldown
+    if(t.skillCooldown>0)t.skillCooldown=Math.max(0,t.skillCooldown-dt);
+    // skill active (multishot)
+    if(t.skillActive){t.skillTimer-=dt;if(t.skillTimer<=0){t.skillActive=false;const def=TOWER_DEFS[t.type];t.fireRate=def.fireRate*(t.level>1?TOWER_DEFS[t.type].upgrades[t.level-2].fireRate/def.fireRate:1);}}
+    // interest tower: no attack
+    if(t.type==='interest')continue;
+    t.fireTimer-=dt;if(t.fireTimer>0)continue;
+    const cx=t.col*CELL+CELL/2,cy=t.row*CELL+CELL/2;
+    let best=null,bestDist=Infinity;
+    for(const m of monsters){
+      if(m.dead||m.frozen)continue;
+      const dx=m.x-cx,dy=m.y-cy,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<=t.range*CELL&&d<bestDist){best=m;bestDist=d;}
+    }
+    if(!best)continue;
+    t.fireTimer=1/t.fireRate;
+    if(t.aoe>0){
+      monsters.forEach(m=>{if(m.dead)return;const dx=m.x-best.x,dy=m.y-best.y;if(Math.sqrt(dx*dx+dy*dy)<=t.aoe*CELL)applyDamage(t,m,t.damage);});
+      projectiles.push({x:cx,y:cy,tx:best.x,ty:best.y,type:'aoe',color:TOWER_DEFS[t.type].color,life:0.3,aoe:t.aoe*CELL});
+    } else {
+      applyDamage(t,best,t.damage);
+      projectiles.push({x:cx,y:cy,tx:best.x,ty:best.y,type:'bullet',color:TOWER_DEFS[t.type].color,life:0.2});
     }
   }
-  
-  render();
-}, 100);
+}
 
-// Monster spawn timer
-setInterval(spawnMonster, 2000);
+function applyDamage(tower,monster,dmg){
+  if(monster.dead)return;
+  monster.hp-=dmg;
+  if(tower.slow>0){monster.slowFactor=1-tower.slow;monster.slowTimer=1.5;}
+  if(tower.dot>0){monster.dotDmg=tower.dot;monster.dotTimer=3;}
+  if(monster.hp<=0)killMonster(monster);
+}
 
-load();
-render();
-setInterval(save, 5000);
+function updateProjectiles(dt){for(const p of projectiles)p.life-=dt;projectiles=projectiles.filter(p=>p.life>0);}
+function updateFloatingTexts(dt){for(const f of floatingTexts){f.life-=dt;f.y-=28*dt;f.alpha=Math.min(1,f.life*3);}floatingTexts=floatingTexts.filter(f=>f.life>0);}
+function updateSkillFx(dt){for(const f of skillFx)f.life-=dt;skillFx=skillFx.filter(f=>f.life>0);}
+function addFloat(text,x,y,color,size=13){floatingTexts.push({text,x,y,color,size,life:1,alpha:1});}
+
+function checkWaveEnd(){
+  if(!waveActive)return;
+  if(spawnQueue.length===0&&monsters.length===0){
+    waveActive=false;
+    if(waveHpLost===0)noDmgStreak++;else noDmgStreak=0;
+    const bonus=20+wave*5;gold+=bonus;updateHUD();
+    document.getElementById('wave-btn').disabled=false;
+    document.getElementById('wave-title').textContent=`웨이브 ${wave} 완료!`;
+    document.getElementById('wave-hint').textContent=`+${bonus}G`;
+    document.getElementById('wave-prog').style.width='100%';
+    showToast(`✅ 웨이브 ${wave} 클리어! +${bonus}G`);
+    checkAchievements();
+  }
+}
+
+function triggerGameOver(){
+  gameOver=true;hp=0;updateHUD();
+  document.getElementById('go-wave').textContent=`웨이브 ${wave}`;
+  document.getElementById('go-kills').textContent=kills;
+  document.getElementById('gameover-popup').classList.add('show');
+}
+
+// ============================================================
+// ACHIEVEMENTS
+// ============================================================
+function getAchState(){
+  return{kills,wave,gold,bossKills,noDmgStreak,
+    towerCount:towers.length,
+    interestTowers:towers.filter(t=>t.type==='interest').length
+  };
+}
+function checkAchievements(){
+  const st=getAchState();
+  ACHIEVEMENTS.forEach(a=>{
+    if(a.done||achDone.has(a.id))return;
+    if(a.cond(st)){
+      a.done=true;achDone.add(a.id);
+      gold+=a.reward;updateHUD();
+      showAchPopup(a);
+    }
+  });
+  renderAchievements();
+}
+function showAchPopup(a){
+  const el=document.getElementById('ach-popup');
+  document.getElementById('ach-popup-name').textContent=a.icon+' '+a.name;
+  document.getElementById('ach-popup-reward').textContent='+'+a.reward+'G 보너스!';
+  el.style.display='block';
+  clearTimeout(showAchPopup._t);
+  showAchPopup._t=setTimeout(()=>el.style.display='none',3000);
+}
+function renderAchievements(){
+  const list=document.getElementById('ach-list');
+  list.innerHTML=ACHIEVEMENTS.map(a=>`
+    <div class="ach-item ${a.done?'done':'locked'}">
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-reward">${a.done?'✅':'+'+a.reward+'G'}</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// DRAW
+// ============================================================
+function draw(){
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  drawGrid();drawPath();drawTowers();drawMonsters();drawProjectiles();drawSkillFx();drawFloatingTexts();drawPlacementGhost();
+}
+
+const TERRAIN_COLORS={
+  0:['#141008','#110e06'],   // plain
+  2:['#0f2010','#0c1a0c'],   // spawn
+  3:['#1a0a0a','#140808'],   // goal
+  4:['#0d1f0a','#0a1a08'],   // forest
+  5:['#1a1510','#151210'],   // rock
+  6:['#0a1020','#08101a'],   // river
+};
+
+function drawGrid(){
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=c*CELL,y=r*CELL,cell=grid[r][c];
+      const colors=TERRAIN_COLORS[cell.type]||TERRAIN_COLORS[0];
+      ctx.fillStyle=colors[(r+c)%2];ctx.fillRect(x,y,CELL,CELL);
+      // terrain decor
+      if(cell.type===4){// forest
+        ctx.font=`${CELL*0.45}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=0.35;
+        ctx.fillText('🌲',x+CELL/2,y+CELL/2);ctx.globalAlpha=1;
+      } else if(cell.type===5){// rock
+        ctx.font=`${CELL*0.45}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=0.5;
+        ctx.fillText('🪨',x+CELL/2,y+CELL/2);ctx.globalAlpha=1;
+      } else if(cell.type===6){// river
+        ctx.fillStyle='rgba(41,128,185,0.18)';ctx.fillRect(x,y,CELL,CELL);
+        ctx.strokeStyle='rgba(52,152,219,0.2)';ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(x,y+CELL*0.4);ctx.lineTo(x+CELL,y+CELL*0.5);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x,y+CELL*0.65);ctx.lineTo(x+CELL,y+CELL*0.7);ctx.stroke();
+      } else if(cell.type===2){// spawn
+        ctx.fillStyle='rgba(39,174,96,0.12)';ctx.fillRect(x,y,CELL,CELL);
+        ctx.font=`${CELL*0.48}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('⚔',x+CELL/2,y+CELL/2);
+      } else if(cell.type===3){// goal
+        ctx.fillStyle='rgba(192,57,43,0.12)';ctx.fillRect(x,y,CELL,CELL);
+        ctx.font=`${CELL*0.48}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('🏰',x+CELL/2,y+CELL/2);
+      }
+      // grid line
+      ctx.strokeStyle='rgba(90,69,32,0.2)';ctx.lineWidth=0.5;ctx.strokeRect(x,y,CELL,CELL);
+    }
+  }
+}
+
+function drawPath(){
+  const path=astar(SPAWN,GOAL);if(!path)return;
+  ctx.strokeStyle='rgba(255,215,0,0.07)';ctx.lineWidth=CELL*0.32;ctx.lineCap='round';ctx.beginPath();
+  path.forEach((p,i)=>{const x=p.col*CELL+CELL/2,y=p.row*CELL+CELL/2;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
+  ctx.stroke();
+}
+
+function drawTowers(){
+  for(const t of towers){
+    const x=t.col*CELL,y=t.row*CELL,def=TOWER_DEFS[t.type];
+    // bg glow if skill active
+    if(t.skillActive){ctx.fillStyle='rgba(255,215,0,0.2)';ctx.fillRect(x,y,CELL,CELL);}
+    ctx.fillStyle=def.color+'2a';ctx.fillRect(x+2,y+2,CELL-4,CELL-4);
+    ctx.strokeStyle=selectedTowerObj?.id===t.id?'#FFD700':def.color;
+    ctx.lineWidth=selectedTowerObj?.id===t.id?2.5:1.5;ctx.strokeRect(x+2,y+2,CELL-4,CELL-4);
+    ctx.font=`${CELL*0.52}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(def.icon,x+CELL/2,y+CELL/2);
+    if(t.level>1){ctx.fillStyle='#FFD700';ctx.font='bold 9px Cinzel,serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('L'+t.level,x+CELL-3,y+3);}
+    // skill cooldown arc
+    if(t.skillCooldown>0){
+      const skDef=def.skill;const pct=1-t.skillCooldown/skDef.cooldown;
+      ctx.strokeStyle='rgba(142,68,173,0.7)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(x+CELL/2,y+CELL/2,CELL/2-3,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);ctx.stroke();
+    }
+    // range if selected
+    if(selectedTowerObj?.id===t.id&&t.range>0){
+      ctx.strokeStyle='rgba(255,215,0,0.25)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x+CELL/2,y+CELL/2,t.range*CELL,0,Math.PI*2);ctx.stroke();
+    }
+  }
+}
+
+function drawMonsters(){
+  for(const m of monsters){
+    if(m.dead)continue;
+    const r=m.size/2;
+    if(m.frozen){ctx.fillStyle='rgba(52,152,219,0.4)';ctx.beginPath();ctx.arc(m.x,m.y,r+5,0,Math.PI*2);ctx.fill();}
+    else if(m.slowFactor<1){ctx.fillStyle='rgba(41,128,185,0.3)';ctx.beginPath();ctx.arc(m.x,m.y,r+3,0,Math.PI*2);ctx.fill();}
+    ctx.font=`${m.size*1.4}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(m.icon,m.x,m.y);
+    const bw=m.size*2+4,bh=4,bx=m.x-bw/2,by=m.y-m.size-8;
+    ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(bx,by,bw,bh);
+    const pct=Math.max(0,m.hp/m.maxHp);
+    ctx.fillStyle=pct>0.5?'#27ae60':pct>0.25?'#f39c12':'#c0392b';ctx.fillRect(bx,by,bw*pct,bh);
+    if(m.isBoss){ctx.fillStyle='#c0392b';ctx.font='bold 9px Cinzel,serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('BOSS',m.x,by-2);}
+  }
+}
+
+function drawProjectiles(){
+  for(const p of projectiles){
+    if(p.type==='bullet'){ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.tx,p.ty,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(p.tx,p.ty,2,0,Math.PI*2);ctx.fill();}
+    else if(p.type==='aoe'){const a=p.life*3;ctx.strokeStyle=p.color;ctx.lineWidth=2;ctx.globalAlpha=Math.min(1,a)*0.6;ctx.beginPath();ctx.arc(p.tx,p.ty,p.aoe*(1.2-p.life),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=Math.min(1,a)*0.15;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.tx,p.ty,p.aoe,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  }
+}
+
+function drawSkillFx(){
+  for(const f of skillFx){
+    const a=Math.min(1,f.life*2);
+    if(f.type==='lightning'){
+      ctx.strokeStyle=f.color;ctx.lineWidth=3;ctx.globalAlpha=a*0.9;
+      ctx.shadowColor=f.color;ctx.shadowBlur=10;
+      ctx.beginPath();ctx.moveTo(f.x1,f.y1);
+      // jagged line
+      const mx=(f.x1+f.x2)/2+(Math.random()-0.5)*20,my=(f.y1+f.y2)/2+(Math.random()-0.5)*20;
+      ctx.quadraticCurveTo(mx,my,f.x2,f.y2);ctx.stroke();
+      ctx.shadowBlur=0;ctx.globalAlpha=1;
+    } else if(f.type==='freeze'){
+      ctx.strokeStyle=f.color;ctx.lineWidth=2;ctx.globalAlpha=a*0.5;
+      ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1+(1-f.life)*0.3),0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle=f.color;ctx.globalAlpha=a*0.08;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    } else if(f.type==='explode'){
+      const prog=1-f.life/0.6;
+      ctx.fillStyle=f.color;ctx.globalAlpha=a*0.3;ctx.beginPath();ctx.arc(f.x,f.y,f.r*prog,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#f39c12';ctx.lineWidth=3;ctx.globalAlpha=a*0.7;ctx.beginPath();ctx.arc(f.x,f.y,f.r*prog,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=1;
+    } else if(f.type==='buff'){
+      ctx.fillStyle=f.color;ctx.globalAlpha=a*0.15;ctx.beginPath();ctx.arc(f.x,f.y,CELL*0.8,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    } else if(f.type==='goldrush'){
+      for(let i=0;i<8;i++){
+        const angle=(i/8)*Math.PI*2,dist=CELL*(1-f.life)*2;
+        ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=a;
+        ctx.fillText('🪙',f.x+Math.cos(angle)*dist,f.y+Math.sin(angle)*dist);
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+}
+
+function drawFloatingTexts(){
+  for(const f of floatingTexts){ctx.globalAlpha=f.alpha;ctx.fillStyle=f.color;ctx.font=`bold ${f.size}px 'Cinzel Decorative',cursive`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(f.text,f.x,f.y);}
+  ctx.globalAlpha=1;
+}
+
+function drawPlacementGhost(){
+  if(!selectedTowerType||mouseCol<0||mouseRow<0)return;
+  const can=canPlace(mouseCol,mouseRow);
+  ctx.fillStyle=can?'rgba(255,215,0,0.13)':'rgba(192,57,43,0.18)';
+  ctx.strokeStyle=can?'rgba(255,215,0,0.7)':'rgba(192,57,43,0.7)';ctx.lineWidth=2;
+  ctx.fillRect(mouseCol*CELL,mouseRow*CELL,CELL,CELL);ctx.strokeRect(mouseCol*CELL+1,mouseRow*CELL+1,CELL-2,CELL-2);
+  const def=TOWER_DEFS[selectedTowerType];
+  ctx.font=`${CELL*0.48}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=0.7;
+  ctx.fillText(def.icon,mouseCol*CELL+CELL/2,mouseRow*CELL+CELL/2);ctx.globalAlpha=1;
+  if(def.range>0){ctx.strokeStyle=can?'rgba(255,215,0,0.18)':'rgba(192,57,43,0.18)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(mouseCol*CELL+CELL/2,mouseRow*CELL+CELL/2,def.range*CELL,0,Math.PI*2);ctx.stroke();}
+}
+
+// ============================================================
+// INPUT
+// ============================================================
+function onCanvasClick(e){
+  const rect=canvas.getBoundingClientRect();
+  const sx=CANVAS_W/rect.width,sy=CANVAS_H/rect.height;
+  const cx=Math.floor((e.clientX-rect.left)*sx/CELL);
+  const cy=Math.floor((e.clientY-rect.top)*sy/CELL);
+  if(cx<0||cx>=COLS||cy<0||cy>=ROWS)return;
+  const existing=towers.find(t=>t.col===cx&&t.row===cy);
+  if(existing){selectedTowerType=null;selectedTowerObj=existing;showSelectedTower(existing);return;}
+  if(selectedTowerType)placeTower(cx,cy,selectedTowerType);
+  else{selectedTowerObj=null;showSelectedInfo(null);}
+}
+function onCanvasMouseMove(e){
+  const rect=canvas.getBoundingClientRect();
+  const sx=CANVAS_W/rect.width,sy=CANVAS_H/rect.height;
+  mouseCol=Math.floor((e.clientX-rect.left)*sx/CELL);
+  mouseRow=Math.floor((e.clientY-rect.top)*sy/CELL);
+}
+
+// ============================================================
+// UI
+// ============================================================
+function renderTowerList(){
+  const list=document.getElementById('tower-list');list.innerHTML='';
+  Object.entries(TOWER_DEFS).forEach(([key,def])=>{
+    const can=gold>=def.cost;
+    const div=document.createElement('div');
+    div.className='tower-card'+(selectedTowerType===key?' selected':'')+(can?'':' unaffordable');
+    div.innerHTML=`<div class="tower-icon">${def.icon}</div><div class="tower-info"><div class="tower-name">${def.name}</div><div class="tower-stats">${def.desc}</div><div class="skill-badge">⚡ ${def.skill.name}</div></div><div class="tower-cost">🪙${def.cost}</div>`;
+    div.onclick=()=>selectTowerType(key);
+    list.appendChild(div);
+  });
+}
+function selectTowerType(key){
+  if(gold<TOWER_DEFS[key].cost){showToast('💰 골드가 부족합니다!');return;}
+  selectedTowerType=selectedTowerType===key?null:key;
+  selectedTowerObj=null;showSelectedInfo(null);renderTowerList();
+}
+function showSelectedTower(t){
+  const def=TOWER_DEFS[t.type];
+  document.getElementById('selected-section').style.display='block';
+  document.getElementById('selected-info').style.display='block';
+  document.getElementById('si-name').textContent=def.icon+' '+def.name;
+  document.getElementById('si-lv').textContent='Lv.'+t.level;
+  document.getElementById('si-dmg').textContent=t.type==='interest'?'이자 '+Math.round(t.interestRate*100)+'%':t.damage+(t.dot>0?` +${t.dot}DoT`:'');
+  document.getElementById('si-spd').textContent=t.type==='interest'?'매 웨이브':t.fireRate.toFixed(1)+'/초';
+  document.getElementById('si-rng').textContent=t.type==='interest'?'-':t.range.toFixed(1);
+  const sk=def.skill;
+  document.getElementById('si-skill-cd').textContent=t.skillCooldown>0?`${t.skillCooldown.toFixed(0)}초 대기`:`준비 완료 (${sk.name})`;
+  document.getElementById('si-skill-btn').textContent=`⚡ ${sk.name}`;
+  const maxLv=def.upgrades.length+1;
+  if(t.level>=maxLv){document.getElementById('si-upgrade-btn').textContent='최대 레벨';document.getElementById('si-upgrade-btn').disabled=true;}
+  else{const upg=def.upgrades[t.level-1];document.getElementById('si-upgrade-btn').textContent=`⬆️ 업그레이드 (${upg.cost}G)`;document.getElementById('si-upgrade-btn').disabled=false;}
+}
+function showSelectedInfo(t){
+  if(!t){document.getElementById('selected-section').style.display='none';}
+}
+function updateHUD(){
+  document.getElementById('hud-gold').textContent=Math.floor(gold);
+  document.getElementById('hud-hp').textContent=Math.max(0,hp);
+  document.getElementById('hud-wave').textContent=wave;
+  document.getElementById('hud-kills').textContent=kills;
+  const interest=calcInterest();
+  document.getElementById('hud-interest').textContent=interest>0?'+'+interest+'G':'-';
+  document.getElementById('hp-bar').style.width=Math.max(0,hp/MAX_HP*100)+'%';
+  renderTowerList();
+}
+function toggleSpeed(){
+  gameSpeed=gameSpeed===1?2:gameSpeed===2?3:1;
+  document.getElementById('speed-txt').textContent='속도 x'+gameSpeed;
+  document.getElementById('speed-indicator').textContent='x'+gameSpeed;
+}
+function confirmReset(){if(confirm('처음부터 다시 시작하시겠습니까?'))restartGame();}
+
+// ============================================================
+// HOF
+// ============================================================
+function getHof(){try{return JSON.parse(localStorage.getItem(HOF_KEY))||[];}catch(e){return[];}}
+function saveHof(list){localStorage.setItem(HOF_KEY,JSON.stringify(list));}
+function renderHof(){
+  const list=document.getElementById('hof-list'),hof=getHof();
+  if(!hof.length){list.innerHTML='<div class="hof-empty">기록 없음</div>';return;}
+  const medals=['🥇','🥈','🥉','4','5'];
+  list.innerHTML=hof.slice(0,5).map((r,i)=>`<div class="hof-row rank-${i+1}"><div class="hof-medal">${medals[i]}</div><div class="hof-name">${r.name}</div><div class="hof-wave">W${r.wave}</div></div>`).join('');
+}
+function submitRecord(){
+  const name=document.getElementById('nick-input').value.trim()||'무명의 용사';
+  const hof=getHof();hof.push({name,wave,kills});hof.sort((a,b)=>b.wave-a.wave);saveHof(hof.slice(0,5));
+  renderHof();document.getElementById('gameover-popup').classList.remove('show');
+  showToast('🏆 기록 등록 완료!');setTimeout(restartGame,800);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ============================================================
+// RESIZE
+// ============================================================
+function resizeCanvas(){
+  const wrap=document.getElementById('canvas-wrap');
+  const ww=wrap.clientWidth,wh=wrap.clientHeight;
+  const scale=Math.min(ww/CANVAS_W,wh/CANVAS_H);
+  canvas.style.width=Math.floor(CANVAS_W*scale)+'px';
+  canvas.style.height=Math.floor(CANVAS_H*scale)+'px';
+}
+window.addEventListener('resize',resizeCanvas);
+window.addEventListener('load',resizeCanvas);
+setTimeout(resizeCanvas,100);
 </script>
 </body>
 </html>
