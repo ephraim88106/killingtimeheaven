@@ -34,3 +34,8 @@
 
 ### 4. Interactivity
 - Add basic click handlers in `main.js` for future game loading.
+
+### 5. Monetization & Compliance
+- **Coupang Partners Banner**: Add a carousel-style banner to the main page.
+- **Compliance Disclaimer**: Include the mandatory disclosure text below the banner.
+- **Styling**: Ensure the banner is centered and the disclaimer is small and unobtrusive.
