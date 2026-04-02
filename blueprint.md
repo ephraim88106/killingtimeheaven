@@ -35,8 +35,10 @@
 ### 4. Interactivity
 - Add basic click handlers in `main.js` for future game loading.
 
-### 6. Google Analytics Integration
-- **Objective**: Add Google Analytics tracking to all pages for user behavior analysis.
-- **Tracking ID**: `G-0WN6RDGF0K`.
-- **Method**: Inject the `gtag.js` script into the `<head>` section of all 14 HTML files.
-- **Verification**: Ensure the script is correctly placed and functional in each file.
+### 6. Google Analytics & Microsoft Clarity Integration
+- **Objective**: Add user behavior tracking and heatmaps to all pages.
+- **Tools**: 
+  - Google Analytics (`G-0WN6RDGF0K`)
+  - Microsoft Clarity (`w59lg6t91y`)
+- **Method**: Inject tracking scripts into the `<head>` section of all 14 HTML files.
+- **Verification**: Ensure scripts are correctly placed and do not conflict.
