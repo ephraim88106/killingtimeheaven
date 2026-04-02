@@ -35,7 +35,8 @@
 ### 4. Interactivity
 - Add basic click handlers in `main.js` for future game loading.
 
-### 5. Monetization & Compliance
-- **Coupang Partners Banner**: Add a carousel-style banner to the main page.
-- **Compliance Disclaimer**: Include the mandatory disclosure text below the banner.
-- **Styling**: Ensure the banner is centered and the disclaimer is small and unobtrusive.
+### 6. Google Analytics Integration
+- **Objective**: Add Google Analytics tracking to all pages for user behavior analysis.
+- **Tracking ID**: `G-0WN6RDGF0K`.
+- **Method**: Inject the `gtag.js` script into the `<head>` section of all 14 HTML files.
+- **Verification**: Ensure the script is correctly placed and functional in each file.
