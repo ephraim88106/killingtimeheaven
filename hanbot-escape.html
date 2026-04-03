@@ -109,26 +109,26 @@ canvas#gc{display:block;border-radius:12px;cursor:pointer}
 // Each level: { cols, rows, start:[r,c], end:[r,c], walls:[[r,c],...] }
 // Wall cells are blocked
 const LEVELS=[
-  // 1-4: 3x3
+  // 1-4: 3x3 (입문)
+  {cols:3,rows:3,start:[2,0],end:[0,0],walls:[]},
   {cols:3,rows:3,start:[0,0],end:[2,2],walls:[]},
-  {cols:3,rows:3,start:[0,0],end:[0,2],walls:[[1,1]]},
-  {cols:3,rows:3,start:[2,0],end:[0,2],walls:[]},
-  {cols:3,rows:3,start:[0,0],end:[2,2],walls:[[0,2],[2,0]]},
-  // 5-8: 4x4
-  {cols:4,rows:4,start:[0,0],end:[3,3],walls:[]},
-  {cols:4,rows:4,start:[0,0],end:[0,3],walls:[[1,1],[2,2]]},
-  {cols:4,rows:4,start:[3,0],end:[0,3],walls:[[1,2],[2,1]]},
-  {cols:4,rows:4,start:[0,0],end:[3,3],walls:[[0,2],[2,0],[1,3],[3,1]]},
-  // 9-12: 5x5
-  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[]},
-  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[[1,1],[2,3],[3,2]]},
-  {cols:5,rows:5,start:[4,0],end:[0,4],walls:[[0,2],[2,0],[2,4],[4,2]]},
-  {cols:5,rows:5,start:[0,2],end:[4,2],walls:[[1,0],[1,4],[3,0],[3,4]]},
-  // 13-16: harder
-  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[[0,3],[1,1],[2,2],[3,1],[4,0]]},
-  {cols:5,rows:5,start:[2,0],end:[2,4],walls:[[0,1],[0,3],[1,2],[3,2],[4,1],[4,3]]},
-  {cols:6,rows:5,start:[0,0],end:[4,5],walls:[[1,1],[1,4],[2,2],[3,0],[3,3]]},
-  {cols:6,rows:5,start:[0,0],end:[4,5],walls:[[0,2],[0,4],[1,3],[2,1],[3,4],[4,0],[4,2]]},
+  {cols:3,rows:3,start:[2,0],end:[2,1],walls:[[1,1]]},
+  {cols:3,rows:3,start:[0,0],end:[1,0],walls:[[0,2]]},
+  // 5-10: 4x4 (초급~중급)
+  {cols:4,rows:4,start:[2,0],end:[0,3],walls:[]},
+  {cols:4,rows:4,start:[1,0],end:[2,2],walls:[]},
+  {cols:4,rows:4,start:[0,0],end:[1,2],walls:[[1,1],[0,1]]},
+  {cols:4,rows:4,start:[0,0],end:[0,2],walls:[[1,0]]},
+  {cols:4,rows:4,start:[2,0],end:[0,0],walls:[[0,1],[3,1],[3,0]]},
+  {cols:4,rows:4,start:[3,1],end:[0,3],walls:[[2,1],[3,0],[3,3],[2,0]]},
+  // 11-14: 5x5 (중급~고급)
+  {cols:5,rows:5,start:[1,2],end:[4,1],walls:[[3,3],[0,2]]},
+  {cols:5,rows:5,start:[0,2],end:[2,0],walls:[]},
+  {cols:5,rows:5,start:[1,3],end:[1,2],walls:[[3,2],[3,1],[2,2]]},
+  {cols:5,rows:5,start:[1,2],end:[4,0],walls:[[0,0],[2,4],[1,0]]},
+  // 15-16: 5x6 (최상급)
+  {cols:6,rows:5,start:[1,3],end:[3,4],walls:[]},
+  {cols:6,rows:5,start:[1,0],end:[3,1],walls:[[3,5],[4,5]]},
 ];
 
 const gc=document.getElementById('gc');
