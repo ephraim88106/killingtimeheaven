@@ -20,6 +20,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>왕국의 번영 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -264,6 +265,7 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Noto Serif KR',ser
 
 <div id="bottom-bar">
   <button class="action-btn" onclick="openNickPopup()"><span class="btn-icon">🏆</span>기록등록</button>
+  <button class="action-btn" onclick="captureScreen()"><span class="btn-icon">🖼️</span>캡처</button>
   <button class="action-btn" onclick="shareGame()"><span class="btn-icon">🔗</span>공유</button>
   <button class="action-btn" onclick="resetGame()"><span class="btn-icon">🔄</span>초기화</button>
 </div>
@@ -436,6 +438,16 @@ function submitRecord(){
   const hofEl=document.getElementById('tab-hof');hofEl.classList.add('record-flash');setTimeout(()=>hofEl.classList.remove('record-flash'),2000);
   showToast('🏆 명예의 전당에 등록됐습니다!');
   switchTab('hof');
+}
+
+function captureScreen(){
+  const target=document.body;
+  html2canvas(target,{backgroundColor:'#0b0c10'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='왕국의번영_현황.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
 }
 
 function shareGame(){

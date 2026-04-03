@@ -48,6 +48,14 @@
   --beat-gradient: linear-gradient(135deg, oklch(65% 0.28 320), oklch(55% 0.3 290));
   --beat-glow: oklch(60% 0.29 305 / 40%);
 
+  /* Game 12: 룰렛 뽑기 (Gold/Amber) */
+  --roulette-gradient: linear-gradient(135deg, oklch(80% 0.2 80), oklch(65% 0.25 50));
+  --roulette-glow: oklch(72% 0.22 65 / 40%);
+
+  /* Game 13: 숫자 야구 (Green/Emerald) */
+  --baseball-gradient: linear-gradient(135deg, oklch(68% 0.2 160), oklch(55% 0.24 180));
+  --baseball-glow: oklch(62% 0.22 170 / 40%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   
@@ -370,6 +378,24 @@ body {
 .beat-btn:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px -5px var(--beat-glow);
+}
+
+.roulette-btn {
+  background: var(--roulette-gradient);
+  box-shadow: 0 10px 20px -5px var(--roulette-glow);
+}
+.roulette-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--roulette-glow);
+}
+
+.baseball-btn {
+  background: var(--baseball-gradient);
+  box-shadow: 0 10px 20px -5px var(--baseball-glow);
+}
+.baseball-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--baseball-glow);
 }
 
 /* Glass Shine Effect on Hover */

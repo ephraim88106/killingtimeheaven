@@ -20,6 +20,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>마왕의 침공 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#FFD700;--gold-dark:#B8860B;--bg:#0a0806;--bg-panel:#12100a;--bg-card:#1a1610;--border:#3a2f1a;--border-gold:#5a4520;--text:#e8d5a0;--text-dim:#8a7050;--green:#27ae60;--red:#c0392b;--blue:#2980b9;--purple:#8e44ad;}
@@ -132,6 +133,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;di
     <div>
       <button class="popup-btn" onclick="submitRecord()">🏆 기록 등록</button>
       <button class="popup-btn sec" onclick="restartGame()">🔄 다시</button>
+      <button class="popup-btn sec" onclick="captureScreen()">🖼️ 캡처</button>
+      <button class="popup-btn sec" onclick="shareResultText()">🔗 공유</button>
     </div>
   </div>
 </div>
@@ -291,6 +294,22 @@ function startGame(){
   if(animFrameId)cancelAnimationFrame(animFrameId);
   lastTime=performance.now();
   animFrameId=requestAnimationFrame(gameLoop);
+}
+
+// ===== CAPTURE & SHARE =====
+function captureScreen(){
+  const target=document.getElementById('gameover-popup');
+  html2canvas(target,{backgroundColor:'#0b0c10'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='마왕의침공_결과.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+function shareResultText(){
+  const text=`⚔️ 마왕의 침공\n🏆 웨이브 ${wave} | 💀 처치: ${kills}\n\n킬링타임천국에서 도전해봐!\nhttps://killingtimeheaven.pages.dev`;
+  if(navigator.share){navigator.share({title:'마왕의 침공',text,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
 }
 
 function restartGame(){

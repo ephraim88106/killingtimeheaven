@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>🎯 초성 스나이퍼 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
@@ -552,6 +553,7 @@ body {
     <div class="result-sub" id="r-best-msg" style="margin-top:12px;color:#f59e0b;"></div>
   </div>
 
+  <button class="btn-primary" onclick="captureScreen()">🖼️ 캡처 저장</button>
   <button class="btn-primary" onclick="shareResult()">📤 결과 공유하기</button>
   <button class="btn-primary" onclick="showScreen('category')">🔄 다시 하기</button>
   <button class="btn-secondary" onclick="showScreen('home')">🏠 처음으로</button>
@@ -1034,7 +1036,16 @@ function endGame() {
   showScreen('result');
 }
 
-// ==================== SHARE ====================
+// ==================== CAPTURE & SHARE ====================
+function captureScreen(){
+  const target=document.getElementById('screen-result');
+  html2canvas(target,{backgroundColor:'#0a0a15'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='초성스나이퍼_결과.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
 function shareResult() {
   const acc = totalAnswered > 0 ? Math.round(correctAnswered / totalAnswered * 100) : 0;
   const modeText = gameMode === 'speed' ? '⚡ 스피드' : '❤️ 서바이벌';

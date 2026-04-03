@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎰 룰렛 뽑기 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen{display:none;width:100%;max-width:420px;padding:20px 16px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-main:disabled{opacity:.4;cursor:default}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+
+/* Roulette */
+.roulette-wrap{position:relative;width:300px;height:300px;margin:20px auto}
+.roulette-canvas{width:300px;height:300px;border-radius:50%;border:4px solid #252545;box-shadow:0 0 30px rgba(168,85,247,.3)}
+.roulette-pointer{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:2em;z-index:10;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.roulette-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;background:linear-gradient(135deg,#a855f7,#06b6d4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:900;border:3px solid #fff;z-index:5}
+
+/* Stats */
+.stats-bar{display:flex;gap:10px;width:100%;margin-bottom:16px}
+.stat-box{flex:1;background:#141428;border:1px solid #252545;border-radius:12px;padding:10px 8px;text-align:center}
+.stat-val{font-size:1.3em;font-weight:800;color:#a855f7}
+.stat-lbl{font-size:.7em;color:#666;margin-top:2px}
+
+/* Result popup */
+.result-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100}
+.result-overlay.show{display:flex}
+.result-card{background:#141428;border:2px solid #252545;border-radius:22px;padding:30px 24px;text-align:center;max-width:340px;width:90%;animation:popIn .4s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.result-emoji{font-size:4em;margin-bottom:12px}
+.result-title{font-size:1.4em;font-weight:900;margin-bottom:8px}
+.result-desc{font-size:.9em;color:#999;line-height:1.6;margin-bottom:16px}
+.result-rarity{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.8em;font-weight:700;margin-bottom:16px}
+
+/* Collection */
+.collection{width:100%;margin-top:12px}
+.coll-title{font-size:.85em;color:#888;margin-bottom:8px}
+.coll-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.coll-item{background:#141428;border:1px solid #252545;border-radius:10px;padding:8px 4px;text-align:center;font-size:1.4em;opacity:.2;transition:all .3s}
+.coll-item.unlocked{opacity:1;border-color:#a855f7;box-shadow:0 0 8px rgba(168,85,247,.3)}
+.coll-count{font-size:.55em;color:#666;display:block;margin-top:2px}
+
+/* History */
+.history{width:100%;margin-top:16px}
+.history-title{font-size:.85em;color:#888;margin-bottom:8px}
+.history-list{max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.history-item{background:#141428;border:1px solid #1e1e35;border-radius:8px;padding:6px 10px;font-size:.8em;display:flex;justify-content:space-between;align-items:center}
+.history-item .h-emoji{font-size:1.2em}
+.history-item .h-name{color:#ccc;font-weight:600}
+.history-item .h-rarity{font-size:.7em;padding:2px 8px;border-radius:10px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="font-size:3em;margin-bottom:8px">🎰</div>
+  <div style="font-size:2.2em;font-weight:900;margin-bottom:6px" class="glow">룰렛 뽑기</div>
+  <div style="color:#666;font-size:.9em;margin-bottom:20px;text-align:center;line-height:1.7">
+    룰렛을 돌려 다양한 보상을 획득하세요!<br>레전드리 아이템을 모아보세요!
+  </div>
+  <div style="background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:24px;font-size:.8em;color:#888;line-height:2">
+    🎯 <b>일반</b> ~ <b>레전드리</b>까지 다양한 등급<br>
+    🏆 총 20종의 아이템 수집에 도전!<br>
+    🔄 매 회전마다 포인트 적립
+  </div>
+  <button class="btn-main" onclick="showGame()">▶ 시작하기</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-val" id="spin-count">0</div><div class="stat-lbl">총 뽑기</div></div>
+    <div class="stat-box"><div class="stat-val" id="points">0</div><div class="stat-lbl">포인트</div></div>
+    <div class="stat-box"><div class="stat-val" id="coll-count">0/20</div><div class="stat-lbl">수집</div></div>
+  </div>
+
+  <div class="roulette-wrap">
+    <div class="roulette-pointer">▼</div>
+    <canvas class="roulette-canvas" id="wheel" width="300" height="300"></canvas>
+    <div class="roulette-center">GO</div>
+  </div>
+
+  <button class="btn-main" id="spin-btn" onclick="spin()" style="margin-top:16px">🎰 룰렛 돌리기!</button>
+  <button class="btn-sub" onclick="show('s-home')" style="margin-top:6px">🏠 처음으로</button>
+
+  <div class="collection">
+    <div class="coll-title">📦 컬렉션 (<span id="coll-disp">0</span>/20)</div>
+    <div class="coll-grid" id="coll-grid"></div>
+  </div>
+
+  <div class="history">
+    <div class="history-title">📜 최근 기록</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- Result overlay -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-card">
+    <div class="result-emoji" id="res-emoji">🎁</div>
+    <div class="result-rarity" id="res-rarity">일반</div>
+    <div class="result-title" id="res-title">아이템</div>
+    <div class="result-desc" id="res-desc">설명</div>
+    <button class="btn-main" onclick="closeResult()">확인</button>
+    <button class="btn-sub" style="margin-top:8px" onclick="captureScreen()">🖼️ 캡처 저장</button>
+    <button class="btn-sub" style="margin-top:8px" onclick="shareResultText()">🔗 결과 공유</button>
+  </div>
+</div>
+
+<script>
+const ITEMS=[
+  // 일반 (40%)
+  {name:'동전 한 닢',icon:'🪙',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:10,desc:'어디선가 떨어진 동전이다.'},
+  {name:'나뭇잎',icon:'🍃',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:10,desc:'바람에 날려온 평범한 잎사귀.'},
+  {name:'돌멩이',icon:'🪨',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:10,desc:'그냥 돌멩이다. 꽤 단단하다.'},
+  {name:'빵 조각',icon:'🍞',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:15,desc:'누군가 먹다 남긴 빵 조각.'},
+  {name:'깃털',icon:'🪶',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:10,desc:'하늘에서 떨어진 새의 깃털.'},
+  {name:'양초',icon:'🕯️',rarity:'일반',color:'#9ca3af',bg:'#1e1e35',points:15,desc:'은은한 빛을 내는 양초.'},
+  // 고급 (30%)
+  {name:'은반지',icon:'💍',rarity:'고급',color:'#22c55e',bg:'#0a2a0a',points:30,desc:'은은하게 빛나는 은반지.'},
+  {name:'마법 물약',icon:'🧪',rarity:'고급',color:'#22c55e',bg:'#0a2a0a',points:35,desc:'신비로운 색의 물약.'},
+  {name:'수정 구슬',icon:'🔮',rarity:'고급',color:'#22c55e',bg:'#0a2a0a',points:30,desc:'미래가 보이는 듯한 구슬.'},
+  {name:'황금 열쇠',icon:'🗝️',rarity:'고급',color:'#22c55e',bg:'#0a2a0a',points:40,desc:'어딘가를 열 수 있는 열쇠.'},
+  {name:'별사탕',icon:'🍬',rarity:'고급',color:'#22c55e',bg:'#0a2a0a',points:25,desc:'먹으면 기분이 좋아지는 사탕.'},
+  // 희귀 (18%)
+  {name:'마법서',icon:'📕',rarity:'희귀',color:'#3b82f6',bg:'#0a1a2a',points:60,desc:'고대의 마법이 담긴 책.'},
+  {name:'왕관',icon:'👑',rarity:'희귀',color:'#3b82f6',bg:'#0a1a2a',points:70,desc:'영광의 상징, 빛나는 왕관.'},
+  {name:'요정의 날개',icon:'🧚',rarity:'희귀',color:'#3b82f6',bg:'#0a1a2a',points:65,desc:'반짝이는 요정의 날개.'},
+  {name:'용의 비늘',icon:'🐉',rarity:'희귀',color:'#3b82f6',bg:'#0a1a2a',points:75,desc:'전설의 용에게서 떨어진 비늘.'},
+  // 에픽 (9%)
+  {name:'불사조 깃털',icon:'🔥',rarity:'에픽',color:'#a855f7',bg:'#1a0a2a',points:120,desc:'불사조의 영혼이 깃든 깃털.'},
+  {name:'시간의 모래',icon:'⏳',rarity:'에픽',color:'#a855f7',bg:'#1a0a2a',points:130,desc:'시간을 조종하는 모래시계.'},
+  {name:'천상의 하프',icon:'🎵',rarity:'에픽',color:'#a855f7',bg:'#1a0a2a',points:110,desc:'천사의 선율이 울려퍼진다.'},
+  // 레전드리 (3%)
+  {name:'세계수의 열매',icon:'🌟',rarity:'레전드리',color:'#f59e0b',bg:'#2a1a0a',points:300,desc:'세계수에서 천 년에 한 번 열리는 전설의 열매!'},
+  {name:'무한의 보석',icon:'💎',rarity:'레전드리',color:'#f59e0b',bg:'#2a1a0a',points:500,desc:'우주의 기운을 담은 궁극의 보석!'},
+];
+
+const RARITY_WEIGHTS={일반:40,고급:30,희귀:18,에픽:9,레전드리:3};
+const RARITY_COLORS={일반:'#6b7280',고급:'#22c55e',희귀:'#3b82f6',에픽:'#a855f7',레전드리:'#f59e0b'};
+
+let spinCount=0,points=0,collection=new Set(),history=[];
+let spinning=false,currentAngle=0;
+
+// Wheel segments
+const SEGMENTS=10;
+const SEGMENT_ITEMS=[];
+function fillSegments(){
+  SEGMENT_ITEMS.length=0;
+  for(let i=0;i<SEGMENTS;i++){
+    SEGMENT_ITEMS.push(pickRandomItem());
+  }
+}
+
+function pickRandomItem(){
+  const total=Object.values(RARITY_WEIGHTS).reduce((a,b)=>a+b,0);
+  let r=Math.random()*total;
+  let chosenRarity='일반';
+  for(const [rarity,w] of Object.entries(RARITY_WEIGHTS)){
+    r-=w;
+    if(r<=0){chosenRarity=rarity;break;}
+  }
+  const pool=ITEMS.filter(it=>it.rarity===chosenRarity);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function drawWheel(angle){
+  const canvas=document.getElementById('wheel');
+  const ctx=canvas.getContext('2d');
+  const cx=150,cy=150,radius=146;
+  ctx.clearRect(0,0,300,300);
+
+  const segAngle=2*Math.PI/SEGMENTS;
+  for(let i=0;i<SEGMENTS;i++){
+    const start=angle+i*segAngle;
+    const end=start+segAngle;
+
+    // Segment
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,radius,start,end);
+    ctx.closePath();
+    const item=SEGMENT_ITEMS[i];
+    ctx.fillStyle=i%2===0?'#1a1a35':'#141428';
+    ctx.fill();
+    ctx.strokeStyle='#252545';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    // Text
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(start+segAngle/2);
+    ctx.textAlign='center';
+    ctx.font='20px sans-serif';
+    ctx.fillText(item.icon,radius*0.62,6);
+    ctx.font='bold 9px "Noto Sans KR",sans-serif';
+    ctx.fillStyle=RARITY_COLORS[item.rarity];
+    ctx.fillText(item.name,radius*0.62,20);
+    ctx.restore();
+  }
+
+  // Outer ring glow
+  ctx.beginPath();
+  ctx.arc(cx,cy,radius,0,2*Math.PI);
+  ctx.strokeStyle='rgba(168,85,247,0.3)';
+  ctx.lineWidth=3;
+  ctx.stroke();
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showGame(){
+  show('s-game');
+  fillSegments();
+  drawWheel(currentAngle);
+  renderCollection();
+}
+
+function spin(){
+  if(spinning)return;
+  spinning=true;
+  document.getElementById('spin-btn').disabled=true;
+
+  fillSegments();
+
+  // Determine winning item first
+  const winItem=pickRandomItem();
+  // Find or place it in a segment
+  const winIdx=Math.floor(Math.random()*SEGMENTS);
+  SEGMENT_ITEMS[winIdx]=winItem;
+
+  // Calculate target angle so winIdx lands at top (270 degrees / 3PI/2)
+  const segAngle=2*Math.PI/SEGMENTS;
+  const targetSegCenter=winIdx*segAngle+segAngle/2;
+  // Pointer is at top (270deg = -PI/2), wheel angle 0 means segment 0 starts at right
+  // We need: angle + targetSegCenter = -PI/2 + 2*PI*k (mod 2PI) => pointing up
+  // Actually pointer is at top, so: -(angle + targetSegCenter) mod 2PI = PI/2
+  const fullSpins=5+Math.floor(Math.random()*3);
+  const targetAngle=-(targetSegCenter-(-Math.PI/2))+fullSpins*2*Math.PI;
+
+  const startAngle=currentAngle;
+  const totalRotation=targetAngle-startAngle;
+  const duration=4000+Math.random()*1000;
+  const startTime=performance.now();
+
+  function easeOut(t){return 1-Math.pow(1-t,3)}
+
+  function animate(now){
+    const elapsed=now-startTime;
+    const t=Math.min(elapsed/duration,1);
+    const easedT=easeOut(t);
+    currentAngle=startAngle+totalRotation*easedT;
+    drawWheel(currentAngle);
+
+    if(t<1){
+      requestAnimationFrame(animate);
+    }else{
+      // Done
+      spinning=false;
+      document.getElementById('spin-btn').disabled=false;
+      spinCount++;
+      points+=winItem.points;
+      collection.add(winItem.name);
+
+      history.unshift(winItem);
+      if(history.length>10)history.pop();
+
+      updateStats();
+      renderCollection();
+      renderHistory();
+      showResult(winItem);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function showResult(item){
+  document.getElementById('res-emoji').textContent=item.icon;
+  document.getElementById('res-title').textContent=item.name;
+  document.getElementById('res-desc').textContent=item.desc;
+  const rarEl=document.getElementById('res-rarity');
+  rarEl.textContent=item.rarity;
+  rarEl.style.background=RARITY_COLORS[item.rarity]+'22';
+  rarEl.style.color=RARITY_COLORS[item.rarity];
+  rarEl.style.border='1px solid '+RARITY_COLORS[item.rarity];
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+function closeResult(){
+  document.getElementById('result-overlay').classList.remove('show');
+}
+
+function updateStats(){
+  document.getElementById('spin-count').textContent=spinCount;
+  document.getElementById('points').textContent=points;
+  document.getElementById('coll-count').textContent=collection.size+'/20';
+  document.getElementById('coll-disp').textContent=collection.size;
+}
+
+function renderCollection(){
+  const grid=document.getElementById('coll-grid');
+  grid.innerHTML='';
+  ITEMS.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='coll-item'+(collection.has(item.name)?' unlocked':'');
+    div.innerHTML=item.icon;
+    div.title=item.name+' ('+item.rarity+')';
+    grid.appendChild(div);
+  });
+}
+
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  list.innerHTML='';
+  history.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='history-item';
+    div.innerHTML=`<span class="h-emoji">${item.icon}</span><span class="h-name">${item.name}</span><span class="h-rarity" style="background:${RARITY_COLORS[item.rarity]}22;color:${RARITY_COLORS[item.rarity]}">${item.rarity}</span>`;
+    list.appendChild(div);
+  });
+}
+
+// ===== CAPTURE & SHARE =====
+function captureScreen(){
+  const target=document.getElementById('result-overlay').querySelector('.result-card');
+  html2canvas(target,{backgroundColor:'#141428'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='룰렛뽑기_결과.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+function shareResultText(){
+  const last=history[0];
+  if(!last)return;
+  const text=`🎰 룰렛 뽑기\n${last.icon} ${last.name} (${last.rarity}) 획득!\n📦 수집: ${collection.size}/20 | 🏆 ${points}포인트\n\n킬링타임천국에서 도전해봐!\nhttps://killingtimeheaven.pages.dev`;
+  if(navigator.share){navigator.share({title:'룰렛 뽑기',text,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
+}
+
+window.addEventListener('load',()=>{
+  renderCollection();
+  updateStats();
+});
+</script>
+</body>
+</html>

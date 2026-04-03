@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>🏗️ 도시를 쌓아라 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -60,6 +61,11 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 @keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-60px)}}
 
 /* Milestone toast */
+/* Share buttons */
+.share-bar{display:flex;gap:6px;margin-bottom:10px}
+.share-btn{flex:1;background:#141428;border:1px solid #252545;border-radius:10px;padding:8px;text-align:center;font-size:.8em;color:#999;cursor:pointer;transition:all .2s}
+.share-btn:active{background:#1a1a38;border-color:#a855f7}
+
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a38;border:1px solid #a855f7;border-radius:12px;padding:10px 20px;font-size:.85em;z-index:100;animation:toastAnim 2.5s ease forwards}
 @keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
 </style>
@@ -84,6 +90,12 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
     🏙️
     <span class="click-btn-label">탭해서 코인 획득!</span>
   </button>
+
+  <!-- Share -->
+  <div class="share-bar">
+    <button class="share-btn" onclick="captureScreen()">🖼️ 캡처 저장</button>
+    <button class="share-btn" onclick="shareResultText()">🔗 현황 공유</button>
+  </div>
 
   <!-- Buildings -->
   <div class="section-title">🏢 건물 구매</div>
@@ -271,6 +283,24 @@ function showToast(msg){
   t.className='toast';t.textContent=msg;
   document.body.appendChild(t);
   setTimeout(()=>t.remove(),2600);
+}
+
+// ===== CAPTURE & SHARE =====
+function captureScreen(){
+  const target=document.querySelector('.wrap');
+  html2canvas(target,{backgroundColor:'#0a0a15'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='도시를쌓아라_현황.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+function shareResultText(){
+  const c=Math.floor(coins);
+  const p=getPopulation();
+  const text=`🏗️ 도시를 쌓아라\n💰 ${fmt(c)} 코인 | 👥 인구 ${p}명\n초당 ${fmt(getCps())} 코인\n\n킬링타임천국에서 도전해봐!\nhttps://killingtimeheaven.pages.dev`;
+  if(navigator.share){navigator.share({title:'도시를 쌓아라',text,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>showToast('📋 현황이 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
 }
 
 // ===== INIT =====
