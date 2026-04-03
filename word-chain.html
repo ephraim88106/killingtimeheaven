@@ -28,7 +28,6 @@
   }
   .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; text-align: center; }
 
-  /* Home Screen */
   #homeScreen { text-align: center; width: 100%; max-width: 420px; }
   .rules {
     background: rgba(255,255,255,0.05);
@@ -39,7 +38,7 @@
     text-align: left;
     font-size: 0.88rem;
     color: #94a3b8;
-    line-height: 1.8;
+    line-height: 1.9;
   }
   .rules strong { color: #c084fc; }
   .start-btn {
@@ -52,18 +51,17 @@
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
     box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+    transition: transform 0.15s;
   }
-  .start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(168,85,247,0.5); }
+  .start-btn:hover { transform: translateY(-3px); }
 
-  /* Game Screen */
   #gameScreen { display: none; width: 100%; max-width: 480px; }
   .status-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     padding: 10px 16px;
     background: rgba(255,255,255,0.05);
     border-radius: 12px;
@@ -78,7 +76,7 @@
     height: 6px;
     background: rgba(255,255,255,0.1);
     border-radius: 99px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     overflow: hidden;
   }
   .timer-bar {
@@ -86,20 +84,18 @@
     background: linear-gradient(90deg, #06b6d4, #a855f7);
     border-radius: 99px;
     transition: width 0.1s linear;
-    width: 100%;
   }
   .timer-bar.urgent { background: linear-gradient(90deg, #ef4444, #f97316); }
 
-  /* Chat area */
   .chat-area {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     padding: 16px;
-    min-height: 260px;
-    max-height: 300px;
+    min-height: 240px;
+    max-height: 280px;
     overflow-y: auto;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -107,30 +103,17 @@
   .chat-area::-webkit-scrollbar { width: 4px; }
   .chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
 
-  .msg {
-    display: flex;
-    flex-direction: column;
-    max-width: 75%;
-    animation: fadeIn 0.3s ease;
-  }
+  .msg { display: flex; flex-direction: column; max-width: 75%; animation: fadeIn 0.3s ease; }
   .msg.player { align-self: flex-end; align-items: flex-end; }
   .msg.ai { align-self: flex-start; align-items: flex-start; }
   .msg.system { align-self: center; align-items: center; max-width: 90%; }
 
-  .msg-bubble {
-    padding: 10px 16px;
-    border-radius: 18px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
+  .msg-bubble { padding: 10px 16px; border-radius: 18px; font-size: 1.1rem; font-weight: 700; }
   .player .msg-bubble { background: linear-gradient(135deg, #06b6d4, #0284c7); color: #fff; border-bottom-right-radius: 4px; }
   .ai .msg-bubble { background: rgba(248,113,221,0.15); border: 1px solid rgba(248,113,221,0.3); color: #f472b6; border-bottom-left-radius: 4px; }
   .system .msg-bubble { background: rgba(255,255,255,0.06); color: #64748b; font-size: 0.8rem; font-weight: 400; border-radius: 8px; text-align: center; }
-
   .msg-name { font-size: 0.72rem; color: #64748b; margin-bottom: 3px; padding: 0 4px; }
 
-  /* Input */
   .input-area { display: flex; gap: 10px; }
   .word-input {
     flex: 1;
@@ -145,7 +128,7 @@
     transition: border-color 0.2s;
   }
   .word-input:focus { border-color: #a855f7; }
-  .word-input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .word-input:disabled { opacity: 0.4; cursor: not-allowed; }
   .send-btn {
     padding: 14px 20px;
     background: linear-gradient(135deg, #a855f7, #06b6d4);
@@ -161,22 +144,10 @@
   .send-btn:hover { transform: scale(1.04); }
   .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .hint-text {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 0.85rem;
-    color: #64748b;
-    min-height: 20px;
-  }
+  .hint-text { text-align: center; margin-top: 10px; font-size: 0.85rem; color: #64748b; min-height: 20px; }
   .hint-text .required { color: #06b6d4; font-weight: 700; font-size: 1rem; }
 
-  /* Result Screen */
-  #resultScreen {
-    display: none;
-    text-align: center;
-    width: 100%;
-    max-width: 420px;
-  }
+  #resultScreen { display: none; text-align: center; width: 100%; max-width: 420px; }
   .result-icon { font-size: 4rem; margin-bottom: 12px; }
   .result-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
   .result-title.win { background: linear-gradient(135deg, #06b6d4, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -187,31 +158,26 @@
   .retry-btn {
     padding: 14px 40px;
     background: linear-gradient(135deg, #a855f7, #06b6d4);
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-bottom: 12px;
+    border: none; border-radius: 14px;
+    color: #fff; font-size: 1rem; font-weight: 700;
+    cursor: pointer; margin-bottom: 12px;
     box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+    transition: transform 0.15s;
   }
   .retry-btn:hover { transform: translateY(-2px); }
   .home-link { color: #64748b; font-size: 0.85rem; text-decoration: none; }
   .home-link:hover { color: #94a3b8; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
   .shake { animation: shake 0.3s ease; }
 
   .ai-thinking {
-    display: flex;
-    gap: 4px;
+    display: flex; gap: 4px;
     padding: 12px 16px;
     background: rgba(248,113,221,0.1);
     border: 1px solid rgba(248,113,221,0.2);
-    border-radius: 18px;
-    border-bottom-left-radius: 4px;
+    border-radius: 18px; border-bottom-left-radius: 4px;
     align-self: flex-start;
   }
   .dot { width: 7px; height: 7px; background: #f472b6; border-radius: 50%; animation: bounce 0.8s infinite; }
@@ -222,37 +188,34 @@
 </head>
 <body>
 
-<!-- Home Screen -->
 <div id="homeScreen">
   <h1>🗣️ 끝말잇기 배틀</h1>
   <p class="subtitle">AI와의 한국어 단어 대결!</p>
   <div class="rules">
     <strong>📖 게임 방법</strong><br>
-    • 이전 단어의 <strong>마지막 글자</strong>로 시작하는 단어를 입력하세요<br>
-    • 턴당 <strong>10초</strong> 제한<br>
+    • 이전 단어의 <strong>마지막 글자</strong>로 시작하는 단어 입력<br>
+    • 턴당 <strong>15초</strong> 제한 — 남은 시간이 표시돼요<br>
     • 이미 쓴 단어는 재사용 불가<br>
-    • AI가 단어를 못 찾으면 <strong>승리!</strong><br>
-    • 시간 초과 / 규칙 위반 시 <strong>패배</strong>
+    • 두 글자 이상의 한국어 단어만 가능<br>
+    • AI가 단어를 못 찾으면 <strong>승리!</strong>
   </div>
   <button class="start-btn" onclick="startGame()">▶ 게임 시작</button>
 </div>
 
-<!-- Game Screen -->
 <div id="gameScreen">
   <div class="status-bar">
-    <span class="turn-label" id="turnLabel">내 차례</span>
+    <span class="turn-label" id="turnLabel"><span class="turn-player">내 차례</span></span>
     <span class="score-display">단어 <span id="wordCount">0</span>개</span>
   </div>
-  <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+  <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
   <div class="chat-area" id="chatArea"></div>
   <div class="input-area">
-    <input class="word-input" id="wordInput" type="text" placeholder="단어를 입력하세요..." maxlength="20" autocomplete="off" autocorrect="off">
+    <input class="word-input" id="wordInput" type="text" placeholder="단어 입력..." maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
     <button class="send-btn" id="sendBtn" onclick="submitWord()">입력</button>
   </div>
   <div class="hint-text" id="hintText"></div>
 </div>
 
-<!-- Result Screen -->
 <div id="resultScreen">
   <div class="result-icon" id="resultIcon"></div>
   <div class="result-title" id="resultTitle"></div>
@@ -264,70 +227,503 @@
 </div>
 
 <script>
-// ===== 단어 데이터베이스 =====
-const WORDS = [
-  "가구","가나","가능","가방","가사","가수","가스","가슴","가을","가입","가정","가족","가지","각도","각자","간격","간식","간장","갈등","갈비","갈색","감기","감동","감사","감자","강물","강아지","강의","강점","개구리","개념","개인","개학","거리","거실","건강","건물","건설","건조","검색","게임","결과","결론","결심","결정","경기","경복궁","경쟁","경제","경찰","계단","계란","계절","계획","고구마","고기","고민","고양이","고장","고추","고향","공감","공기","공부","공연","공원","공장","공책","과거","과목","과자","과일","관계","관심","광고","교실","교육","교통","구름","국가","국물","국민","국수","국어","군인","귤","그림","근처","금요일","기간","기계","기념","기다림","기도","기록","기억","기온","기초","기회","긴장","김치","나라","나무","나물","나비","낙엽","날씨","남자","낮잠","내용","냉면","냉장고","노래","노력","노을","농구","농사","누나","눈물","눈사람","다음","달걀","달력","달리기","담배","대답","대학","대화","도서관","도시","도움","도전","도토리","독서","동물","동생","동아리","동화","두부","드라마","등산","디저트","라디오","라면","레몬","마늘","마당","마라톤","마음","마을","마지막","만화","말하기","매일","맥주","메모","명절","모자","목요일","목표","문어","문자","문장","문화","물고기","미래","미소","미술","바나나","바다","바람","바위","반찬","발걸음","발표","밤하늘","방법","방학","배경","배달","배드민턴","버스","버튼","베개","변화","별자리","병원","보름달","복숭아","부모","부엌","불꽃","불빛","비교","비밀","비빔밥","빛깔","사과","사랑","사막","사진","사탕","산책","삼겹살","상상","상처","새벽","생각","생선","샤워","서점","선물","선생님","성공","세계","소개","소나기","소금","소방관","소설","소파","속도","솔직","수박","수영","수저","숙제","숲속","스마트폰","스포츠","시간","시계","시작","시험","식당","신발","실수","실패","심장","아이스크림","아파트","알람","야채","어린이","어머니","어버이","여름","여행","연구","연습","열쇠","영어","영화","오렌지","오리","오이","온도","외국","요구","요리","우산","우유","우주","우체국","운동","운동장","원숭이","월요일","위험","유리","은하수","음악","음식","의자","이야기","이해","인사","일기","일요일","자동차","자연","자유","자전거","장갑","장난감","저녁","전기","전화","정답","정리","조용","주말","주스","준비","지구","지식","지하철","진심","집중","찬물","참고","창문","채소","책상","철학","청소","초등학교","초콜릿","추억","축구","출발","출석","춤","취미","친구","칠판","침대","컴퓨터","퀴즈","키보드","타조","태양","토끼","특별","파란색","파리","팝콘","편지","평화","포도","표현","풀밭","피아노","학교","학생","한국","할머니","할아버지","해바라기","행복","향기","현실","형제","호기심","호랑이","화분","화요일","환경","회사","후회","휴식","희망",
-  "가격","가구점","가로등","가스레인지","감기약","강강술래","개나리","거울","건강검진","결혼식","경고","고등학교","고민거리","공공장소","과학","광장","교과서","구경","굴비","귀걸이","그네","기린","기상청","길고양이","나침반","낙지","날개","납득","노력가","놀이터","누룽지","다람쥐","달리기","닭갈비","대나무","댄스","더위","도끼","돌고래","두더지","딸기","라디오","레스토랑","로봇","마라탕","마무리","마음씨","만두","말벌","망설임","매미","머리카락","목걸이","목욕","무지개","미역국","박수","박쥐","반딧불","발목","배려","버섯","벌레","병아리","보물","봉사","불가사리","붕어빵","비빔국수","빙수","사슴","사자","상어","새싹","생물","서랍","선풍기","소풍","손바닥","수달","스케이트","시냇물","신호등","실내","심부름","아기","아코디언","안경","알아보기","애완동물","약속","양말","어항","여우","연필","열기구","예의","오카리나","옥수수","와플","외모","요가","용기","우렁찬","원피스","월급","유치원","음료수","이불","인내","일몰","자판기","장마","재미","전갈","점심","제비","조개","주의","중학교","지렁이","진달래","짜장면","찜질방","참외","창고","천문대","체육관","초가집","추진","친절","침실","탱고","테니스","토마토","트럭","파전","팔씨름","팽이","편식","평일","포옹","표범","풍선","피로","하늘","한라산","할인","해산물","행진","헬멧","현관","호두","화살","환경오염","효도",
-  "가능성","간호사","강강수월래","개성","거북이","건축물","겨울방학","경험","고집","공놀이","과학관","교환","구도심","국화","그림책","기초체력","나눔","낙관","납량","노을빛","뇌과학","다양성","달팽이","당근","대기업","도라지","동기부여","두근거림","만족","만화책","말장난","메아리","면접","명함","모험","목소리","몸무게","미역","바이올린","발명","방송국","배움","백합","버드나무","변명","별빛","보고서","봄바람","부드러움","불안감","비전","사막여우","상상력","서랍장","성실","세탁기","소망","손글씨","수련","숨바꼭질","스카프","시인","신뢰","실력","아름다움","안도감","양심","어울림","연대","영광","오해","완성","외로움","요청","우정","원동력","위로","유머","은행나무","의욕","이정표","인내심","일상","자긍심","장점","재능","전통","정성","조화","중요성","지혜","진로","집착","차이","참을성","창의력","체험","추진력","친밀감","탐구","통찰","판단력","표정","풍경","하모니","한계","해결","행운","협력","화합","회복","흥미"
-];
+// ── AI용 대형 단어 DB (첫 글자 → 단어 목록) ──────────────────────────────
+// 플레이어: 첫 글자 맞고 + 두 글자 이상 + 미사용이면 모두 허용
+// AI: 아래 DB에서 후보 검색
+const AI_DB = {
+  "가":["가구","가나","가능","가방","가사","가수","가스","가슴","가을","가입","가정","가족","가지","가격","가나다","가로등","가마솥","가무","가사도우미","가시","가야금","가위","가을바람","가재","가죽","가창","가출"],
+  "강":["강물","강아지","강의","강점","강변","강산","강수","강타","강풍"],
+  "개":["개구리","개념","개인","개학","개나리","개미","개방","개성","개인정보","개찰구"],
+  "거":["거리","거실","거짓","거북이","거울","거품"],
+  "건":["건강","건물","건설","건조","건강검진","건어물","건의"],
+  "검":["검색","검정","검토","검사"],
+  "게":["게임","게시판"],
+  "결":["결과","결론","결심","결정","결혼","결승"],
+  "경":["경기","경복궁","경쟁","경제","경찰","경험","경고","경계","경력","경비","경우"],
+  "계":["계단","계란","계절","계획","계산","계속","계곡"],
+  "고":["고구마","고기","고민","고양이","고장","고추","고향","고등어","고래","고령","고사리","고속도로","고집","고추장"],
+  "공":["공감","공기","공부","공연","공원","공장","공책","공룡","공무원","공식","공주","공중전화","공짜","공항"],
+  "과":["과거","과목","과자","과일","과학","과제","과외","과장"],
+  "관":["관계","관심","관광","관리","관찰"],
+  "교":["교실","교육","교통","교과서","교환","교회"],
+  "구":["구름","구경","구두","구멍","구역","구조","구청"],
+  "국":["국가","국물","국민","국수","국어","국화","국경","국제"],
+  "그":["그림","그늘","그네","그릇","그리움"],
+  "근":["근처","근무","근육","근거"],
+  "금":["금요일","금메달","금지","금반지"],
+  "기":["기간","기계","기념","기다림","기도","기록","기억","기온","기초","기회","기린","기상","기차","기초","기침"],
+  "긴":["긴장","긴소매"],
+  "김":["김치","김밥","김치찌개"],
+  "나":["나라","나무","나물","나비","나침반","나눔"],
+  "낙":["낙엽","낙관","낙지"],
+  "날":["날씨","날개","날카로움"],
+  "남":["남자","남산","남해"],
+  "낮":["낮잠","낮달"],
+  "냉":["냉면","냉장고","냉수"],
+  "노":["노래","노력","노을","노트","노란색","노인"],
+  "농":["농구","농사","농촌"],
+  "누":["누나","누리호"],
+  "눈":["눈물","눈사람","눈꽃"],
+  "다":["다음","다람쥐","다양성","다이아몬드"],
+  "달":["달걀","달력","달리기","달빛","달팽이"],
+  "닭":["닭갈비","닭볶음"],
+  "대":["대답","대학","대화","대나무","대기","대문","대왕","대장"],
+  "도":["도서관","도시","도움","도전","도토리","도깨비","도끼","도라지","도마뱀","도마"],
+  "독":["독서","독립","독도"],
+  "동":["동물","동생","동아리","동화","동네","동굴","동산"],
+  "두":["두부","두더지","두꺼비","두근거림"],
+  "드":["드라마","드래곤"],
+  "등":["등산","등불","등대"],
+  "딸":["딸기","딸꾹질"],
+  "라":["라디오","라면"],
+  "레":["레몬","레스토랑"],
+  "로":["로봇","로켓","로션"],
+  "마":["마늘","마당","마라톤","마음","마을","마지막","마라탕","마무리"],
+  "만":["만화","만두","만족","만남"],
+  "말":["말하기","말벌","말씀"],
+  "매":["매일","매실"],
+  "맥":["맥주","맥락"],
+  "메":["메모","메시지","메아리"],
+  "명":["명절","명함","명품"],
+  "모":["모자","모험","모래","모기","모양","모임"],
+  "목":["목요일","목표","목소리","목걸이","목욕"],
+  "문":["문어","문자","문장","문화","문제","문어발"],
+  "물":["물고기","물병","물감"],
+  "미":["미래","미소","미술","미역","미역국","미용","미용실"],
+  "바":["바나나","바다","바람","바위","바이올린","바닷가"],
+  "반":["반찬","반달","반지","반응"],
+  "발":["발걸음","발표","발목","발명"],
+  "밤":["밤하늘","밤나무"],
+  "방":["방법","방학","방송","방향","방탄소년단"],
+  "배":["배경","배달","배드민턴","배움","배려","배추"],
+  "버":["버스","버섯","버드나무","버튼"],
+  "베":["베개","베란다"],
+  "변":["변화","변명","변기"],
+  "별":["별자리","별빛","별명"],
+  "병":["병원","병아리"],
+  "보":["보름달","복숭아","보물","보고서","보조","보트"],
+  "봄":["봄바람","봄꽃"],
+  "봉":["봉사","봉투"],
+  "부":["부모","부엌","부드러움","부채","부탁"],
+  "불":["불꽃","불빛","불고기","불안","불가사리"],
+  "비":["비교","비밀","비빔밥","비빔국수","비전","비행기"],
+  "빛":["빛깔","빛나리"],
+  "사":["사과","사랑","사막","사진","사탕","사슴","사자","사계절","사물"],
+  "산":["산책","산호","산나물"],
+  "삼":["삼겹살","삼계탕"],
+  "상":["상상","상처","상어","상인","상징"],
+  "새":["새벽","새싹","새해"],
+  "생":["생각","생선","생물","생일"],
+  "서":["서점","서랍","서울","서클"],
+  "선":["선물","선생님","선풍기","선수"],
+  "성":["성공","성격","성실"],
+  "세":["세계","세탁기","세배"],
+  "소":["소개","소나기","소금","소방관","소설","소파","소풍","소시지","소원"],
+  "속":["속도","속마음"],
+  "솔":["솔직","솔방울"],
+  "수":["수박","수영","수저","수달","수련","수면","수업","수첩"],
+  "숙":["숙제","숙소"],
+  "숲":["숲속","숲길"],
+  "스":["스마트폰","스포츠","스케이트","스카프"],
+  "시":["시간","시계","시작","시험","시인","시냇물","시장"],
+  "식":["식당","식물","식빵","식초"],
+  "신":["신발","신호등","신뢰","신비"],
+  "실":["실수","실패","실력","실내"],
+  "심":["심장","심부름"],
+  "아":["아이스크림","아파트","아기","아름다움","아코디언","아침"],
+  "알":["알람","알아보기"],
+  "애":["애완동물","애정"],
+  "야":["야채","야구","야경"],
+  "어":["어린이","어머니","어버이","어항","어울림"],
+  "여":["여름","여행","여우","여기","여자"],
+  "연":["연구","연습","연필","연대","연락"],
+  "열":["열쇠","열기구","열매"],
+  "영":["영어","영화","영광"],
+  "오":["오렌지","오리","오이","오해","오카리나","오전","오후"],
+  "온":["온도","온돌"],
+  "외":["외국","외로움"],
+  "요":["요구","요리","요가","요청"],
+  "우":["우산","우유","우주","우정","우체국","우렁찬"],
+  "운":["운동","운동장","운동화"],
+  "원":["원숭이","원피스","원동력"],
+  "월":["월요일","월급"],
+  "위":["위험","위로","위로금"],
+  "유":["유리","유치원","유머"],
+  "은":["은하수","은행","은행나무"],
+  "음":["음악","음식","음료수"],
+  "의":["의자","의욕","의문"],
+  "이":["이야기","이해","이불","이정표"],
+  "인":["인사","인내","인내심","인생"],
+  "일":["일기","일요일","일몰","일상"],
+  "자":["자동차","자연","자유","자전거","자긍심","자판기"],
+  "장":["장갑","장난감","장마","장점"],
+  "저":["저녁","저금"],
+  "전":["전기","전화","전통"],
+  "정":["정답","정리","정성","정직"],
+  "조":["조용","조개","조화"],
+  "주":["주말","주스","주의","주전자"],
+  "준":["준비"],
+  "지":["지구","지식","지하철","지혜","지렁이","지붕"],
+  "진":["진심","진달래","진로"],
+  "집":["집중","집착"],
+  "짜":["짜장면","짜릿함"],
+  "찜":["찜질방","찜닭"],
+  "참":["참고","참외","참을성"],
+  "창":["창문","창고","창의력"],
+  "채":["채소","채광"],
+  "책":["책상","책방"],
+  "철":["철학","철새"],
+  "청":["청소","청춘","청바지"],
+  "초":["초등학교","초콜릿","초가집","초록","초밥","초승달"],
+  "추":["추억","추진","추진력"],
+  "축":["축구","축제"],
+  "출":["출발","출석"],
+  "춤":["춤사위"],
+  "취":["취미","취업"],
+  "친":["친구","친절","친밀감"],
+  "침":["침대","침실"],
+  "컴":["컴퓨터"],
+  "키":["키보드","키링"],
+  "탑":["탑승","탑클래스"],
+  "태":["태양","태도","태권도"],
+  "토":["토끼","토마토","토요일"],
+  "특":["특별","특기"],
+  "파":["파란색","파리","파전","파도"],
+  "팝":["팝콘","팝송"],
+  "편":["편지","편식","편의점"],
+  "평":["평화","평일","평균"],
+  "포":["포도","포옹","포켓"],
+  "표":["표현","표범"],
+  "풀":["풀밭","풀벌레"],
+  "풍":["풍선","풍경"],
+  "피":["피아노","피로","피자"],
+  "학":["학교","학생"],
+  "한":["한국","한라산","한복","한강"],
+  "할":["할머니","할아버지","할인"],
+  "해":["해바라기","해산물","해변","해결","해외"],
+  "행":["행복","행진","행운"],
+  "향":["향기","향수"],
+  "현":["현실","현관"],
+  "형":["형제","형광"],
+  "호":["호기심","호랑이","호두","호수"],
+  "화":["화분","화요일","화살","화장품"],
+  "환":["환경","환경오염","환절기"],
+  "회":["회사","회복","회의"],
+  "후":["후회","후식"],
+  "휴":["휴식","휴가"],
+  "희":["희망","희극"],
+  "봇":["봇물"],
+  "롯":["롯데"],
+  "릿":["릿지"],
+  "삿":["삿포로"],
+  "팟":["팟캐스트"],
+  "텃":["텃밭"],
+  "멋":["멋쟁이"],
+  "맛":["맛집","맛깔","맛보기"],
+  "맞":["맞춤"],
+  "낮":["낮잠","낮달"],
+  "밭":["밭농사"],
+  "밖":["밖이"],
+  "닻":["닻별"],
+  "빗":["빗물","빗자루"],
+  "빚":["빚쟁이"],
+  "빛":["빛나다"],
+  "꽃":["꽃게","꽃잎","꽃다발","꽃길"],
+  "꽤":["꽤나"],
+  "곳":["곳곳"],
+  "솟":["솟대"],
+  "못":["못자리"],
+  "봇":["봇물"],
+  "싹":["싹둑","싹쓸이"],
+  "돛":["돛단배"],
+  "뚝":["뚝배기"],
+  "닥":["닥나무"],
+  "딱":["딱따구리","딱지"],
+  "떡":["떡볶이","떡국"],
+  "떡":["떡방아"],
+  "막":["막내","막걸리","막대"],
+  "낚":["낚시"],
+  "각":["각도","각자"],
+  "간":["간격","간식","간장","간호사"],
+  "갈":["갈등","갈비","갈색","갈매기"],
+  "감":["감기","감동","감사","감자","감귤"],
+  "갑":["갑옷","갑자기"],
+  "값":["값어치"],
+  "강":["강물","강아지","강의","강점"],
+  "겨":["겨울","겨울방학","겨자"],
+  "격":["격려","격투"],
+  "견":["견습","견우직녀"],
+  "결":["결과","결론","결심"],
+  "겸":["겸손","겸손함"],
+  "고":["고구마","고기","고민"],
+  "곰":["곰탕","곰인형","곰팡이"],
+  "구":["구름","구경","구두"],
+  "귀":["귀걸이","귀신","귀농"],
+  "그":["그림","그늘","그네"],
+  "금":["금요일","금메달","금붕어"],
+  "급":["급식","급행"],
+  "기":["기간","기계","기념"],
+  "낙":["낙엽","낙관","낙지"],
+  "난":["난로","난초","난방"],
+  "납":["납득","납품"],
+  "낭":["낭만","낭비"],
+  "넋":["넋두리"],
+  "넘":["넘치다"],
+  "노":["노래","노력","노을"],
+  "녹":["녹차","녹음","녹두"],
+  "높":["높이뛰기"],
+  "누":["누나","누룽지"],
+  "눈":["눈물","눈사람"],
+  "늑":["늑대"],
+  "능":["능력","능숙"],
+  "다":["다음","다람쥐"],
+  "담":["담배","담요","담장"],
+  "당":["당근","당신","당연"],
+  "닭":["닭갈비","닭볶음"],
+  "대":["대답","대학","대화"],
+  "댄":["댄스"],
+  "더":["더위","더하기"],
+  "덮":["덮밥","덮개"],
+  "도":["도서관","도시","도움"],
+  "독":["독서","독립","독도"],
+  "돌":["돌고래","돌담","돌멩이"],
+  "동":["동물","동생","동아리"],
+  "돼":["돼지","돼지갈비"],
+  "두":["두부","두더지","두꺼비"],
+  "둥":["둥지","둥글기"],
+  "뒤":["뒤란","뒤집기"],
+  "드":["드라마","드래곤"],
+  "들":["들판","들꽃"],
+  "등":["등산","등불","등대"],
+  "딱":["딱따구리","딱지"],
+  "땅":["땅콩","땅굴","땅거미"],
+  "떡":["떡볶이","떡국"],
+  "뜨":["뜨개질","뜨거움"],
+  "라":["라디오","라면"],
+  "람":["람쥐","람보"],
+  "랑":["랑데부"],
+  "레":["레몬","레스토랑"],
+  "롤":["롤케이크","롤모델"],
+  "루":["루돌프","루틴"],
+  "마":["마늘","마당","마라톤"],
+  "막":["막내","막걸리"],
+  "만":["만화","만두","만족"],
+  "말":["말하기","말벌"],
+  "맑":["맑음","맑은날"],
+  "멋":["멋쟁이","멋짐"],
+  "몸":["몸무게","몸통"],
+  "무":["무지개","무대","무명","무당벌레","무릎"],
+  "물":["물고기","물병","물감"],
+  "뭉":["뭉게구름"],
+  "미":["미래","미소","미술"],
+  "민":["민들레","민속","민화"],
+  "밀":["밀가루","밀짚","밀물"],
+  "박":["박수","박쥐","박하사탕"],
+  "반":["반찬","반달","반지"],
+  "발":["발걸음","발표","발명"],
+  "밥":["밥솥","밥맛","밥상"],
+  "배":["배경","배달","배드민턴"],
+  "백":["백합","백조","백설공주"],
+  "버":["버스","버섯","버드나무"],
+  "벌":["벌레","벌꿀","벌판"],
+  "봄":["봄바람","봄꽃"],
+  "불":["불꽃","불빛","불고기"],
+  "붕":["붕어빵","붕어"],
+  "비":["비교","비밀","비빔밥"],
+  "빙":["빙수","빙판"],
+  "사":["사과","사랑","사막"],
+  "삶":["삶터","삶의 의미"],
+  "상":["상상","상처","상어"],
+  "색":["색깔","색종이","색연필"],
+  "샘":["샘터","샘물"],
+  "샤":["샤워","샤프"],
+  "생":["생각","생선","생물"],
+  "서":["서점","서랍","서울"],
+  "석":["석양","석류","석탑"],
+  "선":["선물","선생님","선풍기"],
+  "섬":["섬나라","섬마을"],
+  "성":["성공","성격","성실"],
+  "손":["손바닥","손글씨","손수건"],
+  "솔":["솔직","솔방울"],
+  "수":["수박","수영","수저"],
+  "숙":["숙제","숙소"],
+  "스":["스마트폰","스포츠"],
+  "슬":["슬픔","슬기"],
+  "습":["습관","습도"],
+  "시":["시간","시계","시작"],
+  "식":["식당","식물"],
+  "신":["신발","신호등","신뢰"],
+  "실":["실수","실패","실력"],
+  "심":["심장","심부름"],
+  "싸":["싸움","싸개"],
+  "싹":["싹둑","싹쓸이"],
+  "썰":["썰매","썰렁"],
+  "아":["아이스크림","아파트","아기"],
+  "악":["악기","악어","악몽"],
+  "안":["안경","안도감","안녕"],
+  "알":["알람","알아보기","알록달록"],
+  "암":["암벽","암호"],
+  "앞":["앞날","앞마당"],
+  "야":["야채","야구","야경"],
+  "양":["양말","양심","양고기"],
+  "어":["어린이","어머니","어버이"],
+  "엄":["엄마","엄청"],
+  "여":["여름","여행","여우"],
+  "연":["연구","연습","연필"],
+  "열":["열쇠","열기구","열매"],
+  "영":["영어","영화","영광"],
+  "오":["오렌지","오리","오이"],
+  "온":["온도","온돌","온기"],
+  "올":["올빼미","올림픽"],
+  "옷":["옷장","옷감"],
+  "요":["요구","요리","요가"],
+  "용":["용기","용돈","용궁"],
+  "우":["우산","우유","우주"],
+  "운":["운동","운동장"],
+  "울":["울음","울타리"],
+  "원":["원숭이","원피스"],
+  "위":["위험","위로"],
+  "유":["유리","유치원","유머"],
+  "은":["은하수","은행"],
+  "음":["음악","음식"],
+  "의":["의자","의욕"],
+  "이":["이야기","이해","이불"],
+  "인":["인사","인내","인생"],
+  "일":["일기","일요일","일몰"],
+  "자":["자동차","자연","자유"],
+  "작":["작품","작가","작은"],
+  "잠":["잠자리","잠옷","잠수"],
+  "장":["장갑","장난감","장마"],
+  "재":["재미","재능","재활용"],
+  "저":["저녁","저금","저울"],
+  "전":["전기","전화","전통"],
+  "점":["점심","점수","점프"],
+  "제":["제비","제주도","제빵"],
+  "조":["조용","조개","조화"],
+  "종":["종이","종이접기","종달새"],
+  "주":["주말","주스","주의"],
+  "죽":["죽음","죽순"],
+  "줄":["줄넘기","줄다리기"],
+  "중":["중학교","중심","중요성"],
+  "지":["지구","지식","지하철"],
+  "진":["진심","진달래","진로"],
+  "집":["집중","집착"],
+  "쪽":["쪽지","쪽배"],
+  "참":["참고","참외"],
+  "창":["창문","창고","창의력"],
+  "채":["채소","채광"],
+  "천":["천문대","천둥","천장"],
+  "철":["철학","철새"],
+  "청":["청소","청춘"],
+  "초":["초등학교","초콜릿","초밥"],
+  "추":["추억","추진력","추위"],
+  "축":["축구","축제"],
+  "충":["충전","충성"],
+  "취":["취미","취업"],
+  "친":["친구","친절"],
+  "침":["침대","침실"],
+  "컵":["컵케이크","컵라면"],
+  "케":["케이크","케이블"],
+  "코":["코끼리","코알라","코스모스"],
+  "콩":["콩나물","콩밥"],
+  "쿠":["쿠키","쿠션"],
+  "키":["키보드","키링","키위"],
+  "탁":["탁자","탁구"],
+  "태":["태양","태도","태권도"],
+  "터":["터미널","터널","텃밭"],
+  "토":["토끼","토마토","토요일"],
+  "통":["통나무","통조림","통신"],
+  "튤":["튤립"],
+  "파":["파란색","파리","파전"],
+  "판":["판단력","판매"],
+  "팔":["팔씨름","팔꿈치"],
+  "팽":["팽이","팽팽"],
+  "편":["편지","편식","편의점"],
+  "평":["평화","평일"],
+  "폭":["폭포","폭발"],
+  "포":["포도","포옹"],
+  "표":["표현","표범","표지판"],
+  "풀":["풀밭","풀벌레"],
+  "풍":["풍선","풍경"],
+  "피":["피아노","피로","피자"],
+  "필":["필통","필요"],
+  "하":["하늘","하모니","하마"],
+  "학":["학교","학생"],
+  "한":["한국","한강","한복"],
+  "할":["할머니","할아버지"],
+  "함":["함박눈","함박웃음"],
+  "해":["해바라기","해산물","해변"],
+  "행":["행복","행진","행운"],
+  "향":["향기","향수"],
+  "허":["허리","허브"],
+  "헬":["헬멧","헬리콥터"],
+  "현":["현실","현관","현명"],
+  "호":["호기심","호랑이","호두"],
+  "홍":["홍차","홍시","홍합"],
+  "화":["화분","화요일","화살"],
+  "환":["환경","환절기"],
+  "회":["회사","회복","회의"],
+  "후":["후회","후식","후추"],
+  "휴":["휴식","휴가","휴대폰"],
+  "희":["희망","희극"],
+  "힘":["힘차다","힘내기"]
+};
 
-// 단어 -> 단어 매핑 (마지막 글자 기준)
-let wordMap = {};
+// 두음법칙 처리 (ㄹ→ㄴ, ㄴ→이)
+function applyDueum(syllable) {
+  const map = {"라":"나","래":"내","랑":"낭","런":"넌","레":"네","려":"녀","력":"역","렴":"염","령":"영","례":"예","로":"노","론":"논","뢰":"뇌","루":"누","류":"유","률":"율","름":"늠","릉":"능","리":"이","린":"인","림":"임","립":"입"};
+  return map[syllable] || syllable;
+}
+
 let usedWords = new Set();
 let currentLast = '';
 let timerInterval = null;
-let timeLeft = 10;
+let timeLeft = 15;
 let wordCount = 0;
 let isPlayerTurn = true;
 let gameActive = false;
 
-function buildWordMap() {
-  wordMap = {};
-  WORDS.forEach(w => {
-    const first = w[0];
-    if (!wordMap[first]) wordMap[first] = [];
-    wordMap[first].push(w);
-  });
-}
-
 function startGame() {
-  buildWordMap();
   usedWords = new Set();
   currentLast = '';
   wordCount = 0;
   isPlayerTurn = true;
-  gameActive = true;
+  gameActive = false; // 잠깐 false로
 
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('resultScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
   document.getElementById('chatArea').innerHTML = '';
   document.getElementById('wordCount').textContent = '0';
+  document.getElementById('timerBar').style.width = '100%';
 
-  // 시작 단어를 AI가 먼저 제시
-  const startWords = WORDS.filter(w => w.length >= 2);
-  const firstWord = startWords[Math.floor(Math.random() * startWords.length)];
+  // AI가 첫 단어 제시
+  const pool = ["가방","나무","다음","라면","마음","바다","사랑","아이","자유","하늘","고양이","동물","모험","우주","행복","노래","미래","여행","지구"];
+  const firstWord = pool[Math.floor(Math.random() * pool.length)];
   usedWords.add(firstWord);
   currentLast = firstWord[firstWord.length - 1];
   wordCount++;
 
   addMessage('ai', firstWord);
-  updateHint();
-  startTimer();
+  updateUI();
+
+  // gameActive는 약간 딜레이 후 true (AI 첫 단어 표시 후)
+  setTimeout(() => {
+    gameActive = true;
+    startTimer();
+    document.getElementById('wordInput').focus();
+  }, 300);
 }
 
 function addMessage(who, text) {
   const chatArea = document.getElementById('chatArea');
   const div = document.createElement('div');
   div.className = `msg ${who}`;
-
   if (who === 'system') {
     div.innerHTML = `<div class="msg-bubble">${text}</div>`;
   } else {
-    const name = who === 'player' ? '나' : 'AI';
-    div.innerHTML = `<div class="msg-name">${name}</div><div class="msg-bubble">${text}</div>`;
+    div.innerHTML = `<div class="msg-name">${who === 'player' ? '나' : 'AI'}</div><div class="msg-bubble">${text}</div>`;
   }
-
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -347,24 +743,22 @@ function removeThinking() {
   if (el) el.remove();
 }
 
-function updateHint() {
+function updateUI() {
+  document.getElementById('turnLabel').innerHTML = isPlayerTurn
+    ? '<span class="turn-player">내 차례</span>'
+    : '<span class="turn-ai">AI 차례</span>';
   const hint = document.getElementById('hintText');
-  if (!gameActive) return;
-  if (isPlayerTurn) {
+  if (isPlayerTurn && currentLast) {
     hint.innerHTML = `"<span class="required">${currentLast}</span>"(으)로 시작하는 단어를 입력하세요`;
   } else {
     hint.innerHTML = 'AI가 생각 중...';
   }
-  document.getElementById('turnLabel').innerHTML = isPlayerTurn
-    ? '<span class="turn-player">내 차례</span>'
-    : '<span class="turn-ai">AI 차례</span>';
 }
 
 function startTimer() {
   clearInterval(timerInterval);
-  timeLeft = 10;
+  timeLeft = 15;
   updateTimerBar();
-
   timerInterval = setInterval(() => {
     timeLeft -= 0.1;
     updateTimerBar();
@@ -377,9 +771,13 @@ function startTimer() {
 
 function updateTimerBar() {
   const bar = document.getElementById('timerBar');
-  const pct = Math.max(0, (timeLeft / 10) * 100);
+  const pct = Math.max(0, (timeLeft / 15) * 100);
   bar.style.width = pct + '%';
-  bar.classList.toggle('urgent', timeLeft < 4);
+  bar.classList.toggle('urgent', timeLeft < 5);
+}
+
+function isKorean(str) {
+  return /^[가-힣]+$/.test(str);
 }
 
 function submitWord() {
@@ -387,31 +785,37 @@ function submitWord() {
   const input = document.getElementById('wordInput');
   const word = input.value.trim();
   input.value = '';
-
   if (!word) return;
 
-  // 첫 글자 확인
-  if (currentLast && word[0] !== currentLast) {
+  // 한국어 체크
+  if (!isKorean(word)) {
     shakeInput();
-    addMessage('system', `❌ "${currentLast}"로 시작해야 해요!`);
+    addMessage('system', '❌ 한국어만 입력할 수 있어요!');
     return;
   }
-
-  // 이미 사용한 단어
+  // 두 글자 이상
+  if (word.length < 2) {
+    shakeInput();
+    addMessage('system', '❌ 두 글자 이상 입력하세요!');
+    return;
+  }
+  // 첫 글자 확인 (두음법칙 허용)
+  if (currentLast) {
+    const alt = applyDueum(currentLast);
+    if (word[0] !== currentLast && word[0] !== alt) {
+      shakeInput();
+      addMessage('system', `❌ "${currentLast}"로 시작하는 단어를 입력하세요!`);
+      return;
+    }
+  }
+  // 중복
   if (usedWords.has(word)) {
     shakeInput();
     addMessage('system', '❌ 이미 사용한 단어예요!');
     return;
   }
 
-  // 단어 DB 확인
-  if (!WORDS.includes(word)) {
-    shakeInput();
-    addMessage('system', '❌ 알 수 없는 단어예요!');
-    return;
-  }
-
-  // 성공
+  // ✅ 유효
   clearInterval(timerInterval);
   usedWords.add(word);
   currentLast = word[word.length - 1];
@@ -419,36 +823,25 @@ function submitWord() {
   document.getElementById('wordCount').textContent = wordCount;
   addMessage('player', word);
 
-  // AI 차례
   isPlayerTurn = false;
   document.getElementById('wordInput').disabled = true;
   document.getElementById('sendBtn').disabled = true;
-  updateHint();
+  updateUI();
 
+  // AI 턴
   setTimeout(() => {
     showThinking();
-    const thinkTime = 800 + Math.random() * 1200;
-    setTimeout(() => {
-      removeThinking();
-      aiTurn();
-    }, thinkTime);
-  }, 300);
+    setTimeout(() => { removeThinking(); aiTurn(); }, 800 + Math.random() * 1000);
+  }, 200);
 }
 
 function aiTurn() {
-  // 현재 글자로 시작하는 미사용 단어 찾기
-  const candidates = (wordMap[currentLast] || []).filter(w => !usedWords.has(w) && w.length >= 2);
-
+  const candidates = getAICandidates(currentLast);
   if (candidates.length === 0) {
-    // AI 패배
     endGame(true, 'AI가 단어를 찾지 못했어요!');
     return;
   }
-
-  // 단어 선택 (짧은 것 우선으로 약간의 전략)
-  candidates.sort((a, b) => a.length - b.length);
-  const pick = candidates[Math.floor(Math.random() * Math.min(3, candidates.length))];
-
+  const pick = candidates[Math.floor(Math.random() * Math.min(5, candidates.length))];
   usedWords.add(pick);
   currentLast = pick[pick.length - 1];
   wordCount++;
@@ -458,9 +851,16 @@ function aiTurn() {
   isPlayerTurn = true;
   document.getElementById('wordInput').disabled = false;
   document.getElementById('sendBtn').disabled = false;
-  updateHint();
+  updateUI();
   startTimer();
   document.getElementById('wordInput').focus();
+}
+
+function getAICandidates(syllable) {
+  const alt = applyDueum(syllable);
+  const set1 = (AI_DB[syllable] || []).filter(w => !usedWords.has(w));
+  const set2 = alt !== syllable ? (AI_DB[alt] || []).filter(w => !usedWords.has(w)) : [];
+  return [...set1, ...set2];
 }
 
 function shakeInput() {
@@ -477,13 +877,12 @@ function endGame(win, reason) {
   document.getElementById('sendBtn').disabled = true;
 
   const best = parseInt(localStorage.getItem('wordchain_best') || '0');
-  if (wordCount > best) localStorage.setItem('wordchain_best', wordCount);
   const newBest = Math.max(best, wordCount);
+  localStorage.setItem('wordchain_best', newBest);
 
   setTimeout(() => {
     document.getElementById('gameScreen').style.display = 'none';
     document.getElementById('resultScreen').style.display = 'block';
-
     document.getElementById('resultIcon').textContent = win ? '🏆' : '😵';
     const title = document.getElementById('resultTitle');
     title.textContent = win ? '승리!' : '패배...';
@@ -491,10 +890,9 @@ function endGame(win, reason) {
     document.getElementById('resultDesc').textContent = reason;
     document.getElementById('resultScore').textContent = `주고받은 단어: ${wordCount}개`;
     document.getElementById('resultBest').textContent = `최고 기록: ${newBest}개${wordCount >= newBest && wordCount > 0 ? ' 🎉 신기록!' : ''}`;
-  }, 800);
+  }, 500);
 }
 
-// 엔터키
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('wordInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') submitWord();

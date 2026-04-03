@@ -2,172 +2,129 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>탑 쌓기 - 킬링타임천국</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+  html, body {
     background: #0a0a15;
     color: #e2e8f0;
     font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 100%; height: 100%;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
+  /* ── Home Screen ─────────────────────────── */
   #homeScreen {
-    text-align: center;
-    padding: 30px 20px;
-    max-width: 380px;
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 30px 20px; text-align: center;
+    z-index: 100; background: #0a0a15;
   }
+  .home-emoji { font-size: 3.5rem; margin-bottom: 12px; }
   h1 {
-    font-size: 2.2rem;
-    font-weight: 900;
+    font-size: 2.2rem; font-weight: 900;
     background: linear-gradient(135deg, #a855f7, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     margin-bottom: 6px;
   }
   .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 28px; }
   .how-to {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 24px;
-    text-align: left;
-    font-size: 0.88rem;
-    color: #94a3b8;
-    line-height: 1.9;
+    border-radius: 16px; padding: 18px 20px;
+    margin-bottom: 28px; text-align: left;
+    font-size: 0.88rem; color: #94a3b8; line-height: 1.9;
+    max-width: 360px; width: 100%;
   }
   .how-to strong { color: #c084fc; }
   .start-btn {
-    width: 100%;
-    padding: 16px;
+    max-width: 360px; width: 100%; padding: 16px;
     background: linear-gradient(135deg, #a855f7, #f472b6);
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
+    border: none; border-radius: 14px; color: #fff;
+    font-size: 1.1rem; font-weight: 700; cursor: pointer;
     box-shadow: 0 8px 24px rgba(168,85,247,0.4);
-    transition: transform 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s;
   }
   .start-btn:hover { transform: translateY(-3px); }
+  .best-home { color: #fbbf24; font-size: 0.88rem; margin-top: 14px; }
 
-  /* Game UI */
-  #gameUI {
-    display: none;
-    position: relative;
-    width: 100vw;
-    max-width: 420px;
-    height: 100vh;
-    max-height: 700px;
+  /* ── Game Canvas ─────────────────────────── */
+  #gameCanvas {
+    position: fixed; inset: 0;
+    display: none; cursor: pointer;
   }
 
-  .game-hud {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px 0;
-    z-index: 10;
-    pointer-events: none;
+  /* ── HUD (위 정보) ───────────────────────── */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: none;
+    justify-content: space-between; align-items: flex-start;
+    padding: 18px 24px; pointer-events: none; z-index: 10;
   }
   .hud-score {
-    font-size: 2rem;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 20px rgba(168,85,247,0.8);
+    font-size: 2.6rem; font-weight: 900; color: #fff;
+    text-shadow: 0 0 30px rgba(168,85,247,0.9);
+    line-height: 1;
   }
-  .hud-best {
-    font-size: 0.85rem;
-    color: #64748b;
-    text-align: right;
-  }
-  .hud-best span { color: #fbbf24; font-weight: 700; }
+  .hud-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+  .hud-right { text-align: right; }
+  .hud-best-val { color: #fbbf24; font-size: 1.1rem; font-weight: 700; }
 
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Tap hint overlay */
-  .tap-hint {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.35);
-    font-size: 0.85rem;
-    pointer-events: none;
+  /* ── Tap hint ────────────────────────────── */
+  #tapHint {
+    position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,0.4); font-size: 0.9rem;
+    display: none; pointer-events: none;
     animation: pulse 1.5s infinite;
   }
-  @keyframes pulse { 0%,100%{opacity:0.35} 50%{opacity:0.7} }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
 
-  /* Result overlay */
+  /* ── Result Overlay ──────────────────────── */
   #resultOverlay {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(10,10,21,0.92);
-    z-index: 20;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 30px;
-    backdrop-filter: blur(6px);
+    position: fixed; inset: 0;
+    background: rgba(10,10,21,0.93);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 30px;
+    backdrop-filter: blur(8px); z-index: 50;
   }
-  .res-emoji { font-size: 4rem; margin-bottom: 12px; }
+  .res-emoji { font-size: 4.5rem; margin-bottom: 14px; }
   .res-title {
-    font-size: 1.8rem;
-    font-weight: 900;
+    font-size: 1.9rem; font-weight: 900;
     background: linear-gradient(135deg, #a855f7, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     margin-bottom: 10px;
   }
-  .res-score { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 4px; }
-  .res-label { color: #64748b; font-size: 0.9rem; margin-bottom: 6px; }
-  .res-best { color: #fbbf24; font-weight: 700; font-size: 1rem; margin-bottom: 28px; }
+  .res-score { font-size: 4rem; font-weight: 900; color: #fff; line-height: 1; }
+  .res-label { color: #64748b; font-size: 0.9rem; margin-bottom: 6px; margin-top: 4px; }
+  .res-best { color: #fbbf24; font-weight: 700; font-size: 1rem; margin-bottom: 32px; }
   .res-btn {
-    padding: 14px 40px;
+    padding: 15px 44px;
     background: linear-gradient(135deg, #a855f7, #f472b6);
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
+    border: none; border-radius: 14px; color: #fff;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
     margin-bottom: 14px;
     box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+    transition: transform 0.15s;
   }
   .res-btn:hover { transform: translateY(-2px); }
   .home-link { color: #64748b; font-size: 0.85rem; text-decoration: none; }
   .home-link:hover { color: #94a3b8; }
 
-  /* Score pop */
+  /* ── Score Pop ───────────────────────────── */
   .score-pop {
-    position: absolute;
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: #a855f7;
-    pointer-events: none;
-    animation: popUp 0.8s ease forwards;
-    z-index: 15;
+    position: fixed; font-size: 1.6rem; font-weight: 900;
+    color: #a855f7; pointer-events: none;
+    animation: popUp 0.9s ease forwards; z-index: 20;
   }
   @keyframes popUp {
     0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.4); }
   }
 </style>
 </head>
@@ -175,7 +132,8 @@
 
 <!-- Home -->
 <div id="homeScreen">
-  <h1>🏗️ 탑 쌓기</h1>
+  <div class="home-emoji">🏗️</div>
+  <h1>탑 쌓기</h1>
   <p class="subtitle">얼마나 높이 쌓을 수 있을까?</p>
   <div class="how-to">
     <strong>🎮 조작 방법</strong><br>
@@ -184,201 +142,212 @@
     • 블록이 너무 작아지면 게임 오버!<br>
     • 층수가 올라갈수록 속도가 빨라져요
   </div>
-  <button class="start-btn" onclick="initGame()">▶ 게임 시작</button>
+  <button class="start-btn" id="startBtn">▶ 게임 시작</button>
+  <div class="best-home" id="bestHome"></div>
 </div>
 
-<!-- Game -->
-<div id="gameUI">
-  <div class="game-hud">
+<!-- Canvas -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div>
     <div class="hud-score" id="hudScore">0</div>
-    <div class="hud-best">최고 기록<br><span id="hudBest">0</span>층</div>
+    <div class="hud-label">층</div>
   </div>
-  <canvas id="gameCanvas"></canvas>
-  <div class="tap-hint" id="tapHint">탭 또는 클릭하세요</div>
-  <div id="resultOverlay">
-    <div class="res-emoji">😵</div>
-    <div class="res-title">게임 오버!</div>
-    <div class="res-score" id="resScore">0</div>
-    <div class="res-label">층</div>
-    <div class="res-best" id="resBest"></div>
-    <button class="res-btn" onclick="initGame()">🔄 다시 하기</button>
-    <a href="index.html" class="home-link">← 홈으로</a>
+  <div class="hud-right">
+    <div class="hud-label">최고</div>
+    <div class="hud-best-val" id="hudBest">0</div>
   </div>
+</div>
+
+<!-- Tap hint -->
+<div id="tapHint">탭 또는 클릭하세요</div>
+
+<!-- Result -->
+<div id="resultOverlay">
+  <div class="res-emoji">😵</div>
+  <div class="res-title">게임 오버!</div>
+  <div class="res-score" id="resScore">0</div>
+  <div class="res-label">층</div>
+  <div class="res-best" id="resBest"></div>
+  <button class="res-btn" id="retryBtn">🔄 다시 하기</button>
+  <a href="index.html" class="home-link">← 홈으로</a>
 </div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx    = canvas.getContext('2d');
 
-// State
-let blocks = [];
-let moving = null;
-let score = 0;
-let gameOver = false;
-let animId = null;
-let cameraY = 0;
-let targetCameraY = 0;
-let speed = 2;
-let direction = 1;
+// ── 상수 ──────────────────────────────────
+const BLOCK_H   = 28;
+const MIN_W     = 12;   // 이 이하면 게임오버
+const INIT_W    = 200;
+const BASE_SPEED = 2.5;
+const MAX_SPEED  = 11;
 
-// Colors
-const PALETTE = [
-  ['#a855f7','#9333ea'],
+const COLORS = [
+  ['#a855f7','#7c3aed'],
   ['#06b6d4','#0891b2'],
   ['#f472b6','#ec4899'],
   ['#818cf8','#6366f1'],
-  ['#34d399','#10b981'],
-  ['#fb923c','#f97316'],
-  ['#fbbf24','#f59e0b'],
+  ['#34d399','#059669'],
+  ['#fb923c','#ea580c'],
+  ['#fbbf24','#d97706'],
+  ['#e879f9','#c026d3'],
 ];
 
-const BLOCK_H = 30;
-const BASE_W = 220;
-const CANVAS_W = 420;
-const CANVAS_H = 700;
+// ── 상태 ──────────────────────────────────
+let W, H;
+let blocks   = [];   // { x, y, w, ci }
+let movBlock = null; // { x, y, w, ci, dir }
+let score    = 0;
+let camY     = 0;
+let targCamY = 0;
+let speed    = BASE_SPEED;
+let active   = false; // drop 허용 여부
+let dead     = false;
+let animId   = null;
 
-function setSize() {
-  const w = Math.min(window.innerWidth, CANVAS_W);
-  const h = Math.min(window.innerHeight, CANVAS_H);
-  canvas.width = w;
-  canvas.height = h;
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
 }
 
+// ── 시작 ──────────────────────────────────
 function initGame() {
-  setSize();
-  document.getElementById('homeScreen').style.display = 'none';
-  document.getElementById('gameUI').style.display = 'block';
-  document.getElementById('resultOverlay').style.display = 'none';
-  document.getElementById('tapHint').style.display = 'block';
-  document.getElementById('hudBest').textContent = localStorage.getItem('tower_best') || '0';
+  resize();
+  blocks  = [];
+  score   = 0;
+  camY    = 0;
+  targCamY= 0;
+  speed   = BASE_SPEED;
+  active  = false;   // 아직 drop 불가
+  dead    = false;
 
-  blocks = [];
-  score = 0;
-  gameOver = false;
-  cameraY = 0;
-  targetCameraY = 0;
-  speed = 2.2;
-  direction = 1;
+  // 바닥 블록
+  const bx = (W - INIT_W) / 2;
+  const by = H - 80;
+  blocks.push({ x: bx, y: by, w: INIT_W, ci: 0 });
+
+  spawnMover();
 
   document.getElementById('hudScore').textContent = '0';
+  document.getElementById('hudBest').textContent  = localStorage.getItem('tower_best') || '0';
 
-  const cw = canvas.width;
-  // 바닥 블록
-  const baseX = (cw - BASE_W) / 2;
-  const baseY = canvas.height - 60;
-  blocks.push({ x: baseX, y: baseY, w: BASE_W, color: PALETTE[0] });
-
-  spawnMoving();
+  // UI 전환
+  document.getElementById('homeScreen').style.display  = 'none';
+  document.getElementById('resultOverlay').style.display = 'none';
+  document.getElementById('gameCanvas').style.display  = 'block';
+  document.getElementById('hud').style.display         = 'flex';
+  document.getElementById('tapHint').style.display     = 'block';
 
   if (animId) cancelAnimationFrame(animId);
   loop();
+
+  // 약간의 딜레이 후 drop 허용 (시작 클릭 이벤트와 분리)
+  setTimeout(() => { active = true; }, 400);
 }
 
-function spawnMoving() {
-  const cw = canvas.width;
+function spawnMover() {
   const last = blocks[blocks.length - 1];
-  const ci = blocks.length % PALETTE.length;
-  const newY = last.y - BLOCK_H - 4;
-  const startX = direction > 0 ? -last.w : cw;
-
-  moving = {
-    x: startX,
-    y: newY,
-    w: last.w,
-    color: PALETTE[ci],
-    targetY: newY,
-  };
-  direction *= -1;
+  const ci   = blocks.length % COLORS.length;
+  const newY = last.y - BLOCK_H - 2;
+  // 방향: 매 블록마다 번갈아 (또는 랜덤)
+  const dir  = (blocks.length % 2 === 0) ? 1 : -1;
+  const startX = dir > 0 ? -last.w : W;
+  movBlock = { x: startX, y: newY, w: last.w, ci, dir };
 }
 
+// ── 게임 루프 ──────────────────────────────
 function loop() {
-  if (gameOver) return;
+  if (dead) return;
   update();
-  draw();
+  render();
   animId = requestAnimationFrame(loop);
 }
 
 function update() {
-  if (!moving) return;
-  moving.x += speed * direction * -1;
+  if (!movBlock) return;
+  // 이동 (dir: 1→왼쪽진행, -1→오른쪽진행)
+  movBlock.x -= movBlock.dir * speed;
 
-  // Camera tracking
+  // 카메라 부드럽게 따라가기
   const topBlock = blocks[blocks.length - 1];
-  const targetY = topBlock.y - canvas.height * 0.35;
-  targetCameraY += (targetY - targetCameraY) * 0.08;
+  const want = topBlock.y - H * 0.55;
+  targCamY += (want - targCamY) * 0.07;
+  camY     += (targCamY - camY) * 0.12;
 }
 
-function draw() {
-  const cw = canvas.width;
-  const ch = canvas.height;
+// ── 렌더 ──────────────────────────────────
+function render() {
+  // 배경
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#05030d');
+  bg.addColorStop(1, '#0d0d20');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
 
-  // Background gradient
-  const grad = ctx.createLinearGradient(0, 0, 0, ch);
-  grad.addColorStop(0, '#06030f');
-  grad.addColorStop(1, '#0a0a20');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, cw, ch);
-
-  // Stars
-  ctx.save();
-  const seed = 42;
-  for (let i = 0; i < 60; i++) {
-    const sx = ((seed * (i * 17 + 3)) % cw + cw) % cw;
-    const sy = ((seed * (i * 13 + 7)) % (ch * 3) + ch * 3) % (ch * 3);
-    const alpha = 0.2 + (i % 5) * 0.1;
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.beginPath();
-    ctx.arc(sx, sy - targetCameraY * 0.3, 1, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
+  // 별
+  drawStars();
 
   ctx.save();
-  ctx.translate(0, -targetCameraY);
+  ctx.translate(0, -camY);
 
-  // Placed blocks
+  // 쌓인 블록
   blocks.forEach((b, i) => {
-    const [c1, c2] = b.color;
-    const g = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y + BLOCK_H);
-    g.addColorStop(0, c1);
-    g.addColorStop(1, c2);
-    ctx.fillStyle = g;
-    drawRounded(b.x, b.y, b.w, BLOCK_H, 6);
-    ctx.fill();
-
-    // Shine
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    drawRounded(b.x + 4, b.y + 4, b.w - 8, 6, 3);
-    ctx.fill();
+    drawBlock(b.x, b.y, b.w, BLOCK_H, COLORS[b.ci % COLORS.length], i === blocks.length - 1);
   });
 
-  // Moving block
-  if (moving) {
-    const [c1, c2] = moving.color;
-    const g = ctx.createLinearGradient(moving.x, moving.y, moving.x + moving.w, moving.y + BLOCK_H);
-    g.addColorStop(0, c1);
-    g.addColorStop(1, c2);
-    ctx.fillStyle = g;
-    drawRounded(moving.x, moving.y, moving.w, BLOCK_H, 6);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    drawRounded(moving.x + 4, moving.y + 4, moving.w - 8, 6, 3);
-    ctx.fill();
-
-    // Glow
-    ctx.shadowColor = moving.color[0];
-    ctx.shadowBlur = 16;
-    ctx.fillStyle = 'transparent';
-    drawRounded(moving.x, moving.y, moving.w, BLOCK_H, 6);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+  // 움직이는 블록
+  if (movBlock) {
+    drawBlock(movBlock.x, movBlock.y, movBlock.w, BLOCK_H, COLORS[movBlock.ci % COLORS.length], false);
   }
 
   ctx.restore();
 }
 
-function drawRounded(x, y, w, h, r) {
+function drawStars() {
+  for (let i = 0; i < 80; i++) {
+    // 고정 별 (deterministic)
+    const sx = ((i * 137 + 23) * 997) % W;
+    const sy = ((i * 211 + 47) * 631) % (H * 4);
+    const relY = ((sy - camY * 0.2) % (H * 4) + H * 4) % (H * 4);
+    if (relY > H) continue;
+    const alpha = 0.15 + (i % 6) * 0.07;
+    const r = i % 3 === 0 ? 1.5 : 1;
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(sx, relY, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawBlock(x, y, w, h, colors, isTop) {
+  const [c1, c2] = colors;
+  // 그림자 (맨 위 블록만)
+  if (isTop) {
+    ctx.shadowColor = c1;
+    ctx.shadowBlur  = 18;
+  }
+
+  const g = ctx.createLinearGradient(x, y, x + w, y + h);
+  g.addColorStop(0, c1);
+  g.addColorStop(1, c2);
+  ctx.fillStyle = g;
+  roundRect(x, y, w, h, 6);
+  ctx.fill();
+
+  // 하이라이트
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = 'rgba(255,255,255,0.18)';
+  roundRect(x + 4, y + 4, Math.max(0, w - 8), 6, 3);
+  ctx.fill();
+}
+
+function roundRect(x, y, w, h, r) {
+  if (w < r * 2) r = w / 2;
+  if (h < r * 2) r = h / 2;
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.lineTo(x + w - r, y);
@@ -392,97 +361,105 @@ function drawRounded(x, y, w, h, r) {
   ctx.closePath();
 }
 
+// ── Drop ──────────────────────────────────
 function drop() {
-  if (gameOver || !moving) return;
+  if (!active || dead || !movBlock) return;
   document.getElementById('tapHint').style.display = 'none';
 
-  const last = blocks[blocks.length - 1];
-  const overlapStart = Math.max(moving.x, last.x);
-  const overlapEnd = Math.min(moving.x + moving.w, last.x + last.w);
-  const overlap = overlapEnd - overlapStart;
+  const last    = blocks[blocks.length - 1];
+  const oStart  = Math.max(movBlock.x, last.x);
+  const oEnd    = Math.min(movBlock.x + movBlock.w, last.x + last.w);
+  const overlap = oEnd - oStart;
 
   if (overlap <= 0) {
-    // 완전 miss
-    triggerGameOver();
+    triggerDead();
     return;
   }
 
-  // Perfect bonus
-  const perfect = Math.abs(moving.x - last.x) < 3;
+  const perfect = Math.abs(movBlock.x - last.x) < 4;
+  const newW    = perfect ? last.w : overlap; // 퍼펙트면 크기 유지
 
-  const newBlock = {
-    x: overlapStart,
-    y: moving.y,
-    w: overlap,
-    color: moving.color,
-  };
-  blocks.push(newBlock);
+  blocks.push({ x: oStart, y: movBlock.y, w: newW, ci: movBlock.ci });
   score++;
   document.getElementById('hudScore').textContent = score;
+  showPop(perfect);
 
-  // Score pop
-  showScorePop(perfect);
+  // 속도 증가
+  speed = Math.min(MAX_SPEED, BASE_SPEED + score * 0.09);
 
-  // Speed up
-  speed = 2.2 + score * 0.08;
-  if (speed > 9) speed = 9;
-
-  // Too thin?
-  if (overlap < 12) {
-    triggerGameOver();
+  if (!perfect && newW < MIN_W) {
+    triggerDead();
     return;
   }
-
-  spawnMoving();
+  spawnMover();
 }
 
-function showScorePop(perfect) {
-  const gameUI = document.getElementById('gameUI');
+function showPop(perfect) {
   const pop = document.createElement('div');
   pop.className = 'score-pop';
   pop.textContent = perfect ? '✨ PERFECT!' : `+1`;
-  pop.style.left = '50%';
-  pop.style.top = '45%';
+  pop.style.left  = '50%';
+  pop.style.top   = '42%';
   pop.style.transform = 'translateX(-50%)';
-  if (perfect) pop.style.color = '#fbbf24';
-  gameUI.appendChild(pop);
-  setTimeout(() => pop.remove(), 800);
+  if (perfect) { pop.style.color = '#fbbf24'; pop.style.fontSize = '1.9rem'; }
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 900);
 }
 
-function triggerGameOver() {
-  gameOver = true;
+function triggerDead() {
+  dead   = true;
+  active = false;
   cancelAnimationFrame(animId);
 
-  const best = parseInt(localStorage.getItem('tower_best') || '0');
+  const best    = parseInt(localStorage.getItem('tower_best') || '0');
   const newBest = Math.max(best, score);
   localStorage.setItem('tower_best', newBest);
 
   document.getElementById('resScore').textContent = score;
-  document.getElementById('resBest').textContent = score >= newBest && score > 0
-    ? `🎉 신기록! ${newBest}층`
-    : `최고 기록: ${newBest}층`;
+  document.getElementById('resBest').textContent  =
+    score >= newBest && score > 0
+      ? `🎉 신기록! 최고 ${newBest}층`
+      : `최고 기록: ${newBest}층`;
 
   setTimeout(() => {
     document.getElementById('resultOverlay').style.display = 'flex';
-  }, 600);
+  }, 400);
 }
 
-// Input
-document.addEventListener('click', () => { if (!gameOver) drop(); });
+// ── 이벤트 ────────────────────────────────
+// 시작 버튼: stopPropagation으로 document 이벤트와 분리
+document.getElementById('startBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  initGame();
+});
+document.getElementById('retryBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  initGame();
+});
+
+document.addEventListener('click', () => drop());
 document.addEventListener('touchstart', e => {
+  // 버튼 탭은 제외
+  if (e.target.closest('button, a')) return;
   e.preventDefault();
-  if (!gameOver) drop();
+  drop();
 }, { passive: false });
 document.addEventListener('keydown', e => {
-  if ((e.code === 'Space' || e.code === 'ArrowUp') && !gameOver) {
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
     e.preventDefault();
     drop();
   }
 });
 
 window.addEventListener('resize', () => {
-  if (document.getElementById('gameUI').style.display !== 'none') {
-    setSize();
+  if (!dead) resize();
+});
+
+// 최고 기록 홈화면 표시
+window.addEventListener('load', () => {
+  const b = localStorage.getItem('tower_best');
+  if (b && parseInt(b) > 0) {
+    document.getElementById('bestHome').textContent = `🏆 최고 기록: ${b}층`;
   }
 });
 </script>
