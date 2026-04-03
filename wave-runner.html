@@ -99,12 +99,17 @@ let score,dist,jumps,speed,gameOver,frame;
 let playerY,playerVY,jumpCount,onGround;
 let obstacles=[],particles=[];
 let bgOffset=0;
+let nextSpawnFrame=0;
+let lastObsX=9999; // 마지막 장애물 X위치 추적
 
 const GROUND_RATIO=0.78;
-const GRAVITY=0.55;
-const JUMP_V=-13;
+const GRAVITY=0.42;      // 낮출수록 둥실한 점프
+const JUMP_V=-15;        // 높을수록(음수 절대값) 높이 점프
 const PLAYER_W=44,PLAYER_H=52;
 const OBS_W=26;
+// 히트박스 여유 (클수록 관대)
+const HIT_PAD_X=12;
+const HIT_PAD_Y=10;
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -124,7 +129,8 @@ function resize(){
 function startGame(){
   resize();
   show('s-game');
-  score=0;dist=0;jumps=0;speed=5;frame=0;gameOver=false;
+  score=0;dist=0;jumps=0;speed=4;frame=0;gameOver=false;
+  nextSpawnFrame=80; lastObsX=9999;
   const gY=H*GROUND_RATIO;
   playerY=gY-PLAYER_H;playerVY=0;jumpCount=0;onGround=true;
   obstacles=[];particles=[];bgOffset=0;
@@ -135,7 +141,7 @@ function startGame(){
 function jump(){
   if(gameOver){startGame();return}
   if(jumpCount<2){
-    playerVY=JUMP_V*(jumpCount===1?0.85:1);
+    playerVY=JUMP_V*(jumpCount===1?0.88:1);
     jumpCount++;
     onGround=false;
     jumps++;
@@ -151,16 +157,17 @@ canvas.addEventListener('mousedown',e=>{jump()});
 function spawnObs(){
   const gY=H*GROUND_RATIO;
   const type=Math.random();
-  if(type<0.6){
-    // Ground obstacle (spike/wave)
-    const h=30+Math.random()*40;
+  if(type<0.65){
+    // 지상 장애물 — 최대 높이 제한해서 점프로 확실히 넘을 수 있게
+    const h=24+Math.random()*28; // 최대 52px (캐릭터 높이 이하)
     obstacles.push({x:W+20,y:gY-h,w:OBS_W,h,type:'ground'});
   } else {
-    // Floating obstacle
-    const h=20+Math.random()*25;
-    const fy=gY-PLAYER_H*2.5-Math.random()*60;
+    // 공중 장애물 — 캐릭터가 1단 점프로 피할 수 있는 높이에만 배치
+    const h=18+Math.random()*20;
+    const fy=gY-PLAYER_H*3.2-Math.random()*40; // 더 높이 배치
     obstacles.push({x:W+20,y:fy,w:OBS_W,h,type:'air'});
   }
+  lastObsX=W+20;
 }
 
 function addParticle(x,y){
@@ -185,9 +192,9 @@ function update(){
   frame++;
   if(gameOver)return;
 
-  // Speed ramp
-  speed=5+dist*0.003;
-  if(speed>18)speed=18;
+  // Speed ramp — 천천히 올라가고 최대 11로 제한
+  speed=4+dist*0.0018;
+  if(speed>11)speed=11;
 
   // Player
   const gY=H*GROUND_RATIO;
@@ -200,18 +207,27 @@ function update(){
     onGround=true;
   }
 
-  // Spawn
-  const gap=Math.max(60,200-dist*0.5);
-  if(frame%Math.floor(gap/speed)===0)spawnObs();
+  // Spawn — 프레임 기반으로 정확히 제어, 최소 화면 너비만큼 간격 보장
+  if(frame>=nextSpawnFrame && lastObsX<W-120){
+    spawnObs();
+    // 간격: 초반엔 넉넉히(110f), 후반엔 70f까지 좁아짐
+    const interval=Math.max(70,110-Math.floor(dist*0.08));
+    nextSpawnFrame=frame+interval;
+  }
 
   // Move obstacles
   for(const o of obstacles)o.x-=speed;
   obstacles=obstacles.filter(o=>o.x>-60);
+  // 현재 화면에 있는 장애물 중 가장 오른쪽 X 추적
+  if(obstacles.length>0) lastObsX=Math.max(...obstacles.map(o=>o.x));
+  else lastObsX=0;
 
-  // Collision
+  // Collision — 히트박스를 넉넉히 줄여서 관대하게 판정
   const px=60,py=playerY;
   for(const o of obstacles){
-    if(px+PLAYER_W-8>o.x&&px+8<o.x+o.w&&py+PLAYER_H-6>o.y&&py+4<o.y+o.h){
+    const pleft=px+HIT_PAD_X, pright=px+PLAYER_W-HIT_PAD_X;
+    const ptop=py+HIT_PAD_Y,  pbot=py+PLAYER_H-4;
+    if(pright>o.x&&pleft<o.x+o.w&&pbot>o.y&&ptop<o.y+o.h){
       addParticle(px+PLAYER_W/2,py+PLAYER_H/2);
       triggerGameOver();
       return;
