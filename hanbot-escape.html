@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🧩 한 붓 탈출 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen{display:none;width:100%;max-width:440px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.7}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:24px;font-size:.82em;color:#888;line-height:1.9}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s;margin-bottom:8px}
+
+/* Game */
+.game-header{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.lv-badge{background:linear-gradient(135deg,#a855f7,#06b6d4);border-radius:10px;padding:6px 16px;font-weight:800;font-size:.95em}
+.move-txt{color:#888;font-size:.9em}
+.hint-area{font-size:.82em;color:#555;min-height:20px;margin-bottom:10px;text-align:center}
+
+.grid-wrap{position:relative;margin-bottom:18px;user-select:none;touch-action:none}
+canvas#gc{display:block;border-radius:12px;cursor:pointer}
+
+.game-btns{display:flex;gap:10px;width:100%}
+.gbtn{flex:1;background:#141428;border:1px solid #252545;border-radius:10px;padding:10px;color:#888;font-size:.85em;cursor:pointer;transition:all .2s}
+.gbtn:hover{border-color:#555;color:#ccc}
+
+/* Level select */
+.level-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin-bottom:20px}
+.lv-btn{background:#141428;border:2px solid #252545;border-radius:12px;padding:14px 6px;text-align:center;cursor:pointer;transition:all .2s;font-size:.85em}
+.lv-btn:hover{border-color:#a855f7}
+.lv-btn.cleared{border-color:#22c55e;color:#22c55e}
+.lv-btn .lv-n{font-size:1.2em;font-weight:800}
+.lv-btn .lv-s{font-size:.65em;color:#555;margin-top:2px}
+.lv-btn.cleared .lv-s{color:#22c55e}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:20px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3em;font-weight:900;margin:8px 0}
+.r-sub{color:#666;font-size:.85em}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🧩</div>
+  <div class="title glow">한 붓 탈출</div>
+  <div class="sub">모든 칸을 한 번씩만 지나<br>출구까지 탈출하라!</div>
+  <div class="tips">
+    🟢 <b>초록 칸</b>: 시작점 &nbsp;|&nbsp; 🔴 <b>빨간 칸</b>: 출구<br>
+    👆 칸을 드래그하거나 클릭해서 경로를 그려요<br>
+    ✅ 모든 칸을 밟고 출구에 도착하면 클리어!
+  </div>
+  <button class="btn-main" onclick="show('s-levels')">▶ 레벨 선택</button>
+  <div style="color:#555;font-size:.8em;margin-top:6px">클리어: <span style="color:#22c55e;font-weight:700" id="clear-disp">0</span> / 16</div>
+</div>
+
+<!-- LEVELS -->
+<div id="s-levels" class="screen">
+  <div style="font-size:1.3em;font-weight:800;margin-bottom:18px" class="glow">레벨 선택</div>
+  <div class="level-grid" id="lv-grid"></div>
+  <button class="btn-sub" onclick="show('s-home')">← 뒤로</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-header">
+    <div class="lv-badge" id="g-lv">레벨 1</div>
+    <div class="move-txt">이동: <span id="g-moves">0</span></div>
+  </div>
+  <div class="hint-area" id="g-hint">시작 칸을 눌러보세요</div>
+  <div class="grid-wrap">
+    <canvas id="gc"></canvas>
+  </div>
+  <div class="game-btns">
+    <button class="gbtn" onclick="resetLevel()">↩ 리셋</button>
+    <button class="gbtn" onclick="undoMove()">← 되돌리기</button>
+    <button class="gbtn" onclick="show('s-levels')">≡ 레벨 목록</button>
+  </div>
+</div>
+
+<!-- RESULT (level clear) -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🎉</div>
+    <div class="r-title glow" id="r-title">레벨 클리어!</div>
+    <div class="r-score glow" id="r-score">+100점</div>
+    <div class="r-sub" id="r-sub">이동 횟수: 0</div>
+  </div>
+  <button class="btn-main" id="r-next-btn" onclick="nextLevel()">다음 레벨 →</button>
+  <button class="btn-sub" onclick="show('s-levels')">≡ 레벨 목록</button>
+</div>
+
+<script>
+// ======= LEVELS =======
+// Each level: { cols, rows, start:[r,c], end:[r,c], walls:[[r,c],...] }
+// Wall cells are blocked
+const LEVELS=[
+  // 1-4: 3x3
+  {cols:3,rows:3,start:[0,0],end:[2,2],walls:[]},
+  {cols:3,rows:3,start:[0,0],end:[0,2],walls:[[1,1]]},
+  {cols:3,rows:3,start:[2,0],end:[0,2],walls:[]},
+  {cols:3,rows:3,start:[0,0],end:[2,2],walls:[[0,2],[2,0]]},
+  // 5-8: 4x4
+  {cols:4,rows:4,start:[0,0],end:[3,3],walls:[]},
+  {cols:4,rows:4,start:[0,0],end:[0,3],walls:[[1,1],[2,2]]},
+  {cols:4,rows:4,start:[3,0],end:[0,3],walls:[[1,2],[2,1]]},
+  {cols:4,rows:4,start:[0,0],end:[3,3],walls:[[0,2],[2,0],[1,3],[3,1]]},
+  // 9-12: 5x5
+  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[]},
+  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[[1,1],[2,3],[3,2]]},
+  {cols:5,rows:5,start:[4,0],end:[0,4],walls:[[0,2],[2,0],[2,4],[4,2]]},
+  {cols:5,rows:5,start:[0,2],end:[4,2],walls:[[1,0],[1,4],[3,0],[3,4]]},
+  // 13-16: harder
+  {cols:5,rows:5,start:[0,0],end:[4,4],walls:[[0,3],[1,1],[2,2],[3,1],[4,0]]},
+  {cols:5,rows:5,start:[2,0],end:[2,4],walls:[[0,1],[0,3],[1,2],[3,2],[4,1],[4,3]]},
+  {cols:6,rows:5,start:[0,0],end:[4,5],walls:[[1,1],[1,4],[2,2],[3,0],[3,3]]},
+  {cols:6,rows:5,start:[0,0],end:[4,5],walls:[[0,2],[0,4],[1,3],[2,1],[3,4],[4,0],[4,2]]},
+];
+
+const gc=document.getElementById('gc');
+const gtx=gc.getContext('2d');
+let curLevel=0,path=[],moves=0,dragging=false;
+const cleared=JSON.parse(localStorage.getItem('hb_cleared')||'[]');
+let totalScore=parseInt(localStorage.getItem('hb_score')||'0',10);
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-levels')buildLevelGrid();
+  if(id==='s-home')updateHomeStats();
+}
+
+function updateHomeStats(){
+  document.getElementById('clear-disp').textContent=cleared.length;
+}
+
+function buildLevelGrid(){
+  const grid=document.getElementById('lv-grid');
+  grid.innerHTML='';
+  LEVELS.forEach((_,i)=>{
+    const btn=document.createElement('div');
+    btn.className='lv-btn'+(cleared.includes(i)?' cleared':'');
+    btn.innerHTML=`<div class="lv-n">${i+1}</div><div class="lv-s">${cleared.includes(i)?'✓':'미완'}`;
+    btn.onclick=()=>loadLevel(i);
+    grid.appendChild(btn);
+  });
+}
+
+function loadLevel(idx){
+  curLevel=idx;
+  path=[];moves=0;
+  const lv=LEVELS[idx];
+  // Place start
+  path.push([...lv.start]);
+  show('s-game');
+  document.getElementById('g-lv').textContent='레벨 '+(idx+1);
+  document.getElementById('g-moves').textContent='0';
+  document.getElementById('g-hint').textContent='경로를 그려보세요!';
+  setupCanvas(lv);
+  drawGrid();
+}
+
+function totalCells(lv){
+  return lv.rows*lv.cols-lv.walls.length;
+}
+
+function setupCanvas(lv){
+  const maxW=Math.min(window.innerWidth-40,380);
+  const cellSize=Math.floor(Math.min(maxW/lv.cols,70));
+  const cw=cellSize*lv.cols;
+  const ch=cellSize*lv.rows;
+  gc.width=cw;gc.height=ch;
+  gc.dataset.cell=cellSize;
+}
+
+function isWall(lv,r,c){return lv.walls.some(w=>w[0]===r&&w[1]===c)}
+function inPath(r,c){return path.some(p=>p[0]===r&&p[1]===c)}
+
+function drawGrid(){
+  const lv=LEVELS[curLevel];
+  const cs=parseInt(gc.dataset.cell)||60;
+  const W=gc.width,H=gc.height;
+  gtx.clearRect(0,0,W,H);
+
+  for(let r=0;r<lv.rows;r++){
+    for(let c=0;c<lv.cols;c++){
+      const x=c*cs,y=r*cs;
+      const isStart=lv.start[0]===r&&lv.start[1]===c;
+      const isEnd=lv.end[0]===r&&lv.end[1]===c;
+      const wall=isWall(lv,r,c);
+      const visited=inPath(r,c);
+
+      // Cell bg
+      gtx.fillStyle=wall?'#111122':visited?'#1e1240':'#141428';
+      gtx.strokeStyle='#252545';
+      gtx.lineWidth=2;
+      gtx.beginPath();
+      gtx.roundRect(x+2,y+2,cs-4,cs-4,8);
+      gtx.fill();
+      if(!wall)gtx.stroke();
+
+      if(wall){
+        gtx.fillStyle='#1a1a2e';
+        gtx.fillRect(x+4,y+4,cs-8,cs-8);
+        continue;
+      }
+
+      if(isStart){
+        gtx.fillStyle='#22c55e';
+        gtx.beginPath();gtx.roundRect(x+2,y+2,cs-4,cs-4,8);gtx.fill();
+        gtx.fillStyle='#fff';
+        gtx.font=`bold ${cs*.35}px sans-serif`;
+        gtx.textAlign='center';gtx.textBaseline='middle';
+        gtx.fillText('S',x+cs/2,y+cs/2);
+      } else if(isEnd){
+        gtx.fillStyle='#ef4444';
+        gtx.beginPath();gtx.roundRect(x+2,y+2,cs-4,cs-4,8);gtx.fill();
+        gtx.fillStyle='#fff';
+        gtx.font=`bold ${cs*.35}px sans-serif`;
+        gtx.textAlign='center';gtx.textBaseline='middle';
+        gtx.fillText('E',x+cs/2,y+cs/2);
+      } else if(visited){
+        gtx.fillStyle='#a855f7';
+        gtx.beginPath();gtx.arc(x+cs/2,y+cs/2,cs*.18,0,Math.PI*2);gtx.fill();
+      }
+    }
+  }
+
+  // Draw path lines
+  if(path.length>1){
+    gtx.strokeStyle='rgba(168,85,247,0.6)';
+    gtx.lineWidth=cs*.25;
+    gtx.lineCap='round';gtx.lineJoin='round';
+    gtx.beginPath();
+    path.forEach(([r,c],i)=>{
+      const x=c*cs+cs/2,y=r*cs+cs/2;
+      i===0?gtx.moveTo(x,y):gtx.lineTo(x,y);
+    });
+    gtx.stroke();
+  }
+
+  // Draw head
+  if(path.length>0){
+    const [hr,hc]=path[path.length-1];
+    gtx.fillStyle='#c084fc';
+    gtx.shadowColor='#a855f7';
+    gtx.shadowBlur=10;
+    gtx.beginPath();
+    gtx.arc(hc*cs+cs/2,hr*cs+cs/2,cs*.22,0,Math.PI*2);
+    gtx.fill();
+    gtx.shadowBlur=0;
+  }
+}
+
+function cellFromXY(x,y){
+  const lv=LEVELS[curLevel];
+  const cs=parseInt(gc.dataset.cell)||60;
+  const c=Math.floor(x/cs),r=Math.floor(y/cs);
+  if(r<0||r>=lv.rows||c<0||c>=lv.cols)return null;
+  return [r,c];
+}
+
+function adjacent([r1,c1],[r2,c2]){
+  return Math.abs(r1-r2)+Math.abs(c1-c2)===1;
+}
+
+function tryMove(r,c){
+  const lv=LEVELS[curLevel];
+  if(isWall(lv,r,c))return;
+  const head=path[path.length-1];
+
+  // Check if this is the second-to-last in path (undo)
+  if(path.length>=2){
+    const prev=path[path.length-2];
+    if(prev[0]===r&&prev[1]===c){
+      path.pop();
+      moves++;
+      document.getElementById('g-moves').textContent=moves;
+      drawGrid();
+      return;
+    }
+  }
+
+  if(!adjacent(head,[r,c]))return;
+  if(inPath(r,c))return;// already visited (except undo)
+
+  path.push([r,c]);
+  moves++;
+  document.getElementById('g-moves').textContent=moves;
+  drawGrid();
+
+  // Check win
+  const isEnd=lv.end[0]===r&&lv.end[1]===c;
+  if(isEnd&&path.length===totalCells(lv)){
+    setTimeout(levelClear,300);
+  } else if(isEnd){
+    document.getElementById('g-hint').textContent='출구 근처! 아직 모든 칸을 밟지 않았어요';
+  } else {
+    document.getElementById('g-hint').textContent='';
+  }
+}
+
+function resetLevel(){path=[...[]];const lv=LEVELS[curLevel];path=[[...lv.start]];moves=0;document.getElementById('g-moves').textContent='0';document.getElementById('g-hint').textContent='다시 시작!';drawGrid()}
+function undoMove(){if(path.length>1){path.pop();moves++;document.getElementById('g-moves').textContent=moves;drawGrid()}}
+function nextLevel(){if(curLevel+1<LEVELS.length)loadLevel(curLevel+1);else show('s-levels')}
+
+function levelClear(){
+  if(!cleared.includes(curLevel)){
+    cleared.push(curLevel);
+    localStorage.setItem('hb_cleared',JSON.stringify(cleared));
+  }
+  const bonus=Math.max(0,200-moves)*5;
+  const pts=100+bonus;
+  totalScore+=pts;
+  localStorage.setItem('hb_score',totalScore);
+
+  let emoji,title;
+  if(moves<=totalCells(LEVELS[curLevel])+2){emoji='🏆';title='완벽한 탈출!';}
+  else if(moves<=totalCells(LEVELS[curLevel])+8){emoji='🎯';title='레벨 클리어!';}
+  else{emoji='✅';title='탈출 성공!';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-score').textContent='+'+pts+'점';
+  document.getElementById('r-sub').textContent=`이동 횟수: ${moves}`;
+  document.getElementById('r-next-btn').textContent=curLevel+1<LEVELS.length?'다음 레벨 →':'레벨 목록 보기';
+  show('s-result');
+}
+
+// Touch/Mouse events
+function getPos(e){
+  const rect=gc.getBoundingClientRect();
+  const scaleX=gc.width/rect.width;
+  const scaleY=gc.height/rect.height;
+  const src=e.touches?e.touches[0]:e;
+  return {x:(src.clientX-rect.left)*scaleX,y:(src.clientY-rect.top)*scaleY};
+}
+
+gc.addEventListener('mousedown',e=>{const pos=getPos(e);const cell=cellFromXY(pos.x,pos.y);if(cell)tryMove(cell[0],cell[1]);dragging=true});
+gc.addEventListener('mousemove',e=>{if(!dragging)return;const pos=getPos(e);const cell=cellFromXY(pos.x,pos.y);if(cell)tryMove(cell[0],cell[1])});
+gc.addEventListener('mouseup',()=>dragging=false);
+gc.addEventListener('touchstart',e=>{e.preventDefault();const pos=getPos(e);const cell=cellFromXY(pos.x,pos.y);if(cell)tryMove(cell[0],cell[1]);dragging=true},{passive:false});
+gc.addEventListener('touchmove',e=>{e.preventDefault();if(!dragging)return;const pos=getPos(e);const cell=cellFromXY(pos.x,pos.y);if(cell)tryMove(cell[0],cell[1])},{passive:false});
+gc.addEventListener('touchend',()=>dragging=false);
+
+window.addEventListener('load',()=>updateHomeStats());
+</script>
+</body>
+</html>

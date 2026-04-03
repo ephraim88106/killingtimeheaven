@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎯 초성 스나이퍼 - 킬링타임천국</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: #0a0a15;
+  color: #fff;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes shake {
+  0%,100% { transform:translateX(0); }
+  20%      { transform:translateX(-8px); }
+  60%      { transform:translateX(8px); }
+}
+@keyframes pop {
+  0%   { transform:scale(1); }
+  40%  { transform:scale(1.06); }
+  100% { transform:scale(1); }
+}
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.5; }
+}
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ===== COMMON ===== */
+.glow-text {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  border: none;
+  border-radius: 14px;
+  padding: 16px 24px;
+  color: #fff;
+  font-size: 1.05em;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.03em;
+}
+.btn-primary:active { opacity:0.85; transform:scale(0.98); }
+.btn-secondary {
+  background: #1a1a2e;
+  border: 2px solid #2a2a4a;
+  border-radius: 14px;
+  padding: 14px 24px;
+  color: #999;
+  font-size: 1em;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color:#555; color:#ccc; }
+.back-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 12px;
+  margin-top: 6px;
+}
+.back-btn:hover { color:#aaa; }
+
+/* ===== HOME SCREEN ===== */
+.home-logo { font-size:3.2em; margin-bottom:6px; }
+.home-title {
+  font-size: 2.2em;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+.home-sub { color:#666; font-size:0.9em; margin-bottom:36px; }
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+.mode-card {
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 18px;
+  padding: 28px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mode-card:hover { border-color:#a855f7; background:#1a1a38; transform:translateY(-2px); }
+.mode-card:active { transform:scale(0.97); }
+.mode-card .mc-icon { font-size:2.2em; margin-bottom:10px; }
+.mode-card .mc-name { font-size:1.15em; font-weight:800; margin-bottom:6px; }
+.mode-card .mc-desc { font-size:0.75em; color:#666; line-height:1.5; }
+.mode-card.speed { border-color:#a855f7; }
+.mode-card.survival { border-color:#06b6d4; }
+
+.best-score-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.best-item { text-align:center; }
+.best-label { font-size:0.7em; color:#555; margin-bottom:3px; }
+.best-val { font-size:1.1em; font-weight:700; color:#a855f7; }
+
+.site-badge { color:#444; font-size:0.78em; margin-top:14px; }
+
+/* ===== CATEGORY SCREEN ===== */
+.cat-title { font-size:1.4em; font-weight:800; margin-bottom:22px; }
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+.cat-btn {
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 14px;
+  padding: 20px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #ddd;
+  font-size: 0.95em;
+  font-weight: 600;
+}
+.cat-btn:hover { border-color:#06b6d4; background:#141a28; transform:translateY(-1px); }
+.cat-btn:active { transform:scale(0.97); }
+.cat-btn .ci { font-size:1.6em; display:block; margin-bottom:7px; }
+.cat-btn.all-cat {
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(6,182,212,0.15));
+  border-color: #a855f7;
+  font-size:1.05em;
+}
+
+/* ===== GAME SCREEN ===== */
+.game-wrap { width:100%; }
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.score-area { font-size:1.1em; font-weight:700; }
+.score-num { color:#06b6d4; font-size:1.4em; }
+.combo-area {
+  font-size:0.9em;
+  font-weight:800;
+  color:#f59e0b;
+  min-width:80px;
+  text-align:center;
+  min-height:24px;
+}
+.lives-area { font-size:1.3em; min-width:70px; text-align:right; }
+.timer-area { font-size:1.1em; font-weight:800; color:#a855f7; min-width:70px; text-align:right; }
+
+.timer-bar-wrap {
+  width: 100%;
+  height: 7px;
+  background: #1e1e35;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #06b6d4);
+  border-radius: 4px;
+  transition: width 0.1s linear, background 0.5s;
+}
+.timer-bar.urgent { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+
+/* Question box */
+.q-box {
+  width: 100%;
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 20px;
+  padding: 28px 20px;
+  text-align: center;
+  margin-bottom: 18px;
+  position: relative;
+}
+.q-cat-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #1e1e3a;
+  border-radius: 20px;
+  font-size: 0.78em;
+  color: #777;
+  margin-bottom: 14px;
+}
+.q-chosung {
+  font-size: 3em;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+  animation: slideDown 0.25s ease;
+}
+.q-length { font-size:0.82em; color:#555; }
+.q-hint-reveal {
+  color: #22c55e;
+  font-size: 1.1em;
+  margin-top: 8px;
+  letter-spacing: 0.1em;
+  min-height: 28px;
+  font-weight: 700;
+}
+
+/* Choices */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 14px;
+}
+.choice-btn {
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 13px;
+  padding: 18px 10px;
+  color: #ddd;
+  font-size: 0.97em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 64px;
+  line-height: 1.3;
+}
+.choice-btn:hover:not(:disabled) { border-color:#a855f7; background:#1a1a38; }
+.choice-btn:active:not(:disabled) { transform:scale(0.97); }
+.choice-btn.correct {
+  border-color: #22c55e !important;
+  background: #0f2a1a !important;
+  color: #22c55e !important;
+  animation: pop 0.25s ease;
+}
+.choice-btn.wrong {
+  border-color: #ef4444 !important;
+  background: #2a0f0f !important;
+  color: #ef4444 !important;
+  animation: shake 0.3s ease;
+}
+.choice-btn:disabled { cursor:default; }
+
+/* Type input */
+.type-wrap {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.type-input {
+  flex: 1;
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: #fff;
+  font-size: 1em;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.type-input:focus { border-color: #a855f7; }
+.type-input::placeholder { color:#444; }
+.type-submit-btn {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95em;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.type-submit-btn:active { opacity:0.8; }
+
+/* Bottom row */
+.game-bottom {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.skip-btn {
+  background: none;
+  border: 1px solid #252545;
+  border-radius: 10px;
+  color: #555;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 0.82em;
+  transition: all 0.2s;
+}
+.skip-btn:hover { border-color:#444; color:#888; }
+.hint-btn {
+  background: none;
+  border: 1px solid #252545;
+  border-radius: 10px;
+  color: #555;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 0.82em;
+  transition: all 0.2s;
+}
+.hint-btn:hover { border-color:#f59e0b; color:#f59e0b; }
+
+/* Score flash */
+.score-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5em;
+  font-weight: 900;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 999;
+  color: #22c55e;
+  text-shadow: 0 0 20px rgba(34,197,94,0.8);
+}
+.score-flash.show {
+  animation: scoreAnim 0.8s ease forwards;
+}
+@keyframes scoreAnim {
+  0%   { opacity:1; transform:translate(-50%,-50%) scale(0.8); }
+  40%  { opacity:1; transform:translate(-50%,-70%) scale(1.1); }
+  100% { opacity:0; transform:translate(-50%,-100%) scale(1); }
+}
+
+/* ===== RESULT SCREEN ===== */
+.result-box {
+  width: 100%;
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 22px;
+  padding: 34px 24px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.result-emoji { font-size:3.5em; margin-bottom:12px; }
+.result-rank  { font-size:1.6em; font-weight:900; margin-bottom:4px; }
+.result-score-num {
+  font-size: 4em;
+  font-weight: 900;
+  line-height: 1;
+  margin: 10px 0;
+}
+.result-sub { color:#666; font-size:0.9em; margin-top:8px; }
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+.stat-item { background:#1e1e35; border-radius:10px; padding:10px; }
+.stat-val  { font-size:1.4em; font-weight:800; color:#a855f7; }
+.stat-lbl  { font-size:0.7em; color:#666; margin-top:3px; }
+
+/* ===== PARTICLES ===== */
+.particle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.4em;
+  z-index: 998;
+  animation: particleFly 0.8s ease-out forwards;
+}
+@keyframes particleFly {
+  0%   { opacity:1; transform:translate(0,0) scale(1); }
+  100% { opacity:0; transform:translate(var(--dx), var(--dy)) scale(0.5); }
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .screen { padding: 14px 18px; justify-content: flex-start; padding-top: 30px; }
+  .home-logo { font-size:2.4em; }
+  .home-title { font-size:1.8em; }
+  .mode-card { padding:20px 10px; }
+  .q-box { padding:18px 14px; margin-bottom:12px; }
+  .q-chosung { font-size:2.4em; }
+  .choice-btn { min-height:52px; padding:12px 8px; }
+}
+@media (max-width: 360px) {
+  .q-chosung { font-size:2.4em; }
+  .choice-btn { font-size:0.88em; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<div id="screen-home" class="screen active">
+  <div class="home-logo">🎯</div>
+  <div class="home-title glow-text">초성 스나이퍼</div>
+  <div class="home-sub">초성만 보고 단어를 맞혀라!</div>
+
+  <div class="mode-grid">
+    <div class="mode-card speed" onclick="selectMode('speed')">
+      <div class="mc-icon">⚡</div>
+      <div class="mc-name">스피드</div>
+      <div class="mc-desc">30초 안에<br>최대한 많이!</div>
+    </div>
+    <div class="mode-card survival" onclick="selectMode('survival')">
+      <div class="mc-icon">❤️</div>
+      <div class="mc-name">서바이벌</div>
+      <div class="mc-desc">목숨 3개<br>끝까지 버텨라!</div>
+    </div>
+  </div>
+
+  <div class="best-score-row">
+    <div class="best-item">
+      <div class="best-label">⚡ 스피드 최고</div>
+      <div class="best-val" id="best-speed">-</div>
+    </div>
+    <div class="best-item">
+      <div class="best-label">❤️ 서바이벌 최고</div>
+      <div class="best-val" id="best-survival">-</div>
+    </div>
+  </div>
+
+  <div class="site-badge">🎮 킬링타임천국</div>
+</div>
+
+<!-- ===== CATEGORY ===== -->
+<div id="screen-category" class="screen">
+  <div class="cat-title glow-text">카테고리 선택</div>
+  <div class="cat-grid">
+    <div class="cat-btn all-cat" onclick="startGame('전체')">
+      <span class="ci">🌟</span>전체 랜덤 (추천)
+    </div>
+    <div class="cat-btn" onclick="startGame('영화/드라마')">
+      <span class="ci">🎬</span>영화/드라마
+    </div>
+    <div class="cat-btn" onclick="startGame('음식')">
+      <span class="ci">🍜</span>음식
+    </div>
+    <div class="cat-btn" onclick="startGame('연예인')">
+      <span class="ci">🌟</span>연예인
+    </div>
+    <div class="cat-btn" onclick="startGame('스포츠/게임')">
+      <span class="ci">🎮</span>스포츠/게임
+    </div>
+    <div class="cat-btn" onclick="startGame('속담/사자성어')">
+      <span class="ci">📖</span>속담/사자성어
+    </div>
+  </div>
+  <button class="back-btn" onclick="showScreen('home')">← 모드 선택으로</button>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="screen-game" class="screen">
+  <div class="game-wrap">
+    <div class="game-header">
+      <div class="score-area">점수 <span class="score-num" id="g-score">0</span></div>
+      <div class="combo-area" id="g-combo"></div>
+      <div class="lives-area" id="g-lives"></div>
+      <div class="timer-area" id="g-timer"></div>
+    </div>
+
+    <div class="timer-bar-wrap" id="timer-bar-wrap">
+      <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+    </div>
+
+    <div class="q-box">
+      <div class="q-cat-badge" id="g-cat">카테고리</div>
+      <div class="q-chosung glow-text" id="g-chosung">ㅊㅅㅅㄴㅇ</div>
+      <div class="q-length" id="g-length">5글자</div>
+      <div class="q-hint-reveal" id="g-hint-reveal"></div>
+    </div>
+
+    <div class="type-wrap" id="type-wrap">
+      <input type="text" class="type-input" id="type-input"
+             placeholder="정답 직접 입력..."
+             autocomplete="off" autocorrect="off"
+             autocapitalize="none" spellcheck="false">
+      <button class="type-submit-btn" onclick="submitTyped()">확인</button>
+    </div>
+
+    <div class="choices-grid" id="choices-grid"></div>
+
+    <div class="game-bottom">
+      <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 힌트 (-5점)</button>
+      <button class="skip-btn" onclick="skipQuestion()">건너뛰기 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-box">
+    <div class="result-emoji" id="r-emoji">🏆</div>
+    <div class="result-rank glow-text" id="r-rank">전설의 스나이퍼!</div>
+    <div class="result-score-num glow-text" id="r-score">0점</div>
+    <div class="result-sub" id="r-mode"></div>
+    <div class="result-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="r-correct">0</div>
+        <div class="stat-lbl">정답</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="r-accuracy">0%</div>
+        <div class="stat-lbl">정확도</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="r-maxcombo">0</div>
+        <div class="stat-lbl">최대 콤보</div>
+      </div>
+    </div>
+    <div class="result-sub" id="r-best-msg" style="margin-top:12px;color:#f59e0b;"></div>
+  </div>
+
+  <button class="btn-primary" onclick="shareResult()">📤 결과 공유하기</button>
+  <button class="btn-primary" onclick="showScreen('category')">🔄 다시 하기</button>
+  <button class="btn-secondary" onclick="showScreen('home')">🏠 처음으로</button>
+</div>
+
+<!-- Score flash -->
+<div class="score-flash" id="score-flash">+10</div>
+
+<script>
+// ==================== WORD DATABASE ====================
+const DB = {
+  '영화/드라마': [
+    '기생충','오징어게임','범죄도시','신과함께','극한직업','해운대','왕의남자',
+    '도깨비','이태원클라쓰','사랑의불시착','킹덤','미스터션샤인','스카이캐슬',
+    '더글로리','나의아저씨','무빙','마스크걸','펜트하우스','응답하라',
+    '별에서온그대','태양의후예','구르미그린달빛','시그널','비밀의숲',
+    '이상한변호사우영우','작은아씨들','지금우리학교는','슬기로운의사생활',
+    '동백꽃필무렵','청춘기록','빈센조','갯마을차차차','스물다섯스물하나',
+    '우리들의블루스','파친코','지옥','고요의바다','D.P.',
+  ],
+  '음식': [
+    '삼겹살','김치찌개','떡볶이','순대국밥','비빔밥','갈비탕','냉면','치킨',
+    '피자','라면','짜장면','탕수육','삼계탕','불고기','육개장','된장찌개',
+    '해물파전','보쌈','족발','곱창','순두부찌개','감자탕','닭갈비','칼국수',
+    '수제비','설렁탕','부대찌개','콩나물국밥','낙지볶음','쭈꾸미볶음',
+    '감자전','파전','두부김치','오삼불고기','제육볶음','콩불','마라탕',
+    '짬뽕','우동','소바','스시','라멘','파스타','리조또','스테이크',
+    '핫도그','타코','케밥','팟타이','쌀국수',
+  ],
+  '연예인': [
+    '방탄소년단','블랙핑크','아이유','이효리','유재석','강호동','송강호',
+    '전지현','이병헌','손예진','현빈','공유','김수현','박보검','차은우',
+    '뉴진스','에스파','세븐틴','스트레이키즈','트와이스','레드벨벳',
+    '엔시티','빅뱅','소녀시대','싸이','임영웅','영탁','이승기','이찬혁',
+    '아이브','르세라핌','엔하이픈','투모로우바이투게더','몬스타엑스',
+    '샤이니','인피니트','비투비','갓세븐','씨엔블루',
+  ],
+  '스포츠/게임': [
+    '리그오브레전드','오버워치','메이플스토리','배틀그라운드','마인크래프트',
+    '스타크래프트','피파온라인','던전앤파이터','로스트아크','발로란트',
+    '손흥민','류현진','김연아','박지성','이종범','박세리','안세영',
+    '우상혁','황선우','오상욱','태권도','배드민턴','양궁','쇼트트랙',
+    '월드컵','올림픽','아시안게임','프리미어리그','챔피언스리그',
+    '서든어택','카트라이더','테트리스','포켓몬고','원신',
+  ],
+  '속담/사자성어': [
+    '일석이조','오십보백보','사면초가','일거양득','동문서답','이심전심',
+    '임기응변','우왕좌왕','기사회생','전화위복','새옹지마','작심삼일',
+    '호시탐탐','명불허전','유유상종','동병상련','청출어람','괄목상대',
+    '우공이산','형설지공','수적천석','절치부심','와신상담','권선징악',
+    '인과응보','인지상정','자업자득','자포자기','천하무적','파죽지세',
+    '일취월장','갈수록태산','눈물겨운','소귀에경읽기',
+  ],
+};
+
+// ==================== CHOSUNG ====================
+const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+function getChosung(text) {
+  let result = '';
+  for (const ch of text) {
+    const code = ch.charCodeAt(0) - 0xAC00;
+    if (code >= 0 && code <= 11171) {
+      result += CHOSUNG[Math.floor(code / 28 / 21)];
+    } else {
+      result += ch;
+    }
+  }
+  return result;
+}
+
+// Reveal first N chars as hint (show _ for unrevealed)
+function getHintReveal(word, revealCount) {
+  return word.split('').map((ch, i) => i < revealCount ? ch : '＿').join(' ');
+}
+
+// ==================== UTILS ====================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 600;
+}
+
+// ==================== SOUND ====================
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'correct') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.08);
+      osc.frequency.setValueAtTime(784, now + 0.16);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.start(now); osc.stop(now + 0.35);
+    } else if (type === 'wrong') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.setValueAtTime(180, now + 0.1);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
+    } else if (type === 'combo') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1100, now + 0.1);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+    }
+  } catch(e) {}
+}
+
+// ==================== PARTICLES ====================
+function spawnParticles(x, y) {
+  const emojis = ['⭐','✨','🎯','💥','🔥'];
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const dx = (Math.random() - 0.5) * 150;
+    const dy = -(Math.random() * 120 + 40);
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.setProperty('--dx', dx + 'px');
+    el.style.setProperty('--dy', dy + 'px');
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 850);
+  }
+}
+
+// ==================== BEST SCORE ====================
+function getBest(mode) {
+  return parseInt(localStorage.getItem('cs_best_' + mode) || '0', 10);
+}
+function setBest(mode, val) {
+  if (val > getBest(mode)) {
+    localStorage.setItem('cs_best_' + mode, val);
+    return true;
+  }
+  return false;
+}
+function updateBestDisplay() {
+  const bs = getBest('speed');
+  const bsv = getBest('survival');
+  document.getElementById('best-speed').textContent = bs ? bs + '점' : '-';
+  document.getElementById('best-survival').textContent = bsv ? bsv + '점' : '-';
+}
+
+// ==================== STATE ====================
+let gameMode = '';
+let gameCategory = '';
+let score = 0;
+let lives = 3;
+let combo = 0;
+let maxCombo = 0;
+let timeLeft = 30;
+let timerInterval = null;
+let currentWord = '';
+let wordCategory = '';
+let usedWords = new Set();
+let totalAnswered = 0;
+let correctAnswered = 0;
+let gameActive = false;
+let answerLocked = false;
+let hintUsed = false;
+let hintRevealCount = 0;
+
+// ==================== SCREEN ====================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'home') updateBestDisplay();
+}
+
+function selectMode(mode) {
+  gameMode = mode;
+  showScreen('category');
+}
+
+// ==================== GAME START ====================
+function startGame(category) {
+  gameCategory = category;
+  score = 0; lives = 3; combo = 0; maxCombo = 0;
+  timeLeft = 30; usedWords.clear();
+  totalAnswered = 0; correctAnswered = 0;
+  gameActive = true; answerLocked = false;
+
+  showScreen('game');
+  updateHeader();
+
+  // Timer bar
+  const twrap = document.getElementById('timer-bar-wrap');
+  const tbar  = document.getElementById('timer-bar');
+  if (gameMode === 'speed') {
+    twrap.style.display = 'block';
+    tbar.style.width = '100%';
+    tbar.classList.remove('urgent');
+    startTimer();
+  } else {
+    twrap.style.display = 'none';
+  }
+
+  // Hide type input on mobile
+  document.getElementById('type-wrap').style.display = isMobile() ? 'none' : 'flex';
+
+  nextQuestion();
+  if (!isMobile()) {
+    setTimeout(() => document.getElementById('type-input').focus(), 200);
+  }
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft -= 0.1;
+    const pct = Math.max(0, timeLeft / 30 * 100);
+    const tbar = document.getElementById('timer-bar');
+    tbar.style.width = pct + '%';
+    if (timeLeft <= 8) tbar.classList.add('urgent');
+    document.getElementById('g-timer').textContent = Math.ceil(timeLeft) + 's';
+    if (timeLeft <= 0) { clearInterval(timerInterval); endGame(); }
+  }, 100);
+}
+
+// ==================== HEADER ====================
+function updateHeader() {
+  document.getElementById('g-score').textContent = score;
+
+  // Combo
+  const comboEl = document.getElementById('g-combo');
+  if (combo >= 3) {
+    comboEl.textContent = `🔥 ${combo} COMBO!`;
+  } else if (combo === 2) {
+    comboEl.textContent = '✨ 2연속!';
+  } else {
+    comboEl.textContent = '';
+  }
+
+  // Lives (survival) / Timer label (speed)
+  if (gameMode === 'survival') {
+    document.getElementById('g-lives').textContent =
+      '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+    document.getElementById('g-timer').textContent = '';
+  } else {
+    document.getElementById('g-lives').textContent = '';
+  }
+}
+
+// ==================== QUESTION ====================
+function getPool() {
+  if (gameCategory === '전체') {
+    return Object.values(DB).flat();
+  }
+  return DB[gameCategory] || [];
+}
+
+function nextQuestion() {
+  if (!gameActive) return;
+  answerLocked = false;
+  hintUsed = false;
+  hintRevealCount = 0;
+  document.getElementById('type-input').value = '';
+  document.getElementById('g-hint-reveal').textContent = '';
+  document.getElementById('hint-btn').disabled = false;
+
+  const pool = getPool();
+  let available = pool.filter(w => !usedWords.has(w));
+  if (available.length < 4) { usedWords.clear(); available = pool; }
+
+  currentWord = available[Math.floor(Math.random() * available.length)];
+  usedWords.add(currentWord);
+
+  // Find category of word
+  wordCategory = gameCategory;
+  if (gameCategory === '전체') {
+    for (const [cat, words] of Object.entries(DB)) {
+      if (words.includes(currentWord)) { wordCategory = cat; break; }
+    }
+  }
+
+  const chosung = getChosung(currentWord);
+  document.getElementById('g-cat').textContent = wordCategory;
+  document.getElementById('g-chosung').textContent = chosung;
+  document.getElementById('g-chosung').style.animation = 'none';
+  requestAnimationFrame(() => {
+    document.getElementById('g-chosung').style.animation = '';
+  });
+  document.getElementById('g-length').textContent = currentWord.length + '글자';
+
+  buildChoices(pool);
+}
+
+function buildChoices(pool) {
+  const sameLen = pool.filter(w => w !== currentWord && w.length === currentWord.length);
+  const anyOther = pool.filter(w => w !== currentWord && w.length !== currentWord.length);
+  let wrongs = shuffle(sameLen);
+  if (wrongs.length < 3) wrongs = [...wrongs, ...shuffle(anyOther)];
+  wrongs = wrongs.slice(0, 3);
+
+  const choices = shuffle([currentWord, ...wrongs]);
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  choices.forEach(word => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = word;
+    btn.onclick = (e) => onChoice(btn, word, e);
+    grid.appendChild(btn);
+  });
+}
+
+// ==================== ANSWER ====================
+function onChoice(btn, word, e) {
+  if (answerLocked) return;
+  answerLocked = true;
+  totalAnswered++;
+
+  if (word === currentWord) {
+    handleCorrect(btn, e ? e.clientX : window.innerWidth/2, e ? e.clientY : window.innerHeight/2);
+  } else {
+    btn.classList.add('wrong');
+    highlightCorrect();
+    handleWrong();
+  }
+  updateHeader();
+  setTimeout(() => { if (gameActive) nextQuestion(); }, 750);
+}
+
+function submitTyped() {
+  const val = document.getElementById('type-input').value.trim();
+  if (!val || answerLocked) return;
+  answerLocked = true;
+  totalAnswered++;
+
+  if (val === currentWord) {
+    const inp = document.getElementById('type-input');
+    const rect = inp.getBoundingClientRect();
+    handleCorrect(null, rect.left + rect.width/2, rect.top);
+    highlightCorrect();
+  } else {
+    document.getElementById('type-wrap').style.animation = 'shake 0.3s ease';
+    setTimeout(() => { document.getElementById('type-wrap').style.animation = ''; }, 300);
+    highlightCorrect();
+    handleWrong();
+  }
+  document.getElementById('type-input').value = '';
+  updateHeader();
+  setTimeout(() => {
+    if (gameActive) {
+      nextQuestion();
+      if (!isMobile()) document.getElementById('type-input').focus();
+    }
+  }, 750);
+}
+
+function handleCorrect(btn, x, y) {
+  if (btn) btn.classList.add('correct');
+  correctAnswered++;
+  combo++;
+  if (combo > maxCombo) maxCombo = combo;
+
+  const bonus = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+  const gained = 10 * bonus;
+  score += gained;
+
+  if (gameMode === 'speed') {
+    timeLeft = Math.min(timeLeft + 2, 30);
+  }
+
+  // Flash
+  showScoreFlash('+' + gained + (bonus > 1 ? ' 🔥' : ''), '#22c55e');
+  spawnParticles(x, y);
+
+  if (combo >= 3) playSound('combo');
+  else playSound('correct');
+}
+
+function handleWrong() {
+  combo = 0;
+  playSound('wrong');
+  if (gameMode === 'survival') {
+    lives = Math.max(0, lives - 1);
+    if (lives <= 0) {
+      updateHeader();
+      setTimeout(endGame, 800);
+      return;
+    }
+  }
+}
+
+function highlightCorrect() {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    if (b.textContent === currentWord) b.classList.add('correct');
+  });
+}
+
+function skipQuestion() {
+  if (answerLocked) return;
+  combo = 0;
+  if (gameMode === 'survival') {
+    lives = Math.max(0, lives - 1);
+    if (lives <= 0) { updateHeader(); endGame(); return; }
+  }
+  updateHeader();
+  nextQuestion();
+}
+
+function useHint() {
+  if (answerLocked || hintRevealCount >= 2) return;
+  score = Math.max(0, score - 5);
+  hintRevealCount++;
+  document.getElementById('g-hint-reveal').textContent =
+    getHintReveal(currentWord, hintRevealCount);
+  document.getElementById('g-score').textContent = score;
+  if (hintRevealCount >= 2) document.getElementById('hint-btn').disabled = true;
+}
+
+// ==================== SCORE FLASH ====================
+function showScoreFlash(text, color) {
+  const el = document.getElementById('score-flash');
+  el.textContent = text;
+  el.style.color = color;
+  el.classList.remove('show');
+  void el.offsetWidth; // reflow
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 900);
+}
+
+// ==================== END GAME ====================
+function endGame() {
+  gameActive = false;
+  if (timerInterval) clearInterval(timerInterval);
+
+  const acc = totalAnswered > 0 ? Math.round(correctAnswered / totalAnswered * 100) : 0;
+
+  let emoji, rank;
+  if      (score >= 300) { emoji = '👑'; rank = '레전드 스나이퍼'; }
+  else if (score >= 200) { emoji = '🏆'; rank = '마스터 스나이퍼'; }
+  else if (score >= 150) { emoji = '🎯'; rank = '저격 완료!'; }
+  else if (score >= 100) { emoji = '⭐'; rank = '실력자!'; }
+  else if (score >= 50)  { emoji = '👍'; rank = '잘 했어요!'; }
+  else                   { emoji = '😅'; rank = '다음엔 더 잘 할 수 있어!'; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-rank').textContent = rank;
+  document.getElementById('r-score').textContent = score + '점';
+  document.getElementById('r-mode').textContent =
+    (gameMode === 'speed' ? '⚡ 스피드' : '❤️ 서바이벌') + ' · ' + gameCategory;
+  document.getElementById('r-correct').textContent = correctAnswered;
+  document.getElementById('r-accuracy').textContent = acc + '%';
+  document.getElementById('r-maxcombo').textContent = maxCombo;
+
+  const isNew = setBest(gameMode, score);
+  document.getElementById('r-best-msg').textContent =
+    isNew ? '🎉 신기록 달성!' : '';
+
+  showScreen('result');
+}
+
+// ==================== SHARE ====================
+function shareResult() {
+  const acc = totalAnswered > 0 ? Math.round(correctAnswered / totalAnswered * 100) : 0;
+  const modeText = gameMode === 'speed' ? '⚡ 스피드' : '❤️ 서바이벌';
+
+  const bars = ['⬛','⬛','⬛','⬛','⬛'];
+  const filled = Math.round(acc / 20);
+  for (let i = 0; i < filled; i++) bars[i] = '🟪';
+
+  const text =
+`🎯 초성 스나이퍼
+${modeText} · ${gameCategory}
+🏆 ${score}점 | 정확도 ${acc}%
+${bars.join('')}
+
+킬링타임천국에서 도전해봐!
+https://killingtimeheaven.pages.dev`;
+
+  if (navigator.share) {
+    navigator.share({ title: '초성 스나이퍼', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('📋 결과가 복사됐어요! 친구에게 공유해보세요.');
+    });
+  } else {
+    prompt('아래 텍스트를 복사하세요:', text);
+  }
+}
+
+// ==================== KEYBOARD ====================
+document.getElementById('type-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitTyped();
+});
+
+// ==================== INIT ====================
+window.addEventListener('load', () => {
+  updateBestDisplay();
+  // Wake up audio on first interaction
+  document.addEventListener('touchstart', () => getAudioCtx(), { once: true });
+  document.addEventListener('click',      () => getAudioCtx(), { once: true });
+});
+</script>
+</body>
+</html>

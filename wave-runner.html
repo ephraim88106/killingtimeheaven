@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌊 파도를 넘어라 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation}
+.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.6}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px 16px;width:100%;margin-bottom:28px;font-size:.82em;color:#888;line-height:1.8}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.1em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+
+/* Game canvas screen */
+#s-game{padding:0;background:#0a0a15}
+.game-ui{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}
+.ui-score{font-size:1.4em;font-weight:800;color:#06b6d4}
+.ui-dist{font-size:1em;color:#888}
+#gameCanvas{display:block;width:100%;max-width:480px;touch-action:none}
+
+/* Overlay */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:20;pointer-events:none}
+.tap-hint{font-size:1.3em;color:#888;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0}
+.r-sub{color:#666;font-size:.85em;margin-top:8px}
+.r-best{color:#f59e0b;font-size:.85em;margin-top:10px}
+.stat-row{display:flex;gap:12px;margin-top:18px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 18px;text-align:center}
+.stat-v{font-size:1.3em;font-weight:800;color:#a855f7}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🌊</div>
+  <div class="title glow">파도를 넘어라</div>
+  <div class="sub">끝없이 밀려오는 파도를 뛰어넘어라!</div>
+  <div class="tips">
+    🖱️ <b>PC</b>: 스페이스바 또는 클릭으로 점프<br>
+    👆 <b>모바일</b>: 화면 탭으로 점프<br>
+    ✌️ 공중에서 한 번 더 누르면 <b>이단 점프!</b>
+  </div>
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <div style="color:#555;font-size:.8em;margin-top:6px">최고: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-ui">
+    <div class="ui-score" id="ui-score">0점</div>
+    <div class="ui-dist" id="ui-dist">x1.0</div>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🏆</div>
+    <div class="r-title glow" id="r-title">파도 마스터!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="r-sub" id="r-sub">최고 콤보: 0</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="r-dist">0m</div><div class="stat-l">거리</div></div>
+      <div class="stat"><div class="stat-v" id="r-jumps">0</div><div class="stat-l">점프</div></div>
+    </div>
+    <div class="r-best" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 도전</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<script>
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+
+// State
+let W,H,animId;
+let score,dist,jumps,speed,gameOver,frame;
+let playerY,playerVY,jumpCount,onGround;
+let obstacles=[],particles=[];
+let bgOffset=0;
+
+const GROUND_RATIO=0.78;
+const GRAVITY=0.55;
+const JUMP_V=-13;
+const PLAYER_W=44,PLAYER_H=52;
+const OBS_W=26;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function getBest(){return parseInt(localStorage.getItem('wr_best')||'0',10)}
+function setBest(v){if(v>getBest()){localStorage.setItem('wr_best',v);return true}return false}
+function updateBest(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function resize(){
+  const maxW=Math.min(window.innerWidth,480);
+  canvas.width=maxW;
+  canvas.height=Math.min(window.innerHeight,520);
+  W=canvas.width;H=canvas.height;
+}
+
+function startGame(){
+  resize();
+  show('s-game');
+  score=0;dist=0;jumps=0;speed=5;frame=0;gameOver=false;
+  const gY=H*GROUND_RATIO;
+  playerY=gY-PLAYER_H;playerVY=0;jumpCount=0;onGround=true;
+  obstacles=[];particles=[];bgOffset=0;
+  if(animId)cancelAnimationFrame(animId);
+  loop();
+}
+
+function jump(){
+  if(gameOver){startGame();return}
+  if(jumpCount<2){
+    playerVY=JUMP_V*(jumpCount===1?0.85:1);
+    jumpCount++;
+    onGround=false;
+    jumps++;
+    playJump();
+  }
+}
+
+// Input
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();jump()}});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();jump()});
+canvas.addEventListener('mousedown',e=>{jump()});
+
+function spawnObs(){
+  const gY=H*GROUND_RATIO;
+  const type=Math.random();
+  if(type<0.6){
+    // Ground obstacle (spike/wave)
+    const h=30+Math.random()*40;
+    obstacles.push({x:W+20,y:gY-h,w:OBS_W,h,type:'ground'});
+  } else {
+    // Floating obstacle
+    const h=20+Math.random()*25;
+    const fy=gY-PLAYER_H*2.5-Math.random()*60;
+    obstacles.push({x:W+20,y:fy,w:OBS_W,h,type:'air'});
+  }
+}
+
+function addParticle(x,y){
+  for(let i=0;i<6;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-.5)*6,
+      vy:-Math.random()*5-2,
+      life:1,alpha:1,
+      color:`hsl(${Math.random()*60+180},80%,60%)`
+    });
+  }
+}
+
+function loop(){
+  update();
+  draw();
+  if(!gameOver)animId=requestAnimationFrame(loop);
+}
+
+function update(){
+  frame++;
+  if(gameOver)return;
+
+  // Speed ramp
+  speed=5+dist*0.003;
+  if(speed>18)speed=18;
+
+  // Player
+  const gY=H*GROUND_RATIO;
+  playerVY+=GRAVITY;
+  playerY+=playerVY;
+  if(playerY>=gY-PLAYER_H){
+    playerY=gY-PLAYER_H;
+    playerVY=0;
+    jumpCount=0;
+    onGround=true;
+  }
+
+  // Spawn
+  const gap=Math.max(60,200-dist*0.5);
+  if(frame%Math.floor(gap/speed)===0)spawnObs();
+
+  // Move obstacles
+  for(const o of obstacles)o.x-=speed;
+  obstacles=obstacles.filter(o=>o.x>-60);
+
+  // Collision
+  const px=60,py=playerY;
+  for(const o of obstacles){
+    if(px+PLAYER_W-8>o.x&&px+8<o.x+o.w&&py+PLAYER_H-6>o.y&&py+4<o.y+o.h){
+      addParticle(px+PLAYER_W/2,py+PLAYER_H/2);
+      triggerGameOver();
+      return;
+    }
+  }
+
+  // Score
+  dist+=speed*0.05;
+  score=Math.floor(dist*10);
+  bgOffset=(bgOffset+speed*0.3)%W;
+
+  // Particles
+  for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=0.2;p.life-=0.04;p.alpha=p.life}
+  particles=particles.filter(p=>p.life>0);
+
+  // UI
+  document.getElementById('ui-score').textContent=score+'점';
+  document.getElementById('ui-dist').textContent='x'+speed.toFixed(1);
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const gY=H*GROUND_RATIO;
+
+  // Sky gradient
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#0a0a1f');
+  sky.addColorStop(1,'#0f1a2e');
+  ctx.fillStyle=sky;
+  ctx.fillRect(0,0,W,H);
+
+  // Stars
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  for(let i=0;i<30;i++){
+    const sx=(i*137+bgOffset*.2)%W;
+    const sy=(i*97)%(gY-20);
+    ctx.beginPath();ctx.arc(sx,sy,1,0,Math.PI*2);ctx.fill();
+  }
+
+  // Ground
+  const groundGrad=ctx.createLinearGradient(0,gY,0,H);
+  groundGrad.addColorStop(0,'#1e3a5f');
+  groundGrad.addColorStop(1,'#0a1a30');
+  ctx.fillStyle=groundGrad;
+  ctx.fillRect(0,gY,W,H-gY);
+
+  // Ground line
+  ctx.strokeStyle='#06b6d4';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,gY);ctx.lineTo(W,gY);ctx.stroke();
+
+  // Wave decorations on ground
+  ctx.strokeStyle='rgba(6,182,212,0.3)';
+  ctx.lineWidth=1;
+  for(let i=0;i<3;i++){
+    const wy=gY+10+i*10;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=20){
+      const waveY=wy+Math.sin((x+bgOffset*2+i*30)/30)*4;
+      x===0?ctx.moveTo(x,waveY):ctx.lineTo(x,waveY);
+    }
+    ctx.stroke();
+  }
+
+  // Obstacles
+  for(const o of obstacles){
+    if(o.type==='ground'){
+      // Spike / wave
+      const og=ctx.createLinearGradient(o.x,o.y,o.x,o.y+o.h);
+      og.addColorStop(0,'#06b6d4');
+      og.addColorStop(1,'#1e3a5f');
+      ctx.fillStyle=og;
+      ctx.beginPath();
+      ctx.moveTo(o.x,o.y+o.h);
+      ctx.lineTo(o.x+o.w/2,o.y);
+      ctx.lineTo(o.x+o.w,o.y+o.h);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(6,182,212,0.8)';ctx.lineWidth=1.5;ctx.stroke();
+    } else {
+      // Floating obstacle (seagull / rock)
+      ctx.fillStyle='#7c3aed';
+      ctx.strokeStyle='#a855f7';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.roundRect(o.x,o.y,o.w,o.h,6);
+      ctx.fill();ctx.stroke();
+      // Glow
+      ctx.shadowColor='#a855f7';
+      ctx.shadowBlur=8;
+      ctx.stroke();
+      ctx.shadowBlur=0;
+    }
+  }
+
+  // Player (character)
+  const px=60,py=playerY;
+  // Body
+  ctx.fillStyle=gameOver?'#ef4444':'#a855f7';
+  ctx.strokeStyle=gameOver?'#f87171':'#c084fc';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.roundRect(px,py,PLAYER_W,PLAYER_H,10);
+  ctx.fill();ctx.stroke();
+  // Face
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.arc(px+14,py+18,5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(px+30,py+18,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#0a0a15';
+  ctx.beginPath();ctx.arc(px+15,py+19,3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(px+31,py+19,3,0,Math.PI*2);ctx.fill();
+  // Legs animation
+  const legOff=onGround?Math.sin(frame*0.3)*8:0;
+  ctx.fillStyle='#7c3aed';
+  ctx.fillRect(px+6,py+PLAYER_H-2,12,8+legOff);
+  ctx.fillRect(px+PLAYER_W-18,py+PLAYER_H-2,12,8-legOff);
+
+  // Particles
+  for(const p of particles){
+    ctx.globalAlpha=p.alpha;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // Game over overlay
+  if(gameOver){
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#fff';
+    ctx.font='bold 28px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('💀 게임 오버',W/2,H/2-20);
+    ctx.font='16px sans-serif';
+    ctx.fillStyle='#888';
+    ctx.fillText('탭/클릭으로 다시 시작',W/2,H/2+20);
+    ctx.textAlign='left';
+  }
+}
+
+function triggerGameOver(){
+  gameOver=true;
+  playDead();
+  setTimeout(()=>showResult(),1200);
+}
+
+function showResult(){
+  const best=setBest(score);
+  let emoji,title;
+  if(score>=5000){emoji='👑';title='파도 전설!';}
+  else if(score>=3000){emoji='🏆';title='파도 마스터!';}
+  else if(score>=1500){emoji='🎯';title='파도 정복자!';}
+  else if(score>=700){emoji='⭐';title='잘 뛰었어요!';}
+  else{emoji='😅';title='다시 도전해봐요!';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-dist').textContent=Math.floor(dist)+'m';
+  document.getElementById('r-jumps').textContent=jumps;
+  document.getElementById('r-best').textContent=best?'🎉 최고 기록 달성!':'';
+  show('s-result');
+}
+
+// Sound
+let actx=null;
+function getActx(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return actx}
+function playJump(){
+  try{const c=getActx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='sine';
+    o.frequency.setValueAtTime(300,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(600,c.currentTime+.12);
+    g.gain.setValueAtTime(.2,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.2);
+    o.start();o.stop(c.currentTime+.2);
+  }catch(e){}
+}
+function playDead(){
+  try{const c=getActx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(400,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(80,c.currentTime+.4);
+    g.gain.setValueAtTime(.3,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.5);
+    o.start();o.stop(c.currentTime+.5);
+  }catch(e){}
+}
+
+window.addEventListener('load',()=>{
+  updateBest();
+  resize();
+  document.addEventListener('click',()=>getActx(),{once:true});
+  document.addEventListener('touchstart',()=>getActx(),{once:true});
+});
+window.addEventListener('resize',resize);
+</script>
+</body>
+</html>

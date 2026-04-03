@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🏗️ 도시를 쌓아라 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.wrap{width:100%;max-width:420px;padding:16px 16px 24px;display:flex;flex-direction:column;min-height:100vh;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Header */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;padding:10px 0}
+.hdr-title{font-size:1.1em;font-weight:800}
+.pop-badge{background:#141428;border:1px solid #252545;border-radius:20px;padding:5px 14px;font-size:.8em;color:#888}
+.pop-val{color:#a855f7;font-weight:700}
+
+/* Coin display */
+.coin-area{background:#141428;border:2px solid #252545;border-radius:18px;padding:18px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden}
+.coin-label{font-size:.78em;color:#666;margin-bottom:4px}
+.coin-num{font-size:2.6em;font-weight:900;line-height:1}
+.cps-row{font-size:.8em;color:#888;margin-top:6px}
+.cps-val{color:#f59e0b;font-weight:700}
+
+/* Click button */
+.click-btn{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:18px;padding:22px;font-size:2em;cursor:pointer;width:100%;margin-bottom:14px;transition:transform .1s;position:relative;overflow:hidden;user-select:none}
+.click-btn:active{transform:scale(.95)}
+.click-btn-label{font-size:.35em;display:block;margin-top:4px;opacity:.8}
+
+/* Buildings */
+.section-title{font-size:.85em;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.buildings{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;padding-bottom:10px}
+.building{background:#141428;border:2px solid #252545;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s;position:relative}
+.building:active{transform:scale(.98)}
+.building.can-buy{border-color:#a855f7}
+.building.can-buy:hover{background:#1a1a38}
+.building.maxed{border-color:#f59e0b;opacity:.7;cursor:default}
+.building.locked{opacity:.4;cursor:not-allowed}
+.building .b-icon{font-size:1.8em;flex-shrink:0}
+.building .b-info{flex:1;min-width:0}
+.building .b-name{font-size:.92em;font-weight:700}
+.building .b-desc{font-size:.72em;color:#888;margin-top:2px}
+.building .b-right{text-align:right;flex-shrink:0}
+.building .b-cost{font-size:.82em;font-weight:700;color:#f59e0b}
+.building .b-count{font-size:.72em;color:#555;margin-top:3px}
+.building.can-buy .b-cost{color:#22c55e}
+.buy-anim{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.85em;font-weight:700;color:#22c55e;pointer-events:none;opacity:0}
+
+/* Prestige */
+.prestige-area{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(6,182,212,.1));border:1px solid #a855f7;border-radius:14px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;justify-content:space-between}
+.prestige-txt{font-size:.82em;color:#888}
+.prestige-val{font-size:.85em;font-weight:700}
+.prestige-btn{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:10px;padding:8px 16px;color:#fff;font-size:.8em;font-weight:700;cursor:pointer}
+.prestige-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* Coin float */
+.cfloat{position:fixed;pointer-events:none;font-weight:800;font-size:1em;color:#f59e0b;animation:floatUp .8s ease-out forwards;z-index:99}
+@keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-60px)}}
+
+/* Milestone toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a38;border:1px solid #a855f7;border-radius:12px;padding:10px 20px;font-size:.85em;z-index:100;animation:toastAnim 2.5s ease forwards}
+@keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-title glow">🏗️ 도시를 쌓아라</div>
+    <div class="pop-badge">인구 <span class="pop-val" id="pop">0</span>명</div>
+  </div>
+
+  <!-- Coins -->
+  <div class="coin-area">
+    <div class="coin-label">💰 보유 코인</div>
+    <div class="coin-num glow" id="coins">0</div>
+    <div class="cps-row">초당 <span class="cps-val" id="cps">0</span> 코인</div>
+  </div>
+
+  <!-- Click Button -->
+  <button class="click-btn" id="click-btn" onclick="handleClick(event)">
+    🏙️
+    <span class="click-btn-label">탭해서 코인 획득!</span>
+  </button>
+
+  <!-- Buildings -->
+  <div class="section-title">🏢 건물 구매</div>
+  <div class="buildings" id="buildings"></div>
+
+  <!-- Prestige -->
+  <div class="prestige-area" id="prestige-area">
+    <div>
+      <div class="prestige-val glow">⭐ 재시작 (프레스티지)</div>
+      <div class="prestige-txt">코인 초기화 대신 배율 <span id="p-multi">×1.0</span> 획득</div>
+    </div>
+    <button class="prestige-btn" id="prestige-btn" onclick="prestige()" disabled>초기화</button>
+  </div>
+</div>
+
+<script>
+// ===== BUILDING DATA =====
+const BUILDINGS=[
+  {id:'tent',    name:'텐트',    icon:'⛺',cps:0.1, base:10,   pop:1,   desc:'소박한 시작. 코인을 조금씩 생산해요'},
+  {id:'house',   name:'주택',    icon:'🏠',cps:0.5, base:80,   pop:5,   desc:'주민들이 살아갈 집'},
+  {id:'market',  name:'시장',    icon:'🏪',cps:3,   base:500,  pop:15,  desc:'상업 활동으로 코인 창출'},
+  {id:'school',  name:'학교',    icon:'🏫',cps:10,  base:2000, pop:30,  desc:'교육으로 도시 발전'},
+  {id:'factory', name:'공장',    icon:'🏭',cps:40,  base:8000, pop:50,  desc:'대량 생산으로 코인 폭발'},
+  {id:'bank',    name:'은행',    icon:'🏦',cps:150, base:30000,pop:100, desc:'금융 시스템 구축'},
+  {id:'tower',   name:'타워',    icon:'🗼',cps:500, base:100000,pop:200,desc:'도시의 랜드마크!'},
+  {id:'rocket',  name:'우주센터',icon:'🚀',cps:2000,base:500000,pop:500,desc:'우주로! 최고 효율의 건물'},
+];
+const MAX_COUNT=50;
+
+// ===== STATE =====
+let coins=0,totalCoins=0,clickPower=1,prestigeMulti=1,prestigeCount=0;
+let bldCounts={};
+let lastTick=Date.now();
+let cps=0;
+let population=0;
+
+BUILDINGS.forEach(b=>bldCounts[b.id]=0);
+
+// Save/Load
+function save(){
+  localStorage.setItem('cb_save',JSON.stringify({coins,totalCoins,clickPower,prestigeMulti,prestigeCount,bldCounts}));
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem('cb_save')||'null');
+    if(!d)return;
+    coins=d.coins||0;totalCoins=d.totalCoins||0;
+    clickPower=d.clickPower||1;prestigeMulti=d.prestigeMulti||1;prestigeCount=d.prestigeCount||0;
+    bldCounts=d.bldCounts||{};
+    BUILDINGS.forEach(b=>{if(bldCounts[b.id]===undefined)bldCounts[b.id]=0});
+  }catch(e){}
+}
+
+function getCps(){
+  let c=0;
+  BUILDINGS.forEach(b=>c+=b.cps*bldCounts[b.id]);
+  return c*prestigeMulti;
+}
+function getClickValue(){return Math.max(1,clickPower+(getCps()*0.1))*prestigeMulti}
+function getBuildingCost(b){return Math.floor(b.base*Math.pow(1.15,bldCounts[b.id]))}
+function getPopulation(){let p=0;BUILDINGS.forEach(b=>p+=b.pop*bldCounts[b.id]);return p}
+
+function fmt(n){
+  if(n>=1e9)return(n/1e9).toFixed(1)+'B';
+  if(n>=1e6)return(n/1e6).toFixed(1)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toLocaleString();
+}
+
+// ===== RENDER =====
+function renderBuildings(){
+  const wrap=document.getElementById('buildings');
+  wrap.innerHTML='';
+  BUILDINGS.forEach(b=>{
+    const cost=getBuildingCost(b);
+    const count=bldCounts[b.id];
+    const canBuy=coins>=cost;
+    const maxed=count>=MAX_COUNT;
+    const locked=count===0&&cost>totalCoins*3&&totalCoins<100;
+
+    const div=document.createElement('div');
+    div.className='building'+(maxed?' maxed':canBuy?' can-buy':locked?' locked':'');
+    div.innerHTML=`
+      <div class="b-icon">${b.icon}</div>
+      <div class="b-info">
+        <div class="b-name">${b.name} <span style="color:#555;font-size:.85em">${count>0?'×'+count:''}</span></div>
+        <div class="b-desc">${b.desc} (+${b.cps*prestigeMulti}/s)</div>
+      </div>
+      <div class="b-right">
+        <div class="b-cost">${maxed?'MAX':canBuy?'💰'+fmt(cost):'🔒'+fmt(cost)}</div>
+        <div class="b-count">인구 +${b.pop}</div>
+      </div>
+    `;
+    if(!maxed&&!locked)div.onclick=()=>buyBuilding(b);
+    wrap.appendChild(div);
+  });
+}
+
+function renderStats(){
+  cps=getCps();
+  population=getPopulation();
+  document.getElementById('coins').textContent=fmt(coins);
+  document.getElementById('cps').textContent=fmt(cps);
+  document.getElementById('pop').textContent=population.toLocaleString();
+
+  // Prestige
+  const pmulti=1+prestigeCount*0.5;
+  document.getElementById('p-multi').textContent='×'+pmulti.toFixed(1);
+  document.getElementById('prestige-btn').disabled=totalCoins<1000000;
+}
+
+// ===== ACTIONS =====
+function handleClick(e){
+  const val=getClickValue();
+  coins+=val;totalCoins+=val;
+  spawnCoinFloat(e.clientX,e.clientY,'+'+fmt(val));
+  renderStats();
+  save();
+}
+
+function buyBuilding(b){
+  const cost=getBuildingCost(b);
+  if(coins<cost)return;
+  coins-=cost;
+  bldCounts[b.id]++;
+  checkMilestones();
+  renderBuildings();
+  renderStats();
+  save();
+}
+
+function prestige(){
+  if(totalCoins<1000000)return;
+  prestigeCount++;
+  prestigeMulti=1+prestigeCount*0.5;
+  coins=0;totalCoins=0;clickPower=1;
+  BUILDINGS.forEach(b=>bldCounts[b.id]=0);
+  showToast(`⭐ 프레스티지! 이제 ×${prestigeMulti.toFixed(1)} 배율 적용!`);
+  renderBuildings();renderStats();save();
+}
+
+// Milestones
+const MILESTONES=[
+  {val:100,msg:'🏕️ 캠핑 마을 완성!'},
+  {val:1000,msg:'🏘️ 동네가 생겼어요!'},
+  {val:10000,msg:'🏙️ 작은 도시 탄생!'},
+  {val:100000,msg:'🌆 중형 도시 달성!'},
+  {val:1000000,msg:'🌃 대도시가 됐어요!'},
+  {val:10000000,msg:'🌇 메트로폴리탄!'},
+  {val:1000000000,msg:'👑 세계 최대 도시!'},
+];
+const shownMilestones=new Set();
+function checkMilestones(){
+  MILESTONES.forEach(m=>{
+    if(totalCoins>=m.val&&!shownMilestones.has(m.val)){
+      shownMilestones.add(m.val);
+      showToast(m.msg);
+    }
+  });
+}
+
+// ===== IDLE TICK =====
+function tick(){
+  const now=Date.now();
+  const dt=(now-lastTick)/1000;
+  lastTick=now;
+  const earned=getCps()*dt;
+  if(earned>0){coins+=earned;totalCoins+=earned;checkMilestones();}
+  renderStats();
+}
+
+// ===== UI HELPERS =====
+function spawnCoinFloat(x,y,txt){
+  const el=document.createElement('div');
+  el.className='cfloat';
+  el.textContent=txt;
+  el.style.left=x+'px';
+  el.style.top=y+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),850);
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+// ===== INIT =====
+load();
+renderBuildings();renderStats();
+setInterval(tick,100);
+setInterval(()=>{renderBuildings();},2000);
+setInterval(save,5000);
+</script>
+</body>
+</html>

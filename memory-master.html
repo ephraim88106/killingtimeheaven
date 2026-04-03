@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🧠 기억력 달인 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen{display:none;width:100%;max-width:420px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.title{font-size:2.2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:36px;text-align:center}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px 24px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+.btn-sub:hover{border-color:#555;color:#ccc}
+
+/* Game */
+.level-row{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:20px}
+.level-txt{font-size:1em;color:#888}
+.score-txt{font-size:1.2em;font-weight:700;color:#a855f7}
+.status-msg{font-size:1.1em;font-weight:700;min-height:32px;margin-bottom:18px;text-align:center;color:#ddd}
+.pad-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.pad{width:160px;height:160px;border-radius:20px;cursor:pointer;transition:filter .1s,transform .1s;border:3px solid transparent;user-select:none}
+.pad:active{transform:scale(.96)}
+@media(max-width:400px){.pad{width:140px;height:140px}}
+.pad-red   {background:#7f1d1d;border-color:#991b1b}
+.pad-blue  {background:#1e3a8a;border-color:#1d4ed8}
+.pad-green {background:#14532d;border-color:#166534}
+.pad-yellow{background:#78350f;border-color:#92400e}
+.pad-red.lit   {background:#ef4444;border-color:#f87171;filter:brightness(1.3) drop-shadow(0 0 18px #ef4444);transform:scale(1.04)}
+.pad-blue.lit  {background:#3b82f6;border-color:#60a5fa;filter:brightness(1.3) drop-shadow(0 0 18px #3b82f6);transform:scale(1.04)}
+.pad-green.lit {background:#22c55e;border-color:#4ade80;filter:brightness(1.3) drop-shadow(0 0 18px #22c55e);transform:scale(1.04)}
+.pad-yellow.lit{background:#f59e0b;border-color:#fcd34d;filter:brightness(1.3) drop-shadow(0 0 18px #f59e0b);transform:scale(1.04)}
+.pad.wrong{animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.best-row{color:#555;font-size:.82em;margin-top:8px}
+.best-val{color:#a855f7;font-weight:700}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3.2em;margin-bottom:10px}
+.r-rank{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0}
+.r-sub{color:#666;font-size:.88em;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="font-size:3em;margin-bottom:8px">🧠</div>
+  <div class="title glow">기억력 달인</div>
+  <div class="sub">순서를 기억하고<br>그대로 따라 눌러라!</div>
+  <button class="btn-main" onclick="goStart()">▶ 게임 시작</button>
+  <div class="best-row">최고 레벨: <span class="best-val" id="best-disp">-</span></div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="level-row">
+    <div class="level-txt">레벨 <span id="g-level">1</span></div>
+    <div class="score-txt"><span id="g-score">0</span>점</div>
+  </div>
+  <div class="status-msg" id="g-status">잠시 후 시작...</div>
+  <div class="pad-grid">
+    <div class="pad pad-red"    id="p0" onclick="onPad(0)"></div>
+    <div class="pad pad-blue"   id="p1" onclick="onPad(1)"></div>
+    <div class="pad pad-green"  id="p2" onclick="onPad(2)"></div>
+    <div class="pad pad-yellow" id="p3" onclick="onPad(3)"></div>
+  </div>
+  <div style="color:#444;font-size:.8em">빛나는 순서를 기억하세요</div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🏆</div>
+    <div class="r-rank glow" id="r-rank">기억력 달인!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="r-sub" id="r-sub">레벨 1 · 0연속 성공</div>
+    <div style="color:#f59e0b;font-size:.85em;margin-top:10px" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="goStart()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<script>
+const PADS=['pad-red','pad-blue','pad-green','pad-yellow'];
+const SOUNDS=[[523,659],[440,554],[330,415],[392,494]];// freq pairs per pad
+
+let seq=[],playerIdx=0,level=0,score=0,locked=true;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function getBest(){return parseInt(localStorage.getItem('mm_best')||'0',10)}
+function setBest(v){if(v>getBest()){localStorage.setItem('mm_best',v);return true}return false}
+
+function updateBest(){
+  const b=getBest();
+  document.getElementById('best-disp').textContent=b?b+'레벨':'-';
+}
+
+function goStart(){
+  seq=[];playerIdx=0;level=0;score=0;locked=true;
+  show('s-game');
+  setStatus('준비...',false);
+  setTimeout(nextLevel,800);
+}
+
+function nextLevel(){
+  level++;
+  playerIdx=0;
+  seq.push(Math.floor(Math.random()*4));
+  document.getElementById('g-level').textContent=level;
+  setStatus('잘 봐!',false);
+  locked=true;
+  showSequence();
+}
+
+async function showSequence(){
+  await sleep(400);
+  for(let id of seq){
+    await flashPad(id,520);
+    await sleep(240);
+  }
+  setStatus('당신 차례!',true);
+  locked=false;
+}
+
+function flashPad(id,ms){
+  return new Promise(resolve=>{
+    const el=document.getElementById('p'+id);
+    el.classList.add('lit');
+    playBeep(id);
+    setTimeout(()=>{el.classList.remove('lit');resolve()},ms);
+  });
+}
+
+function onPad(id){
+  if(locked)return;
+  flashPad(id,180);
+
+  if(id!==seq[playerIdx]){
+    // Wrong
+    locked=true;
+    setStatus('틀렸어요! 😵',false);
+    document.getElementById('p'+id).classList.add('wrong');
+    setTimeout(()=>{
+      document.getElementById('p'+id).classList.remove('wrong');
+      showResult();
+    },700);
+    return;
+  }
+
+  playerIdx++;
+  if(playerIdx===seq.length){
+    // All correct
+    locked=true;
+    score+=level*10;
+    document.getElementById('g-score').textContent=score;
+    setStatus('정확해요! 🎉',false);
+    setTimeout(nextLevel,900);
+  }
+}
+
+function setStatus(msg,interactive){
+  document.getElementById('g-status').textContent=msg;
+}
+
+function showResult(){
+  const best=setBest(level);
+  let emoji,rank;
+  if(level>=15){emoji='👑';rank='전설의 기억력 달인!';}
+  else if(level>=10){emoji='🏆';rank='기억력 마스터!';}
+  else if(level>=7){emoji='🎯';rank='대단해요!';}
+  else if(level>=4){emoji='⭐';rank='잘 했어요!';}
+  else{emoji='😅';rank='다시 도전해봐요!';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-rank').textContent=rank;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-sub').textContent=`레벨 ${level} · ${seq.length-1}연속 성공`;
+  document.getElementById('r-best').textContent=best?'🎉 최고 레벨 신기록!':'';
+  show('s-result');
+}
+
+// Sound
+let ctx=null;
+function getCtx(){if(!ctx){try{ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return ctx}
+function playBeep(id){
+  try{
+    const c=getCtx();if(!c)return;
+    const [f1,f2]=SOUNDS[id];
+    const osc=c.createOscillator(),g=c.createGain();
+    osc.connect(g);g.connect(c.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(f1,c.currentTime);
+    osc.frequency.setValueAtTime(f2,c.currentTime+0.1);
+    g.gain.setValueAtTime(.3,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);
+    osc.start();osc.stop(c.currentTime+.35);
+  }catch(e){}
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+window.addEventListener('load',()=>{
+  updateBest();
+  document.addEventListener('click',()=>getCtx(),{once:true});
+  document.addEventListener('touchstart',()=>getCtx(),{once:true});
+});
+</script>
+</body>
+</html>

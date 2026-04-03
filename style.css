@@ -20,6 +20,34 @@
   --invasion-gradient: linear-gradient(135deg, oklch(50% 0.2 25), oklch(40% 0.25 20));
   --invasion-glow: oklch(45% 0.2 20 / 50%);
 
+  /* Game 5: 초성 스나이퍼 (Cyan/Teal) */
+  --chosung-gradient: linear-gradient(135deg, oklch(72% 0.2 195), oklch(58% 0.22 210));
+  --chosung-glow: oklch(65% 0.2 200 / 40%);
+
+  /* Game 6: 파도를 넘어라 (Blue/Purple) */
+  --wave-gradient: linear-gradient(135deg, oklch(60% 0.25 270), oklch(55% 0.28 300));
+  --wave-glow: oklch(57% 0.26 285 / 40%);
+
+  /* Game 7: 기억력 달인 (Orange/Amber) */
+  --memory-gradient: linear-gradient(135deg, oklch(78% 0.18 55), oklch(65% 0.22 40));
+  --memory-glow: oklch(70% 0.2 47 / 40%);
+
+  /* Game 8: 한 붓 탈출 (Green/Lime) */
+  --hanbot-gradient: linear-gradient(135deg, oklch(75% 0.2 140), oklch(60% 0.22 155));
+  --hanbot-glow: oklch(68% 0.21 147 / 40%);
+
+  /* Game 9: 도시를 쌓아라 (Yellow/Gold) */
+  --city-gradient: linear-gradient(135deg, oklch(85% 0.18 90), oklch(72% 0.22 70));
+  --city-glow: oklch(78% 0.2 80 / 40%);
+
+  /* Game 10: 운명의 카드 (Rose/Pink) */
+  --destiny-gradient: linear-gradient(135deg, oklch(68% 0.24 0), oklch(58% 0.26 340));
+  --destiny-glow: oklch(63% 0.25 350 / 40%);
+
+  /* Game 11: 비트를 잡아라 (Magenta/Purple) */
+  --beat-gradient: linear-gradient(135deg, oklch(65% 0.28 320), oklch(55% 0.3 290));
+  --beat-glow: oklch(60% 0.29 305 / 40%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   
@@ -279,6 +307,69 @@ body {
 .invasion-pc:hover, .invasion-mobile:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px -5px var(--invasion-glow);
+}
+
+.chosung-btn {
+  background: var(--chosung-gradient);
+  box-shadow: 0 10px 20px -5px var(--chosung-glow);
+}
+.chosung-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--chosung-glow);
+}
+
+.wave-btn {
+  background: var(--wave-gradient);
+  box-shadow: 0 10px 20px -5px var(--wave-glow);
+}
+.wave-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--wave-glow);
+}
+
+.memory-btn {
+  background: var(--memory-gradient);
+  box-shadow: 0 10px 20px -5px var(--memory-glow);
+}
+.memory-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--memory-glow);
+}
+
+.hanbot-btn {
+  background: var(--hanbot-gradient);
+  box-shadow: 0 10px 20px -5px var(--hanbot-glow);
+}
+.hanbot-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--hanbot-glow);
+}
+
+.city-btn {
+  background: var(--city-gradient);
+  box-shadow: 0 10px 20px -5px var(--city-glow);
+}
+.city-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--city-glow);
+}
+
+.destiny-btn {
+  background: var(--destiny-gradient);
+  box-shadow: 0 10px 20px -5px var(--destiny-glow);
+}
+.destiny-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--destiny-glow);
+}
+
+.beat-btn {
+  background: var(--beat-gradient);
+  box-shadow: 0 10px 20px -5px var(--beat-glow);
+}
+.beat-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--beat-glow);
 }
 
 /* Glass Shine Effect on Hover */

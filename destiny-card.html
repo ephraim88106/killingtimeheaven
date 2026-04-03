@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🃏 운명의 카드 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen{display:none;width:100%;max-width:420px;padding:20px 16px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+
+/* Battle UI */
+.battle-wrap{width:100%;display:flex;flex-direction:column;gap:10px}
+
+/* Enemy */
+.enemy-box{background:#1a0a0a;border:2px solid #7f1d1d;border-radius:16px;padding:14px;text-align:center;position:relative}
+.enemy-icon{font-size:2.4em;margin-bottom:4px}
+.enemy-name{font-size:1em;font-weight:700;color:#fca5a5;margin-bottom:8px}
+.hp-bar-wrap{height:10px;background:#2a0a0a;border-radius:5px;overflow:hidden;margin-bottom:4px}
+.hp-bar{height:100%;background:linear-gradient(90deg,#dc2626,#ef4444);border-radius:5px;transition:width .4s}
+.hp-txt{font-size:.75em;color:#888}
+.wave-txt{position:absolute;top:8px;right:12px;font-size:.78em;color:#666}
+.attack-anim{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:1.4em;pointer-events:none;opacity:0}
+
+/* Player status */
+.player-box{background:#0a1a0a;border:2px solid #14532d;border-radius:16px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.player-hp{font-size:1.2em;font-weight:800;color:#22c55e}
+.player-shield{font-size:.9em;color:#06b6d4;font-weight:700}
+.player-score{font-size:.9em;color:#a855f7;font-weight:700}
+.status-txt{font-size:.78em;color:#666;min-height:18px;text-align:center;margin:4px 0}
+
+/* Cards */
+.cards-area{margin-top:4px}
+.cards-label{font-size:.78em;color:#666;margin-bottom:8px;display:flex;justify-content:space-between}
+.cards-hand{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.card{
+  width:72px;height:100px;border-radius:10px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:transform .2s,box-shadow .2s;border:2px solid transparent;
+  position:relative;user-select:none;flex-shrink:0;
+}
+.card:active{transform:translateY(-8px) scale(1.05)!important}
+.card:hover{transform:translateY(-5px)}
+.card-icon{font-size:1.8em;margin-bottom:4px}
+.card-name{font-size:.6em;font-weight:700;text-align:center;line-height:1.2}
+.card-val{font-size:.75em;font-weight:800;margin-top:3px}
+.card-atk {background:#2d0a0a;border-color:#ef4444;color:#fca5a5}
+.card-shld{background:#0a1a2a;border-color:#06b6d4;color:#7dd3fc}
+.card-heal{background:#0a2a0a;border-color:#22c55e;color:#86efac}
+.card-2x  {background:#2a1a0a;border-color:#f59e0b;color:#fcd34d}
+.card-bolt{background:#1a0a2a;border-color:#a855f7;color:#c084fc}
+.card-fire{background:#2a0a10;border-color:#f43f5e;color:#fda4af}
+.card.disabled{opacity:.4;cursor:default;pointer-events:none}
+
+/* Deck */
+.deck-area{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.deck-pile{background:#252545;border:2px solid #3a3a65;border-radius:8px;width:44px;height:60px;display:flex;align-items:center;justify-content:center;font-size:.75em;color:#888;cursor:pointer;transition:all .2s}
+.deck-pile:hover{border-color:#a855f7}
+.draw-btn{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:10px;padding:8px 18px;color:#fff;font-size:.85em;font-weight:700;cursor:pointer;transition:opacity .2s}
+.draw-btn:disabled{opacity:.3;cursor:default}
+
+/* Effect overlay */
+.fx{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:50;display:flex;align-items:center;justify-content:center;font-size:2.5em;font-weight:900;opacity:0}
+.fx.show{animation:fxAnim .6s ease forwards}
+@keyframes fxAnim{0%{opacity:0;transform:scale(.6)}40%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1)}}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:30px 22px;text-align:center;width:100%;margin-bottom:20px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;margin:10px 0}
+.r-stats{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.r-stat{background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center}
+.r-sv{font-size:1.3em;font-weight:800;color:#a855f7}
+.r-sl{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="font-size:3em;margin-bottom:8px">🃏</div>
+  <div style="font-size:2.2em;font-weight:900;margin-bottom:6px" class="glow">운명의 카드</div>
+  <div style="color:#666;font-size:.9em;margin-bottom:20px;text-align:center;line-height:1.7">
+    무작위로 주어지는 카드를 써서<br>밀려오는 적을 물리쳐라!
+  </div>
+  <div style="background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:24px;font-size:.8em;color:#888;line-height:2">
+    ⚔️ 공격: 적에게 데미지 &nbsp;|&nbsp; 🛡️ 방어: 다음 공격 막기<br>
+    💚 회복: HP 회복 &nbsp;|&nbsp; ⚡ 번개: 강력한 데미지<br>
+    🔥 작열: 지속 데미지 &nbsp;|&nbsp; ×2: 다음 카드 2배!
+  </div>
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <div style="color:#555;font-size:.8em;margin-top:6px">최고 기록: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="battle-wrap">
+
+    <!-- Enemy -->
+    <div class="enemy-box">
+      <div class="wave-txt" id="wave-txt">1웨이브</div>
+      <div class="enemy-icon" id="enemy-icon">👹</div>
+      <div class="enemy-name" id="enemy-name">고블린</div>
+      <div class="hp-bar-wrap"><div class="hp-bar" id="enemy-hp-bar" style="width:100%"></div></div>
+      <div class="hp-txt">HP: <span id="enemy-hp">20</span> / <span id="enemy-maxhp">20</span></div>
+      <div class="attack-anim" id="atk-anim">💥</div>
+    </div>
+
+    <!-- Player -->
+    <div class="player-box">
+      <div>
+        <div class="player-hp">❤️ <span id="p-hp">20</span></div>
+        <div style="font-size:.72em;color:#555;margin-top:2px">MAX HP: <span id="p-maxhp">20</span></div>
+      </div>
+      <div style="text-align:center">
+        <div class="player-shield" id="p-shield" style="display:none">🛡️ 방어 중</div>
+        <div id="p-burn" style="display:none;color:#f97316;font-size:.8em">🔥 <span id="burn-txt">0</span>턴 지속</div>
+      </div>
+      <div class="player-score">🏆 <span id="p-score">0</span>점</div>
+    </div>
+
+    <div class="status-txt" id="status-txt">카드를 선택하세요</div>
+
+    <!-- Deck & Draw -->
+    <div class="deck-area">
+      <div style="font-size:.75em;color:#666">덱: <span id="deck-count">0</span>장</div>
+      <div class="deck-pile" id="deck-pile" onclick="drawCards()">🂠</div>
+      <button class="draw-btn" id="draw-btn" onclick="drawCards()">카드 뽑기</button>
+    </div>
+
+    <!-- Hand -->
+    <div class="cards-area">
+      <div class="cards-label">
+        <span>🃏 패 (<span id="hand-count">0</span>/5)</span>
+        <span style="color:#555">적 공격 후 보충</span>
+      </div>
+      <div class="cards-hand" id="hand"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">⚔️</div>
+    <div class="r-title glow" id="r-title">용감히 싸웠어요!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="r-stats">
+      <div class="r-stat"><div class="r-sv" id="r-wave">0</div><div class="r-sl">웨이브</div></div>
+      <div class="r-stat"><div class="r-sv" id="r-kills">0</div><div class="r-sl">처치</div></div>
+      <div class="r-stat"><div class="r-sv" id="r-dmg">0</div><div class="r-sl">데미지</div></div>
+    </div>
+    <div style="color:#f59e0b;font-size:.85em;margin-top:12px" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 도전</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<div class="fx" id="fx"></div>
+
+<script>
+// ===== CARD TYPES =====
+const CARD_TYPES=[
+  {id:'atk',  name:'공격',   icon:'⚔️', cls:'card-atk', desc:'10 데미지',   weight:5},
+  {id:'atk2', name:'강공격', icon:'🗡️', cls:'card-atk', desc:'18 데미지',   weight:3},
+  {id:'shld', name:'방어',   icon:'🛡️', cls:'card-shld',desc:'다음 공격 차단',weight:4},
+  {id:'heal', name:'회복',   icon:'💚', cls:'card-heal',desc:'HP +8',        weight:3},
+  {id:'2x',   name:'×2',    icon:'×2', cls:'card-2x',  desc:'다음 카드 2배',weight:2},
+  {id:'bolt', name:'번개',   icon:'⚡', cls:'card-bolt',desc:'25 데미지',    weight:2},
+  {id:'fire', name:'작열',   icon:'🔥', cls:'card-fire',desc:'3턴 데미지',   weight:2},
+];
+
+// ===== ENEMIES =====
+const ENEMIES=[
+  {name:'고블린',     icon:'👹', hp:20,  atk:4,  reward:50},
+  {name:'오크',       icon:'👺', hp:35,  atk:6,  reward:80},
+  {name:'스켈레톤',   icon:'💀', hp:25,  atk:5,  reward:70},
+  {name:'트롤',       icon:'🧌', hp:55,  atk:8,  reward:120},
+  {name:'마법사',     icon:'🧙', hp:40,  atk:10, reward:140},
+  {name:'드래곤',     icon:'🐉', hp:80,  atk:12, reward:200},
+  {name:'다크로드',   icon:'😈', hp:100, atk:14, reward:250},
+  {name:'악마 왕',    icon:'👿', hp:130, atk:16, reward:300},
+];
+
+// ===== STATE =====
+let playerHP,playerMaxHP,playerShield,burnTurns;
+let enemyHP,enemyMaxHP,enemy;
+let hand=[],deck=[];
+let wave,kills,score,totalDmg;
+let doubleNext=false;
+let actionLocked=false;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function getBest(){return parseInt(localStorage.getItem('dc_best')||'0',10)}
+function setBest(v){if(v>getBest()){localStorage.setItem('dc_best',v);return true}return false}
+function updateBestDisp(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function buildDeck(){
+  const d=[];
+  CARD_TYPES.forEach(ct=>{
+    for(let i=0;i<ct.weight*2;i++)d.push({...ct});
+  });
+  // shuffle
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+function startGame(){
+  playerHP=20;playerMaxHP=20;playerShield=false;burnTurns=0;
+  wave=1;kills=0;score=0;totalDmg=0;
+  hand=[];deck=buildDeck();doubleNext=false;actionLocked=false;
+  spawnEnemy();
+  show('s-game');
+  drawCards();
+  setStatus('카드를 선택하세요!');
+}
+
+function spawnEnemy(){
+  const idx=Math.min(Math.floor((wave-1)/2),ENEMIES.length-1);
+  const base=ENEMIES[idx];
+  const scale=1+wave*0.12;
+  enemy={
+    ...base,
+    hp:Math.floor(base.hp*scale),
+    maxhp:Math.floor(base.hp*scale),
+    atk:Math.floor(base.atk+wave*0.5),
+  };
+  enemyHP=enemy.hp;enemyMaxHP=enemy.maxhp;
+  updateEnemyUI();
+  document.getElementById('wave-txt').textContent=wave+'웨이브';
+}
+
+function updateEnemyUI(){
+  document.getElementById('enemy-icon').textContent=enemy.icon;
+  document.getElementById('enemy-name').textContent=enemy.name;
+  document.getElementById('enemy-hp').textContent=Math.max(0,Math.ceil(enemyHP));
+  document.getElementById('enemy-maxhp').textContent=enemyMaxHP;
+  document.getElementById('enemy-hp-bar').style.width=Math.max(0,enemyHP/enemyMaxHP*100)+'%';
+}
+
+function updatePlayerUI(){
+  document.getElementById('p-hp').textContent=Math.max(0,Math.ceil(playerHP));
+  document.getElementById('p-maxhp').textContent=playerMaxHP;
+  document.getElementById('p-score').textContent=score;
+  const shieldEl=document.getElementById('p-shield');
+  shieldEl.style.display=playerShield?'':'none';
+  const burnEl=document.getElementById('p-burn');
+  if(burnTurns>0){burnEl.style.display='';document.getElementById('burn-txt').textContent=burnTurns;}
+  else burnEl.style.display='none';
+}
+
+function drawCards(){
+  if(actionLocked)return;
+  const needed=5-hand.length;
+  if(needed<=0)return;
+  if(deck.length<needed){
+    const newDeck=buildDeck();
+    deck=[...deck,...newDeck];
+  }
+  for(let i=0;i<needed&&deck.length>0;i++){
+    hand.push(deck.pop());
+  }
+  renderHand();
+  document.getElementById('draw-btn').disabled=true;
+  document.getElementById('deck-count').textContent=deck.length;
+}
+
+function renderHand(){
+  const wrap=document.getElementById('hand');
+  wrap.innerHTML='';
+  hand.forEach((card,i)=>{
+    const div=document.createElement('div');
+    div.className=`card ${card.cls}${actionLocked?' disabled':''}`;
+    div.innerHTML=`<div class="card-icon">${card.icon}</div><div class="card-name">${card.name}</div><div class="card-val">${card.desc}</div>`;
+    div.onclick=()=>playCard(i);
+    wrap.appendChild(div);
+  });
+  document.getElementById('hand-count').textContent=hand.length;
+}
+
+async function playCard(idx){
+  if(actionLocked)return;
+  actionLocked=true;
+  const card=hand.splice(idx,1)[0];
+  renderHand();
+
+  let dmg=0;
+  const mult=doubleNext?2:1;
+  doubleNext=false;
+
+  setStatus('');
+
+  if(card.id==='atk'){dmg=10*mult;dealDmgToEnemy(dmg);}
+  else if(card.id==='atk2'){dmg=18*mult;dealDmgToEnemy(dmg);}
+  else if(card.id==='bolt'){dmg=25*mult;dealDmgToEnemy(dmg);showFX('⚡ '+dmg+'!','#a855f7');}
+  else if(card.id==='fire'){burnTurns=3*mult;showFX('🔥 작열!','#f97316');setStatus('적이 불에 탑니다!');}
+  else if(card.id==='shld'){playerShield=true;showFX('🛡️ 방어!','#06b6d4');setStatus('다음 공격을 막습니다!');}
+  else if(card.id==='heal'){const h=8*mult;playerHP=Math.min(playerMaxHP,playerHP+h);showFX('💚 +'+h,'#22c55e');setStatus('체력을 회복했습니다!');}
+  else if(card.id==='2x'){doubleNext=true;showFX('×2!','#f59e0b');setStatus('다음 카드 2배 효과!');actionLocked=false;renderHand();updatePlayerUI();return;}
+
+  totalDmg+=dmg;
+  updatePlayerUI();
+
+  // Check enemy dead
+  if(enemyHP<=0){
+    await sleep(400);
+    enemyKilled();
+    return;
+  }
+
+  // Burn tick
+  if(burnTurns>0){
+    await sleep(400);
+    const bd=5;
+    dealDmgToEnemy(bd);
+    totalDmg+=bd;
+    burnTurns--;
+    setStatus('🔥 작열 데미지 '+bd+'!');
+    updatePlayerUI();
+    updateEnemyUI();
+    if(enemyHP<=0){enemyKilled();return;}
+  }
+
+  // Enemy attacks
+  await sleep(500);
+  enemyAttack();
+}
+
+function dealDmgToEnemy(dmg){
+  enemyHP-=dmg;
+  if(dmg>0)showFX('-'+dmg,'#ef4444');
+  updateEnemyUI();
+}
+
+function enemyAttack(){
+  const atk=enemy.atk;
+  if(playerShield){
+    playerShield=false;
+    showFX('🛡️ 막음!','#06b6d4');
+    setStatus('방어 성공! 공격을 막았습니다!');
+  } else {
+    playerHP-=atk;
+    showFX('💔 -'+atk,'#ef4444');
+    setStatus(`${enemy.icon} ${enemy.name}의 공격! -${atk}`);
+  }
+  updatePlayerUI();
+  if(playerHP<=0){
+    setTimeout(()=>gameOver(),600);
+    return;
+  }
+  // Refill hand
+  setTimeout(()=>{
+    drawCards();
+    actionLocked=false;
+    renderHand();
+    setStatus('카드를 선택하세요!');
+    document.getElementById('draw-btn').disabled=false;
+  },500);
+}
+
+function enemyKilled(){
+  kills++;
+  score+=enemy.reward+(wave*10);
+  wave++;
+  playerMaxHP=Math.min(40,playerMaxHP+2);
+  playerHP=Math.min(playerMaxHP,playerHP+5);
+  setStatus(`${enemy.icon} 처치! +${enemy.reward}점. 다음 웨이브!`);
+  showFX('✨ 처치!','#22c55e');
+  setTimeout(()=>{
+    spawnEnemy();
+    deck=buildDeck();
+    drawCards();
+    actionLocked=false;
+    renderHand();
+    updatePlayerUI();
+    document.getElementById('draw-btn').disabled=false;
+  },800);
+}
+
+function gameOver(){
+  const best=setBest(score);
+  let emoji,title;
+  if(wave>=8){emoji='👑';title='전설의 용사!';}
+  else if(wave>=5){emoji='🏆';title='영웅의 전투!';}
+  else if(wave>=3){emoji='⚔️';title='용감히 싸웠어요!';}
+  else{emoji='😅';title='더 강해져서 돌아와!';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-wave').textContent=wave;
+  document.getElementById('r-kills').textContent=kills;
+  document.getElementById('r-dmg').textContent=totalDmg;
+  document.getElementById('r-best').textContent=best?'🎉 최고 기록 달성!':'';
+  show('s-result');
+}
+
+function showFX(txt,color){
+  const el=document.getElementById('fx');
+  el.textContent=txt;
+  el.style.color=color;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function setStatus(msg){document.getElementById('status-txt').textContent=msg}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+window.addEventListener('load',updateBestDisp);
+</script>
+</body>
+</html>

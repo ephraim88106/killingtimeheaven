@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎵 비트를 잡아라 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation}
+.screen{display:none;width:100%;max-width:440px;padding:24px 16px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+
+/* Difficulty select */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;margin-bottom:24px}
+.diff-btn{background:#141428;border:2px solid #252545;border-radius:12px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;font-size:.9em;font-weight:700}
+.diff-btn:hover{border-color:#a855f7}
+.diff-btn.sel{border-color:#a855f7;background:#1a1a38;color:#c084fc}
+.diff-icon{font-size:1.5em;display:block;margin-bottom:6px}
+
+/* Game */
+#s-game{padding:10px;background:#0a0a15;justify-content:flex-start}
+.g-header{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 6px;margin-bottom:8px}
+.g-score{font-size:1.4em;font-weight:800;color:#06b6d4}
+.g-combo{font-size:.95em;font-weight:700;color:#f59e0b;min-width:80px;text-align:center}
+.g-timer{font-size:1.1em;font-weight:800;color:#a855f7}
+
+.prog-wrap{width:100%;height:5px;background:#1e1e35;border-radius:3px;margin-bottom:10px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,#a855f7,#06b6d4);border-radius:3px;transition:width .1s linear}
+
+/* Stage display */
+.stage-info{text-align:center;font-size:.8em;color:#555;margin-bottom:8px}
+
+/* Lanes */
+.lanes-wrap{width:100%;position:relative;flex:1}
+.lanes{display:flex;gap:6px;height:320px;position:relative}
+.lane{flex:1;position:relative;border-radius:8px;background:#0d0d20;overflow:hidden}
+.lane-line{position:absolute;bottom:64px;left:0;right:0;height:3px;border-radius:2px;opacity:.5}
+.lane-btn{position:absolute;bottom:8px;left:4px;right:4px;height:52px;border-radius:10px;border:none;cursor:pointer;font-size:1.4em;transition:filter .1s;user-select:none}
+.lane-btn.pressed{filter:brightness(1.6)}
+
+/* Notes */
+.note{position:absolute;left:4px;right:4px;height:36px;border-radius:8px;transition:none}
+@keyframes noteHit{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+
+/* Judgement */
+.judge{position:absolute;bottom:75px;left:50%;transform:translateX(-50%);font-weight:900;font-size:1.1em;pointer-events:none;opacity:0;white-space:nowrap;z-index:10}
+.judge.show{animation:judgeAnim .5s ease forwards}
+@keyframes judgeAnim{0%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.3) translateY(-15px)}}
+
+/* Lane colors */
+.l0 .note{background:#ef4444;box-shadow:0 0 8px #ef4444}
+.l1 .note{background:#3b82f6;box-shadow:0 0 8px #3b82f6}
+.l2 .note{background:#22c55e;box-shadow:0 0 8px #22c55e}
+.l3 .note{background:#f59e0b;box-shadow:0 0 8px #f59e0b}
+.l0 .lane-line{background:#ef4444}.l0 .lane-btn{background:#7f1d1d;color:#ef4444}
+.l1 .lane-line{background:#3b82f6}.l1 .lane-btn{background:#1e3a8a;color:#3b82f6}
+.l2 .lane-line{background:#22c55e}.l2 .lane-btn{background:#14532d;color:#22c55e}
+.l3 .lane-line{background:#f59e0b}.l3 .lane-btn{background:#78350f;color:#f59e0b}
+
+/* Keys hint */
+.key-hints{display:flex;gap:6px;margin-top:6px;justify-content:center}
+.key-hint{flex:1;text-align:center;font-size:.72em;color:#444;background:#111120;border-radius:6px;padding:4px 2px}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:30px 22px;text-align:center;width:100%;margin-bottom:20px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-rank{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;margin:10px 0}
+.grade-stats{display:flex;gap:8px;margin-top:14px}
+.gs{flex:1;background:#1e1e35;border-radius:10px;padding:9px 4px;text-align:center}
+.gs-v{font-size:1.2em;font-weight:800;color:#a855f7}
+.gs-l{font-size:.68em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="font-size:3em;margin-bottom:8px">🎵</div>
+  <div style="font-size:2.2em;font-weight:900;margin-bottom:6px" class="glow">비트를 잡아라</div>
+  <div style="color:#666;font-size:.9em;margin-bottom:22px;text-align:center;line-height:1.7">
+    내려오는 비트를 타이밍에 맞게 터치하라!
+  </div>
+
+  <div style="font-size:.85em;color:#888;margin-bottom:10px;width:100%">난이도 선택</div>
+  <div class="diff-grid">
+    <div class="diff-btn sel" id="d-easy" onclick="selDiff('easy',this)">
+      <span class="diff-icon">🟢</span>쉬움<div style="font-size:.7em;color:#666;margin-top:3px">천천히</div>
+    </div>
+    <div class="diff-btn" id="d-normal" onclick="selDiff('normal',this)">
+      <span class="diff-icon">🟡</span>보통<div style="font-size:.7em;color:#666;margin-top:3px">적당히</div>
+    </div>
+    <div class="diff-btn" id="d-hard" onclick="selDiff('hard',this)">
+      <span class="diff-icon">🔴</span>어려움<div style="font-size:.7em;color:#666;margin-top:3px">빠르게</div>
+    </div>
+  </div>
+
+  <div style="background:#141428;border:1px solid #252545;border-radius:12px;padding:12px;width:100%;margin-bottom:22px;font-size:.8em;color:#888;line-height:1.9">
+    ⌨️ <b>PC</b>: D F J K 키로 4개 레인 조작<br>
+    👆 <b>모바일</b>: 하단 버튼 탭
+  </div>
+
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <div style="color:#555;font-size:.8em;margin-top:6px">최고: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="g-header">
+    <div class="g-score" id="g-score">0점</div>
+    <div class="g-combo" id="g-combo"></div>
+    <div class="g-timer" id="g-timer">60s</div>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:100%"></div></div>
+  <div class="stage-info" id="stage-info">🎵 비트에 맞춰 탭하세요!</div>
+
+  <div class="lanes-wrap">
+    <div class="lanes" id="lanes">
+      <div class="lane l0" id="lane0">
+        <div class="lane-line"></div>
+        <button class="lane-btn" onmousedown="hitLane(0)" ontouchstart="hitLane(0)">D</button>
+        <div class="judge" id="judge0"></div>
+      </div>
+      <div class="lane l1" id="lane1">
+        <div class="lane-line"></div>
+        <button class="lane-btn" onmousedown="hitLane(1)" ontouchstart="hitLane(1)">F</button>
+        <div class="judge" id="judge1"></div>
+      </div>
+      <div class="lane l2" id="lane2">
+        <div class="lane-line"></div>
+        <button class="lane-btn" onmousedown="hitLane(2)" ontouchstart="hitLane(2)">J</button>
+        <div class="judge" id="judge2"></div>
+      </div>
+      <div class="lane l3" id="lane3">
+        <div class="lane-line"></div>
+        <button class="lane-btn" onmousedown="hitLane(3)" ontouchstart="hitLane(3)">K</button>
+        <div class="judge" id="judge3"></div>
+      </div>
+    </div>
+  </div>
+  <div class="key-hints">
+    <div class="key-hint">D</div>
+    <div class="key-hint">F</div>
+    <div class="key-hint">J</div>
+    <div class="key-hint">K</div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🏆</div>
+    <div class="r-rank glow" id="r-rank">퍼펙트!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="grade-stats">
+      <div class="gs"><div class="gs-v" id="r-perfect">0</div><div class="gs-l">PERFECT</div></div>
+      <div class="gs"><div class="gs-v" id="r-good">0</div><div class="gs-l">GOOD</div></div>
+      <div class="gs"><div class="gs-v" id="r-miss">0</div><div class="gs-l">MISS</div></div>
+      <div class="gs"><div class="gs-v" id="r-acc">0%</div><div class="gs-l">정확도</div></div>
+    </div>
+    <div style="color:#f59e0b;font-size:.85em;margin-top:12px" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<script>
+const LANE_COUNT=4;
+const GAME_DURATION=60;
+const HIT_ZONE_PX=64; // from bottom
+const NOTE_H=36;
+const PERFECT_WIN=30,GOOD_WIN=60; // pixels
+
+let diff='easy';
+let score,combo,maxCombo,timer,animId,spawnTimer;
+let notes=[]; // {lane, el, y, hit}
+let perfects,goods,misses;
+let gameActive=false;
+let noteSpeed,spawnInterval,lastSpawnTime;
+let raf=0;
+
+const DIFFS={
+  easy:  {speed:2.2,interval:900,bpm:60},
+  normal:{speed:3.2,interval:650,bpm:90},
+  hard:  {speed:4.5,interval:400,bpm:130},
+};
+
+function selDiff(d,el){
+  diff=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-home')updateBestDisp();
+}
+function getBest(){return parseInt(localStorage.getItem('bc_best_'+diff)||'0',10)}
+function setBest(v){if(v>getBest()){localStorage.setItem('bc_best_'+diff,v);return true}return false}
+function updateBestDisp(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function startGame(){
+  score=0;combo=0;maxCombo=0;timer=GAME_DURATION;
+  perfects=0;goods=0;misses=0;notes=[];
+  gameActive=true;
+  const cfg=DIFFS[diff];
+  noteSpeed=cfg.speed;
+  spawnInterval=cfg.interval;
+  lastSpawnTime=0;
+
+  // Clear lane notes
+  for(let i=0;i<LANE_COUNT;i++){
+    const lane=document.getElementById('lane'+i);
+    lane.querySelectorAll('.note').forEach(n=>n.remove());
+  }
+
+  show('s-game');
+  updateUI();
+
+  let lastTime=null;
+  let elapsed=0;
+
+  function loop(ts){
+    if(!gameActive)return;
+    if(lastTime===null)lastTime=ts;
+    const dt=(ts-lastTime)/1000;
+    lastTime=ts;
+    elapsed+=dt;
+    timer=Math.max(0,GAME_DURATION-elapsed);
+
+    // Spawn
+    if(ts-lastSpawnTime>spawnInterval){
+      spawnNote();
+      lastSpawnTime=ts;
+    }
+
+    // Move notes
+    const laneEls=document.querySelectorAll('.lane');
+    const laneH=laneEls[0].clientHeight;
+
+    notes.forEach(n=>{
+      if(n.hit)return;
+      n.y+=noteSpeed;
+      const bottomY=laneH-HIT_ZONE_PX-NOTE_H;
+      if(n.y>laneH){
+        // Miss
+        if(!n.hit){n.hit=true;registerMiss(n.lane);}
+        if(n.el.parentNode)n.el.parentNode.removeChild(n.el);
+      } else {
+        n.el.style.top=n.y+'px';
+      }
+    });
+    notes=notes.filter(n=>!n.hit||n.el.parentNode);
+
+    // Timer
+    document.getElementById('g-timer').textContent=Math.ceil(timer)+'s';
+    document.getElementById('prog-bar').style.width=(timer/GAME_DURATION*100)+'%';
+    if(timer<=10)document.getElementById('prog-bar').style.background='linear-gradient(90deg,#ef4444,#f59e0b)';
+
+    if(timer<=0){endGame();return;}
+    raf=requestAnimationFrame(loop);
+  }
+  raf=requestAnimationFrame(loop);
+
+  // Start beat sound
+  startBeat();
+}
+
+function spawnNote(){
+  const lane=Math.floor(Math.random()*LANE_COUNT);
+  const laneEl=document.getElementById('lane'+lane);
+  const el=document.createElement('div');
+  el.className='note';
+  el.style.top='-36px';
+  laneEl.appendChild(el);
+  notes.push({lane,el,y:-36,hit:false});
+}
+
+function hitLane(lane){
+  if(!gameActive)return;
+  const laneEl=document.getElementById('lane'+lane);
+  const btn=laneEl.querySelector('.lane-btn');
+  btn.classList.add('pressed');
+  setTimeout(()=>btn.classList.remove('pressed'),120);
+
+  const laneH=laneEl.clientHeight;
+  const hitZoneTop=laneH-HIT_ZONE_PX-NOTE_H-GOOD_WIN;
+  const hitZoneBot=laneH-HIT_ZONE_PX+GOOD_WIN;
+
+  // Find closest note in this lane
+  let best=null,bestDist=Infinity;
+  for(const n of notes){
+    if(n.lane!==lane||n.hit)continue;
+    const noteCenter=n.y+NOTE_H/2;
+    const zoneCenter=laneH-HIT_ZONE_PX-NOTE_H/2;
+    const dist=Math.abs(noteCenter-zoneCenter);
+    if(dist<bestDist&&noteCenter>hitZoneTop&&noteCenter<hitZoneBot+GOOD_WIN){
+      bestDist=dist;best=n;
+    }
+  }
+
+  if(!best){
+    // Miss (hit but no note)
+    showJudge(lane,'MISS','#ef4444');
+    combo=0;
+    updateUI();
+    return;
+  }
+
+  best.hit=true;
+  if(best.el.parentNode)best.el.parentNode.removeChild(best.el);
+
+  if(bestDist<PERFECT_WIN){
+    perfects++;combo++;if(combo>maxCombo)maxCombo=combo;
+    score+=100+(combo>5?50:0);
+    showJudge(lane,'PERFECT! ✨','#f59e0b');
+    playHit(true);
+  } else {
+    goods++;combo++;if(combo>maxCombo)maxCombo=combo;
+    score+=50;
+    showJudge(lane,'GOOD','#22c55e');
+    playHit(false);
+  }
+  updateUI();
+}
+
+function registerMiss(lane){
+  misses++;combo=0;
+  showJudge(lane,'MISS','#ef4444');
+  updateUI();
+}
+
+function updateUI(){
+  document.getElementById('g-score').textContent=score+'점';
+  if(combo>=5){document.getElementById('g-combo').textContent='🔥 '+combo+' COMBO';}
+  else if(combo>0){document.getElementById('g-combo').textContent=combo+' COMBO';}
+  else{document.getElementById('g-combo').textContent='';}
+}
+
+function showJudge(lane,txt,color){
+  const el=document.getElementById('judge'+lane);
+  el.textContent=txt;
+  el.style.color=color;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+
+function endGame(){
+  gameActive=false;
+  cancelAnimationFrame(raf);
+  stopBeat();
+
+  const total=perfects+goods+misses;
+  const acc=total>0?Math.round((perfects+goods*0.5)/total*100):0;
+  const best=setBest(score);
+
+  let emoji,rank;
+  if(acc>=95&&misses===0){emoji='💎';rank='PERFECT CLEAR!';}
+  else if(acc>=90){emoji='🏆';rank='S 랭크!';}
+  else if(acc>=75){emoji='⭐';rank='A 랭크!';}
+  else if(acc>=60){emoji='🎯';rank='B 랭크';}
+  else{emoji='😅';rank='C 랭크';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-rank').textContent=rank;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-perfect').textContent=perfects;
+  document.getElementById('r-good').textContent=goods;
+  document.getElementById('r-miss').textContent=misses;
+  document.getElementById('r-acc').textContent=acc+'%';
+  document.getElementById('r-best').textContent=best?'🎉 최고 기록!':'';
+  show('s-result');
+}
+
+// ===== SOUND =====
+let actx=null,beatInterval=null;
+function getCtx(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return actx}
+
+function startBeat(){
+  const bpm=DIFFS[diff].bpm;
+  const interval=60000/bpm;
+  let beat=0;
+  beatInterval=setInterval(()=>{
+    if(!gameActive)return;
+    playBeat(beat%4===0);
+    beat++;
+  },interval);
+}
+function stopBeat(){if(beatInterval)clearInterval(beatInterval)}
+
+function playBeat(accent){
+  try{
+    const c=getCtx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='square';
+    o.frequency.value=accent?200:150;
+    g.gain.setValueAtTime(.08,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.08);
+    o.start();o.stop(c.currentTime+.1);
+  }catch(e){}
+}
+
+function playHit(perfect){
+  try{
+    const c=getCtx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='sine';
+    o.frequency.value=perfect?880:660;
+    g.gain.setValueAtTime(.2,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.15);
+    o.start();o.stop(c.currentTime+.15);
+  }catch(e){}
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  const keyMap={d:0,f:1,j:2,k:3};
+  const lane=keyMap[e.key.toLowerCase()];
+  if(lane!==undefined&&gameActive){e.preventDefault();hitLane(lane);}
+});
+
+window.addEventListener('load',()=>{
+  updateBestDisp();
+  document.addEventListener('click',()=>getCtx(),{once:true});
+  document.addEventListener('touchstart',()=>getCtx(),{once:true});
+});
+</script>
+</body>
+</html>
