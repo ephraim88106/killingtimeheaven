@@ -56,6 +56,14 @@
   --baseball-gradient: linear-gradient(135deg, oklch(68% 0.2 160), oklch(55% 0.24 180));
   --baseball-glow: oklch(62% 0.22 170 / 40%);
 
+  /* Game 14: 끝말잇기 배틀 (Purple/Pink) */
+  --wordchain-gradient: linear-gradient(135deg, oklch(65% 0.26 300), oklch(62% 0.26 350));
+  --wordchain-glow: oklch(63% 0.26 325 / 40%);
+
+  /* Game 15: 탑 쌓기 (Purple/Violet) */
+  --tower-gradient: linear-gradient(135deg, oklch(68% 0.28 310), oklch(58% 0.3 330));
+  --tower-glow: oklch(63% 0.29 320 / 40%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   
@@ -396,6 +404,24 @@ body {
 .baseball-btn:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px -5px var(--baseball-glow);
+}
+
+.wordchain-btn {
+  background: var(--wordchain-gradient);
+  box-shadow: 0 10px 20px -5px var(--wordchain-glow);
+}
+.wordchain-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--wordchain-glow);
+}
+
+.tower-btn {
+  background: var(--tower-gradient);
+  box-shadow: 0 10px 20px -5px var(--tower-glow);
+}
+.tower-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px var(--tower-glow);
 }
 
 /* Glass Shine Effect on Hover */

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>끝말잇기 배틀 - 킬링타임천국</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a15;
+    color: #e2e8f0;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; text-align: center; }
+
+  /* Home Screen */
+  #homeScreen { text-align: center; width: 100%; max-width: 420px; }
+  .rules {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    text-align: left;
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.8;
+  }
+  .rules strong { color: #c084fc; }
+  .start-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+  }
+  .start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(168,85,247,0.5); }
+
+  /* Game Screen */
+  #gameScreen { display: none; width: 100%; max-width: 480px; }
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    font-size: 0.9rem;
+  }
+  .turn-label { font-weight: 700; font-size: 1rem; }
+  .turn-player { color: #06b6d4; }
+  .turn-ai { color: #f472b6; }
+  .score-display { color: #a855f7; font-weight: 700; }
+
+  .timer-bar-wrap {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #06b6d4, #a855f7);
+    border-radius: 99px;
+    transition: width 0.1s linear;
+    width: 100%;
+  }
+  .timer-bar.urgent { background: linear-gradient(90deg, #ef4444, #f97316); }
+
+  /* Chat area */
+  .chat-area {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 260px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    animation: fadeIn 0.3s ease;
+  }
+  .msg.player { align-self: flex-end; align-items: flex-end; }
+  .msg.ai { align-self: flex-start; align-items: flex-start; }
+  .msg.system { align-self: center; align-items: center; max-width: 90%; }
+
+  .msg-bubble {
+    padding: 10px 16px;
+    border-radius: 18px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .player .msg-bubble { background: linear-gradient(135deg, #06b6d4, #0284c7); color: #fff; border-bottom-right-radius: 4px; }
+  .ai .msg-bubble { background: rgba(248,113,221,0.15); border: 1px solid rgba(248,113,221,0.3); color: #f472b6; border-bottom-left-radius: 4px; }
+  .system .msg-bubble { background: rgba(255,255,255,0.06); color: #64748b; font-size: 0.8rem; font-weight: 400; border-radius: 8px; text-align: center; }
+
+  .msg-name { font-size: 0.72rem; color: #64748b; margin-bottom: 3px; padding: 0 4px; }
+
+  /* Input */
+  .input-area { display: flex; gap: 10px; }
+  .word-input {
+    flex: 1;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .word-input:focus { border-color: #a855f7; }
+  .word-input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .send-btn {
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s;
+    white-space: nowrap;
+  }
+  .send-btn:hover { transform: scale(1.04); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .hint-text {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #64748b;
+    min-height: 20px;
+  }
+  .hint-text .required { color: #06b6d4; font-weight: 700; font-size: 1rem; }
+
+  /* Result Screen */
+  #resultScreen {
+    display: none;
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+  }
+  .result-icon { font-size: 4rem; margin-bottom: 12px; }
+  .result-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
+  .result-title.win { background: linear-gradient(135deg, #06b6d4, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .result-title.lose { background: linear-gradient(135deg, #ef4444, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .result-desc { color: #94a3b8; margin-bottom: 6px; font-size: 0.95rem; }
+  .result-score { color: #a855f7; font-size: 1.3rem; font-weight: 900; margin-bottom: 8px; }
+  .result-best { color: #fbbf24; font-size: 0.9rem; margin-bottom: 24px; }
+  .retry-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 24px rgba(168,85,247,0.4);
+  }
+  .retry-btn:hover { transform: translateY(-2px); }
+  .home-link { color: #64748b; font-size: 0.85rem; text-decoration: none; }
+  .home-link:hover { color: #94a3b8; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .shake { animation: shake 0.3s ease; }
+
+  .ai-thinking {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: rgba(248,113,221,0.1);
+    border: 1px solid rgba(248,113,221,0.2);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .dot { width: 7px; height: 7px; background: #f472b6; border-radius: 50%; animation: bounce 0.8s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.15s; }
+  .dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+</style>
+</head>
+<body>
+
+<!-- Home Screen -->
+<div id="homeScreen">
+  <h1>🗣️ 끝말잇기 배틀</h1>
+  <p class="subtitle">AI와의 한국어 단어 대결!</p>
+  <div class="rules">
+    <strong>📖 게임 방법</strong><br>
+    • 이전 단어의 <strong>마지막 글자</strong>로 시작하는 단어를 입력하세요<br>
+    • 턴당 <strong>10초</strong> 제한<br>
+    • 이미 쓴 단어는 재사용 불가<br>
+    • AI가 단어를 못 찾으면 <strong>승리!</strong><br>
+    • 시간 초과 / 규칙 위반 시 <strong>패배</strong>
+  </div>
+  <button class="start-btn" onclick="startGame()">▶ 게임 시작</button>
+</div>
+
+<!-- Game Screen -->
+<div id="gameScreen">
+  <div class="status-bar">
+    <span class="turn-label" id="turnLabel">내 차례</span>
+    <span class="score-display">단어 <span id="wordCount">0</span>개</span>
+  </div>
+  <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="input-area">
+    <input class="word-input" id="wordInput" type="text" placeholder="단어를 입력하세요..." maxlength="20" autocomplete="off" autocorrect="off">
+    <button class="send-btn" id="sendBtn" onclick="submitWord()">입력</button>
+  </div>
+  <div class="hint-text" id="hintText"></div>
+</div>
+
+<!-- Result Screen -->
+<div id="resultScreen">
+  <div class="result-icon" id="resultIcon"></div>
+  <div class="result-title" id="resultTitle"></div>
+  <div class="result-desc" id="resultDesc"></div>
+  <div class="result-score" id="resultScore"></div>
+  <div class="result-best" id="resultBest"></div>
+  <button class="retry-btn" onclick="startGame()">🔄 다시 하기</button><br>
+  <a href="index.html" class="home-link">← 홈으로</a>
+</div>
+
+<script>
+// ===== 단어 데이터베이스 =====
+const WORDS = [
+  "가구","가나","가능","가방","가사","가수","가스","가슴","가을","가입","가정","가족","가지","각도","각자","간격","간식","간장","갈등","갈비","갈색","감기","감동","감사","감자","강물","강아지","강의","강점","개구리","개념","개인","개학","거리","거실","건강","건물","건설","건조","검색","게임","결과","결론","결심","결정","경기","경복궁","경쟁","경제","경찰","계단","계란","계절","계획","고구마","고기","고민","고양이","고장","고추","고향","공감","공기","공부","공연","공원","공장","공책","과거","과목","과자","과일","관계","관심","광고","교실","교육","교통","구름","국가","국물","국민","국수","국어","군인","귤","그림","근처","금요일","기간","기계","기념","기다림","기도","기록","기억","기온","기초","기회","긴장","김치","나라","나무","나물","나비","낙엽","날씨","남자","낮잠","내용","냉면","냉장고","노래","노력","노을","농구","농사","누나","눈물","눈사람","다음","달걀","달력","달리기","담배","대답","대학","대화","도서관","도시","도움","도전","도토리","독서","동물","동생","동아리","동화","두부","드라마","등산","디저트","라디오","라면","레몬","마늘","마당","마라톤","마음","마을","마지막","만화","말하기","매일","맥주","메모","명절","모자","목요일","목표","문어","문자","문장","문화","물고기","미래","미소","미술","바나나","바다","바람","바위","반찬","발걸음","발표","밤하늘","방법","방학","배경","배달","배드민턴","버스","버튼","베개","변화","별자리","병원","보름달","복숭아","부모","부엌","불꽃","불빛","비교","비밀","비빔밥","빛깔","사과","사랑","사막","사진","사탕","산책","삼겹살","상상","상처","새벽","생각","생선","샤워","서점","선물","선생님","성공","세계","소개","소나기","소금","소방관","소설","소파","속도","솔직","수박","수영","수저","숙제","숲속","스마트폰","스포츠","시간","시계","시작","시험","식당","신발","실수","실패","심장","아이스크림","아파트","알람","야채","어린이","어머니","어버이","여름","여행","연구","연습","열쇠","영어","영화","오렌지","오리","오이","온도","외국","요구","요리","우산","우유","우주","우체국","운동","운동장","원숭이","월요일","위험","유리","은하수","음악","음식","의자","이야기","이해","인사","일기","일요일","자동차","자연","자유","자전거","장갑","장난감","저녁","전기","전화","정답","정리","조용","주말","주스","준비","지구","지식","지하철","진심","집중","찬물","참고","창문","채소","책상","철학","청소","초등학교","초콜릿","추억","축구","출발","출석","춤","취미","친구","칠판","침대","컴퓨터","퀴즈","키보드","타조","태양","토끼","특별","파란색","파리","팝콘","편지","평화","포도","표현","풀밭","피아노","학교","학생","한국","할머니","할아버지","해바라기","행복","향기","현실","형제","호기심","호랑이","화분","화요일","환경","회사","후회","휴식","희망",
+  "가격","가구점","가로등","가스레인지","감기약","강강술래","개나리","거울","건강검진","결혼식","경고","고등학교","고민거리","공공장소","과학","광장","교과서","구경","굴비","귀걸이","그네","기린","기상청","길고양이","나침반","낙지","날개","납득","노력가","놀이터","누룽지","다람쥐","달리기","닭갈비","대나무","댄스","더위","도끼","돌고래","두더지","딸기","라디오","레스토랑","로봇","마라탕","마무리","마음씨","만두","말벌","망설임","매미","머리카락","목걸이","목욕","무지개","미역국","박수","박쥐","반딧불","발목","배려","버섯","벌레","병아리","보물","봉사","불가사리","붕어빵","비빔국수","빙수","사슴","사자","상어","새싹","생물","서랍","선풍기","소풍","손바닥","수달","스케이트","시냇물","신호등","실내","심부름","아기","아코디언","안경","알아보기","애완동물","약속","양말","어항","여우","연필","열기구","예의","오카리나","옥수수","와플","외모","요가","용기","우렁찬","원피스","월급","유치원","음료수","이불","인내","일몰","자판기","장마","재미","전갈","점심","제비","조개","주의","중학교","지렁이","진달래","짜장면","찜질방","참외","창고","천문대","체육관","초가집","추진","친절","침실","탱고","테니스","토마토","트럭","파전","팔씨름","팽이","편식","평일","포옹","표범","풍선","피로","하늘","한라산","할인","해산물","행진","헬멧","현관","호두","화살","환경오염","효도",
+  "가능성","간호사","강강수월래","개성","거북이","건축물","겨울방학","경험","고집","공놀이","과학관","교환","구도심","국화","그림책","기초체력","나눔","낙관","납량","노을빛","뇌과학","다양성","달팽이","당근","대기업","도라지","동기부여","두근거림","만족","만화책","말장난","메아리","면접","명함","모험","목소리","몸무게","미역","바이올린","발명","방송국","배움","백합","버드나무","변명","별빛","보고서","봄바람","부드러움","불안감","비전","사막여우","상상력","서랍장","성실","세탁기","소망","손글씨","수련","숨바꼭질","스카프","시인","신뢰","실력","아름다움","안도감","양심","어울림","연대","영광","오해","완성","외로움","요청","우정","원동력","위로","유머","은행나무","의욕","이정표","인내심","일상","자긍심","장점","재능","전통","정성","조화","중요성","지혜","진로","집착","차이","참을성","창의력","체험","추진력","친밀감","탐구","통찰","판단력","표정","풍경","하모니","한계","해결","행운","협력","화합","회복","흥미"
+];
+
+// 단어 -> 단어 매핑 (마지막 글자 기준)
+let wordMap = {};
+let usedWords = new Set();
+let currentLast = '';
+let timerInterval = null;
+let timeLeft = 10;
+let wordCount = 0;
+let isPlayerTurn = true;
+let gameActive = false;
+
+function buildWordMap() {
+  wordMap = {};
+  WORDS.forEach(w => {
+    const first = w[0];
+    if (!wordMap[first]) wordMap[first] = [];
+    wordMap[first].push(w);
+  });
+}
+
+function startGame() {
+  buildWordMap();
+  usedWords = new Set();
+  currentLast = '';
+  wordCount = 0;
+  isPlayerTurn = true;
+  gameActive = true;
+
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('chatArea').innerHTML = '';
+  document.getElementById('wordCount').textContent = '0';
+
+  // 시작 단어를 AI가 먼저 제시
+  const startWords = WORDS.filter(w => w.length >= 2);
+  const firstWord = startWords[Math.floor(Math.random() * startWords.length)];
+  usedWords.add(firstWord);
+  currentLast = firstWord[firstWord.length - 1];
+  wordCount++;
+
+  addMessage('ai', firstWord);
+  updateHint();
+  startTimer();
+}
+
+function addMessage(who, text) {
+  const chatArea = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = `msg ${who}`;
+
+  if (who === 'system') {
+    div.innerHTML = `<div class="msg-bubble">${text}</div>`;
+  } else {
+    const name = who === 'player' ? '나' : 'AI';
+    div.innerHTML = `<div class="msg-name">${name}</div><div class="msg-bubble">${text}</div>`;
+  }
+
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showThinking() {
+  const chatArea = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.id = 'thinkingBubble';
+  div.className = 'ai-thinking';
+  div.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinkingBubble');
+  if (el) el.remove();
+}
+
+function updateHint() {
+  const hint = document.getElementById('hintText');
+  if (!gameActive) return;
+  if (isPlayerTurn) {
+    hint.innerHTML = `"<span class="required">${currentLast}</span>"(으)로 시작하는 단어를 입력하세요`;
+  } else {
+    hint.innerHTML = 'AI가 생각 중...';
+  }
+  document.getElementById('turnLabel').innerHTML = isPlayerTurn
+    ? '<span class="turn-player">내 차례</span>'
+    : '<span class="turn-ai">AI 차례</span>';
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 10;
+  updateTimerBar();
+
+  timerInterval = setInterval(() => {
+    timeLeft -= 0.1;
+    updateTimerBar();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      endGame(false, '⏰ 시간 초과! AI의 승리');
+    }
+  }, 100);
+}
+
+function updateTimerBar() {
+  const bar = document.getElementById('timerBar');
+  const pct = Math.max(0, (timeLeft / 10) * 100);
+  bar.style.width = pct + '%';
+  bar.classList.toggle('urgent', timeLeft < 4);
+}
+
+function submitWord() {
+  if (!gameActive || !isPlayerTurn) return;
+  const input = document.getElementById('wordInput');
+  const word = input.value.trim();
+  input.value = '';
+
+  if (!word) return;
+
+  // 첫 글자 확인
+  if (currentLast && word[0] !== currentLast) {
+    shakeInput();
+    addMessage('system', `❌ "${currentLast}"로 시작해야 해요!`);
+    return;
+  }
+
+  // 이미 사용한 단어
+  if (usedWords.has(word)) {
+    shakeInput();
+    addMessage('system', '❌ 이미 사용한 단어예요!');
+    return;
+  }
+
+  // 단어 DB 확인
+  if (!WORDS.includes(word)) {
+    shakeInput();
+    addMessage('system', '❌ 알 수 없는 단어예요!');
+    return;
+  }
+
+  // 성공
+  clearInterval(timerInterval);
+  usedWords.add(word);
+  currentLast = word[word.length - 1];
+  wordCount++;
+  document.getElementById('wordCount').textContent = wordCount;
+  addMessage('player', word);
+
+  // AI 차례
+  isPlayerTurn = false;
+  document.getElementById('wordInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+  updateHint();
+
+  setTimeout(() => {
+    showThinking();
+    const thinkTime = 800 + Math.random() * 1200;
+    setTimeout(() => {
+      removeThinking();
+      aiTurn();
+    }, thinkTime);
+  }, 300);
+}
+
+function aiTurn() {
+  // 현재 글자로 시작하는 미사용 단어 찾기
+  const candidates = (wordMap[currentLast] || []).filter(w => !usedWords.has(w) && w.length >= 2);
+
+  if (candidates.length === 0) {
+    // AI 패배
+    endGame(true, 'AI가 단어를 찾지 못했어요!');
+    return;
+  }
+
+  // 단어 선택 (짧은 것 우선으로 약간의 전략)
+  candidates.sort((a, b) => a.length - b.length);
+  const pick = candidates[Math.floor(Math.random() * Math.min(3, candidates.length))];
+
+  usedWords.add(pick);
+  currentLast = pick[pick.length - 1];
+  wordCount++;
+  document.getElementById('wordCount').textContent = wordCount;
+  addMessage('ai', pick);
+
+  isPlayerTurn = true;
+  document.getElementById('wordInput').disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  updateHint();
+  startTimer();
+  document.getElementById('wordInput').focus();
+}
+
+function shakeInput() {
+  const inp = document.getElementById('wordInput');
+  inp.classList.remove('shake');
+  void inp.offsetWidth;
+  inp.classList.add('shake');
+}
+
+function endGame(win, reason) {
+  clearInterval(timerInterval);
+  gameActive = false;
+  document.getElementById('wordInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  const best = parseInt(localStorage.getItem('wordchain_best') || '0');
+  if (wordCount > best) localStorage.setItem('wordchain_best', wordCount);
+  const newBest = Math.max(best, wordCount);
+
+  setTimeout(() => {
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+
+    document.getElementById('resultIcon').textContent = win ? '🏆' : '😵';
+    const title = document.getElementById('resultTitle');
+    title.textContent = win ? '승리!' : '패배...';
+    title.className = 'result-title ' + (win ? 'win' : 'lose');
+    document.getElementById('resultDesc').textContent = reason;
+    document.getElementById('resultScore').textContent = `주고받은 단어: ${wordCount}개`;
+    document.getElementById('resultBest').textContent = `최고 기록: ${newBest}개${wordCount >= newBest && wordCount > 0 ? ' 🎉 신기록!' : ''}`;
+  }, 800);
+}
+
+// 엔터키
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('wordInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitWord();
+  });
+});
+</script>
+</body>
+</html>
