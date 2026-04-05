@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🧩 2048 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  background: #0a0a15;
+  color: #fff;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ===== COMMON ===== */
+.glow-text {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.btn-main {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  border: none;
+  border-radius: 14px;
+  padding: 16px 24px;
+  color: #fff;
+  font-size: 1.05em;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.03em;
+}
+.btn-main:active { opacity:0.85; transform:scale(0.98); }
+.btn-sub {
+  background: #1a1a2e;
+  border: 2px solid #2a2a4a;
+  border-radius: 14px;
+  padding: 14px 24px;
+  color: #999;
+  font-size: 1em;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-sub:hover { border-color:#555; color:#ccc; }
+
+/* ===== HOME ===== */
+.home-logo { font-size:3.2em; margin-bottom:6px; }
+.home-title { font-size:2.2em; font-weight:900; margin-bottom:6px; }
+.home-sub { color:#666; font-size:0.9em; margin-bottom:20px; text-align:center; line-height:1.6; }
+
+.tips-box {
+  background: #141428;
+  border: 1px solid #252545;
+  border-radius: 12px;
+  padding: 14px 18px;
+  width: 100%;
+  margin-bottom: 20px;
+  font-size: 0.85em;
+  color: #888;
+  line-height: 1.8;
+  text-align: center;
+}
+.tips-box span { color:#a855f7; font-weight:700; }
+
+.rank-board {
+  background: #141428;
+  border: 1px solid #252545;
+  border-radius: 12px;
+  padding: 14px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+.rank-title { font-size:.9em; font-weight:700; color:#a855f7; margin-bottom:10px; text-align:center; }
+.rank-list { display:flex; flex-direction:column; gap:4px; }
+.rank-row { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:#1e1e35; border-radius:8px; font-size:.82em; }
+.rank-pos { font-weight:800; min-width:28px; }
+.rank-score { color:#06b6d4; font-weight:700; }
+.rank-tile { color:#f59e0b; font-size:0.85em; margin-left:8px; }
+.rank-empty { text-align:center; color:#555; font-size:.82em; padding:8px; }
+
+.site-badge { color:#444; font-size:0.78em; margin-top:14px; }
+
+/* ===== GAME SCREEN ===== */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.score-box {
+  background: #141428;
+  border: 1px solid #252545;
+  border-radius: 10px;
+  padding: 8px 14px;
+  text-align: center;
+  min-width: 90px;
+}
+.score-label { font-size:0.65em; color:#666; text-transform:uppercase; font-weight:700; }
+.score-val { font-size:1.3em; font-weight:900; color:#06b6d4; }
+.score-val.best { color:#f59e0b; }
+
+.game-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+.action-btn {
+  flex: 1;
+  background: #141428;
+  border: 1px solid #252545;
+  border-radius: 10px;
+  padding: 10px;
+  color: #888;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn:hover { border-color:#a855f7; color:#ccc; }
+.action-btn:active { transform:scale(0.97); }
+.action-btn:disabled { opacity:0.4; cursor:default; }
+
+/* ===== GRID ===== */
+.grid-container {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 1;
+  background: #1a1a2e;
+  border-radius: 14px;
+  padding: 8px;
+  margin-bottom: 14px;
+}
+.grid-bg {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+.cell-bg {
+  background: #252545;
+  border-radius: 10px;
+}
+
+.tile-layer {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+}
+
+.tile {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  border-radius: 10px;
+  transition: top 0.12s ease, left 0.12s ease;
+  z-index: 1;
+}
+.tile.merged {
+  animation: tilePop 0.2s ease;
+  z-index: 2;
+}
+.tile.new {
+  animation: tileAppear 0.2s ease;
+}
+@keyframes tilePop {
+  0%   { transform:scale(1); }
+  50%  { transform:scale(1.15); }
+  100% { transform:scale(1); }
+}
+@keyframes tileAppear {
+  0%   { transform:scale(0); opacity:0; }
+  100% { transform:scale(1); opacity:1; }
+}
+
+/* ===== WIN OVERLAY ===== */
+.win-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10,10,21,0.75);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+}
+.win-overlay .win-title {
+  font-size: 2em;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.win-overlay .win-sub {
+  color: #aaa;
+  font-size: 0.9em;
+  margin-bottom: 16px;
+}
+.win-overlay button {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 4px;
+  font-size: 0.9em;
+}
+
+/* ===== RESULT ===== */
+.result-box {
+  width: 100%;
+  background: #141428;
+  border: 2px solid #252545;
+  border-radius: 22px;
+  padding: 34px 24px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.result-emoji { font-size:3.5em; margin-bottom:12px; }
+.result-title { font-size:1.6em; font-weight:900; margin-bottom:4px; }
+.result-score-num {
+  font-size: 3.5em;
+  font-weight: 900;
+  line-height: 1;
+  margin: 10px 0;
+}
+.result-sub { color:#666; font-size:0.9em; margin-top:8px; }
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+.stat-item { background:#1e1e35; border-radius:10px; padding:12px; }
+.stat-val  { font-size:1.4em; font-weight:800; color:#a855f7; }
+.stat-lbl  { font-size:0.7em; color:#666; margin-top:3px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-height: 700px) {
+  .screen { padding: 14px 18px; justify-content: flex-start; padding-top: 20px; }
+  .home-logo { font-size:2.4em; }
+  .home-title { font-size:1.8em; }
+  .grid-container { max-width: 300px; }
+}
+@media (max-width: 360px) {
+  .grid-container { max-width: 280px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME ===== -->
+<div id="s-home" class="screen active">
+  <div class="home-logo">🧩</div>
+  <div class="home-title glow-text">2048</div>
+  <div class="home-sub">같은 숫자를 합쳐 2048을 만들어라!</div>
+
+  <div class="tips-box">
+    <span>🖥 PC:</span> 방향키 (←↑↓→)<br>
+    <span>📱 모바일:</span> 스와이프
+  </div>
+
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <button class="btn-main" onclick="startGame()">🎮 게임 시작</button>
+
+  <div class="site-badge">🎮 킬링타임천국</div>
+</div>
+
+<!-- ===== GAME ===== -->
+<div id="s-game" class="screen">
+  <div class="game-header">
+    <div class="score-box">
+      <div class="score-label">점수</div>
+      <div class="score-val" id="g-score">0</div>
+    </div>
+    <div class="score-box">
+      <div class="score-label">최고</div>
+      <div class="score-val best" id="g-best">0</div>
+    </div>
+  </div>
+
+  <div class="game-actions">
+    <button class="action-btn" id="btn-undo" onclick="undoMove()" disabled>↩ 되돌리기</button>
+    <button class="action-btn" onclick="startGame()">🔄 새 게임</button>
+    <button class="action-btn" onclick="show('home')">🏠</button>
+  </div>
+
+  <div class="grid-container" id="grid-container">
+    <div class="grid-bg">
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+    </div>
+    <div class="tile-layer" id="tile-layer"></div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="s-result" class="screen">
+  <div class="result-box" id="result-box">
+    <div class="result-emoji" id="r-emoji">🏆</div>
+    <div class="result-title glow-text" id="r-title">게임 오버</div>
+    <div class="result-score-num glow-text" id="r-score">0</div>
+    <div class="result-sub">점</div>
+    <div class="result-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="r-maxtile">0</div>
+        <div class="stat-lbl">최대 타일</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="r-moves">0</div>
+        <div class="stat-lbl">이동 횟수</div>
+      </div>
+    </div>
+    <div class="result-sub" id="r-best-msg" style="margin-top:12px;color:#f59e0b;"></div>
+  </div>
+
+  <button class="btn-main" onclick="captureScreen()">🖼️ 캡처 저장</button>
+  <button class="btn-main" onclick="shareResultText()">📤 결과 공유하기</button>
+  <button class="btn-main" onclick="startGame()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('home')">🏠 처음으로</button>
+</div>
+
+<script>
+// ==================== SCREEN ====================
+function show(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + name).classList.add('active');
+  if (name === 'home') renderRanks();
+}
+
+// ==================== SOUND ====================
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'merge') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.08);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now); osc.stop(now + 0.2);
+    } else if (type === 'gameover') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(330, now);
+      osc.frequency.setValueAtTime(260, now + 0.15);
+      osc.frequency.setValueAtTime(200, now + 0.3);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 'win') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.1);
+      osc.frequency.setValueAtTime(784, now + 0.2);
+      osc.frequency.setValueAtTime(1047, now + 0.3);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now); osc.stop(now + 0.5);
+    }
+  } catch(e) {}
+}
+
+// ==================== STORAGE ====================
+function getBest() {
+  return parseInt(localStorage.getItem('g2048_best') || '0', 10);
+}
+function setBest(val) {
+  if (val > getBest()) {
+    localStorage.setItem('g2048_best', val);
+    return true;
+  }
+  return false;
+}
+function getRanks() {
+  return JSON.parse(localStorage.getItem('g2048_ranks') || '[]');
+}
+function saveRank(sc, maxTile) {
+  let ranks = getRanks();
+  ranks.push({ score: sc, tile: maxTile, date: Date.now() });
+  ranks.sort((a, b) => b.score - a.score);
+  ranks = ranks.slice(0, 5);
+  localStorage.setItem('g2048_ranks', JSON.stringify(ranks));
+}
+function renderRanks() {
+  const ranks = getRanks();
+  const el = document.getElementById('rank-list');
+  if (!ranks.length) { el.innerHTML = '<div class="rank-empty">아직 기록이 없습니다</div>'; return; }
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML = ranks.map((r, i) =>
+    `<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score.toLocaleString()}점</span><span class="rank-tile">${r.tile}</span></div>`
+  ).join('');
+}
+
+// ==================== GAME STATE ====================
+let grid = [];
+let score = 0;
+let moveCount = 0;
+let gameOver = false;
+let won = false;
+let keepPlaying = false;
+let prevState = null; // for undo
+let tileId = 0;
+
+const TILE_COLORS = {
+  2:    { bg:'#eee4da', color:'#776e65' },
+  4:    { bg:'#ede0c8', color:'#776e65' },
+  8:    { bg:'#f2b179', color:'#fff' },
+  16:   { bg:'#f59563', color:'#fff' },
+  32:   { bg:'#f67c5f', color:'#fff' },
+  64:   { bg:'#f65e3b', color:'#fff' },
+  128:  { bg:'#edcf72', color:'#fff' },
+  256:  { bg:'#edcc61', color:'#fff' },
+  512:  { bg:'#edc850', color:'#fff' },
+  1024: { bg:'#edc53f', color:'#fff' },
+  2048: { bg:'#edc22e', color:'#fff' },
+};
+
+function getTileStyle(val) {
+  if (TILE_COLORS[val]) return TILE_COLORS[val];
+  // For tiles > 2048
+  return { bg:'#3c3a32', color:'#fff' };
+}
+
+function getTileFontSize(val) {
+  if (val < 100) return '2em';
+  if (val < 1000) return '1.6em';
+  if (val < 10000) return '1.3em';
+  return '1em';
+}
+
+// ==================== GRID LOGIC ====================
+function emptyGrid() {
+  return [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+}
+
+function cloneGrid(g) {
+  return g.map(r => [...r]);
+}
+
+function emptyCells(g) {
+  const cells = [];
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      if (g[r][c] === 0) cells.push([r, c]);
+  return cells;
+}
+
+function addRandomTile(g) {
+  const cells = emptyCells(g);
+  if (!cells.length) return null;
+  const [r, c] = cells[Math.floor(Math.random() * cells.length)];
+  g[r][c] = Math.random() < 0.9 ? 2 : 4;
+  return { r, c, val: g[r][c] };
+}
+
+function getMaxTile(g) {
+  let max = 0;
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      if (g[r][c] > max) max = g[r][c];
+  return max;
+}
+
+function canMove(g) {
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++) {
+      if (g[r][c] === 0) return true;
+      if (c < 3 && g[r][c] === g[r][c+1]) return true;
+      if (r < 3 && g[r][c] === g[r+1][c]) return true;
+    }
+  return false;
+}
+
+// Slide a single row to the left, return { row, mergeScore, merged }
+function slideRow(row) {
+  let arr = row.filter(v => v !== 0);
+  let mergeScore = 0;
+  const mergedPositions = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] === arr[i+1]) {
+      arr[i] *= 2;
+      mergeScore += arr[i];
+      mergedPositions.push(i);
+      arr.splice(i + 1, 1);
+    }
+  }
+  while (arr.length < 4) arr.push(0);
+  return { row: arr, mergeScore, mergedPositions };
+}
+
+function move(g, dir) {
+  // dir: 0=left, 1=up, 2=right, 3=down
+  let newGrid = emptyGrid();
+  let totalMerge = 0;
+  let moved = false;
+  const mergedCells = [];
+
+  for (let i = 0; i < 4; i++) {
+    let line = [];
+    for (let j = 0; j < 4; j++) {
+      if (dir === 0) line.push(g[i][j]);       // left
+      else if (dir === 1) line.push(g[j][i]);   // up
+      else if (dir === 2) line.push(g[i][3-j]); // right
+      else line.push(g[3-j][i]);                 // down
+    }
+    const result = slideRow(line);
+    totalMerge += result.mergeScore;
+
+    for (let j = 0; j < 4; j++) {
+      let r, c;
+      if (dir === 0) { r = i; c = j; }
+      else if (dir === 1) { r = j; c = i; }
+      else if (dir === 2) { r = i; c = 3 - j; }
+      else { r = 3 - j; c = i; }
+      newGrid[r][c] = result.row[j];
+      if (result.row[j] !== g[r][c]) moved = true;
+      if (result.mergedPositions.includes(j)) {
+        mergedCells.push({ r, c });
+      }
+    }
+  }
+
+  return { grid: newGrid, mergeScore: totalMerge, moved, mergedCells };
+}
+
+// ==================== RENDERING ====================
+let tileElements = {}; // id -> DOM element
+
+function calcTileGeometry() {
+  const layer = document.getElementById('tile-layer');
+  const w = layer.offsetWidth;
+  const gap = 8;
+  const cellSize = (w - gap * 3) / 4;
+  return { cellSize, gap };
+}
+
+function tilePos(r, c) {
+  const { cellSize, gap } = calcTileGeometry();
+  return {
+    left: c * (cellSize + gap),
+    top: r * (cellSize + gap),
+    size: cellSize
+  };
+}
+
+function renderGrid(newTile, mergedCells) {
+  const layer = document.getElementById('tile-layer');
+
+  // Remove old tiles not in grid
+  const activeTiles = new Set();
+
+  // Build new tile map
+  const newElements = {};
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (grid[r][c] === 0) continue;
+      const key = r + '_' + c;
+      activeTiles.add(key);
+    }
+  }
+
+  // Clear and rebuild
+  layer.innerHTML = '';
+  tileElements = {};
+
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (grid[r][c] === 0) continue;
+      const val = grid[r][c];
+      const pos = tilePos(r, c);
+      const style = getTileStyle(val);
+      const el = document.createElement('div');
+      el.className = 'tile';
+      const isMerged = mergedCells && mergedCells.some(m => m.r === r && m.c === c);
+      const isNew = newTile && newTile.r === r && newTile.c === c;
+      if (isMerged) el.classList.add('merged');
+      if (isNew) el.classList.add('new');
+      el.style.width = pos.size + 'px';
+      el.style.height = pos.size + 'px';
+      el.style.left = pos.left + 'px';
+      el.style.top = pos.top + 'px';
+      el.style.backgroundColor = style.bg;
+      el.style.color = style.color;
+      el.style.fontSize = getTileFontSize(val);
+      el.textContent = val;
+      layer.appendChild(el);
+    }
+  }
+
+  // Update score display
+  document.getElementById('g-score').textContent = score.toLocaleString();
+  const best = getBest();
+  document.getElementById('g-best').textContent = (score > best ? score : best).toLocaleString();
+
+  // Undo button
+  document.getElementById('btn-undo').disabled = !prevState;
+}
+
+// ==================== GAME CONTROL ====================
+function startGame() {
+  grid = emptyGrid();
+  score = 0;
+  moveCount = 0;
+  gameOver = false;
+  won = false;
+  keepPlaying = false;
+  prevState = null;
+  tileId = 0;
+
+  addRandomTile(grid);
+  addRandomTile(grid);
+
+  show('game');
+  // Small delay to ensure layout is computed
+  requestAnimationFrame(() => {
+    renderGrid(null, null);
+  });
+
+  // Remove any win overlay
+  const existing = document.querySelector('.win-overlay');
+  if (existing) existing.remove();
+}
+
+function doMove(dir) {
+  if (gameOver) return;
+
+  const result = move(grid, dir);
+  if (!result.moved) return;
+
+  // Save undo state
+  prevState = { grid: cloneGrid(grid), score: score, moveCount: moveCount };
+
+  grid = result.grid;
+  score += result.mergeScore;
+  moveCount++;
+
+  if (result.mergeScore > 0) playSound('merge');
+
+  const newTile = addRandomTile(grid);
+
+  renderGrid(newTile, result.mergedCells);
+
+  // Check win
+  if (!won && !keepPlaying && getMaxTile(grid) >= 2048) {
+    won = true;
+    playSound('win');
+    showWinOverlay();
+    return;
+  }
+
+  // Check game over
+  if (!canMove(grid)) {
+    gameOver = true;
+    playSound('gameover');
+    setTimeout(() => endGame(), 600);
+  }
+}
+
+function undoMove() {
+  if (!prevState || gameOver) return;
+  grid = prevState.grid;
+  score = prevState.score;
+  moveCount = prevState.moveCount;
+  prevState = null;
+  renderGrid(null, null);
+}
+
+function showWinOverlay() {
+  const container = document.getElementById('grid-container');
+  const overlay = document.createElement('div');
+  overlay.className = 'win-overlay';
+  overlay.innerHTML = `
+    <div class="win-title glow-text">🎉 2048!</div>
+    <div class="win-sub">축하합니다! 계속 도전하시겠습니까?</div>
+    <div>
+      <button onclick="continueGame()">계속하기</button>
+      <button onclick="endGame()">결과 보기</button>
+    </div>
+  `;
+  container.appendChild(overlay);
+}
+
+function continueGame() {
+  keepPlaying = true;
+  const overlay = document.querySelector('.win-overlay');
+  if (overlay) overlay.remove();
+}
+
+function endGame() {
+  const overlay = document.querySelector('.win-overlay');
+  if (overlay) overlay.remove();
+  gameOver = true;
+
+  const maxTile = getMaxTile(grid);
+  const isNew = setBest(score);
+  saveRank(score, maxTile);
+
+  // Result screen
+  let emoji = '😅';
+  let title = '게임 오버';
+  if (maxTile >= 2048) { emoji = '🏆'; title = '2048 달성!'; }
+  else if (maxTile >= 1024) { emoji = '🔥'; title = '아쉽다!'; }
+  else if (maxTile >= 512) { emoji = '💪'; title = '괜찮은 실력!'; }
+  else if (maxTile >= 256) { emoji = '👍'; title = '나쁘지 않아요!'; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-score').textContent = score.toLocaleString();
+  document.getElementById('r-maxtile').textContent = maxTile;
+  document.getElementById('r-moves').textContent = moveCount;
+  document.getElementById('r-best-msg').textContent = isNew ? '🎉 신기록 달성!' : '';
+
+  show('result');
+}
+
+// ==================== INPUT: KEYBOARD ====================
+document.addEventListener('keydown', e => {
+  if (document.getElementById('s-game').classList.contains('active')) {
+    const map = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3 };
+    if (map[e.key] !== undefined) {
+      e.preventDefault();
+      doMove(map[e.key]);
+    }
+  }
+});
+
+// ==================== INPUT: SWIPE ====================
+let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+
+document.addEventListener('touchstart', e => {
+  if (!document.getElementById('s-game').classList.contains('active')) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchStartTime = Date.now();
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  if (!document.getElementById('s-game').classList.contains('active')) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  const dt = Date.now() - touchStartTime;
+
+  if (dt > 500) return;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
+  const minSwipe = 30;
+
+  if (Math.max(absDx, absDy) < minSwipe) return;
+
+  if (absDx > absDy) {
+    doMove(dx > 0 ? 2 : 0); // right : left
+  } else {
+    doMove(dy > 0 ? 3 : 1); // down : up
+  }
+}, { passive: true });
+
+// Prevent scrolling on game screen
+document.addEventListener('touchmove', e => {
+  if (document.getElementById('s-game').classList.contains('active')) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// ==================== CAPTURE & SHARE ====================
+function captureScreen() {
+  const target = document.getElementById('s-result');
+  html2canvas(target, { backgroundColor: '#0a0a15' }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = '2048_결과.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+
+function shareResultText() {
+  const maxTile = getMaxTile(grid);
+  const tileBar = [];
+  const levels = [2048, 1024, 512, 256, 128];
+  for (const l of levels) tileBar.push(maxTile >= l ? '🟪' : '⬛');
+
+  const text =
+`🧩 2048
+🏆 ${score.toLocaleString()}점 | 최대 타일: ${maxTile}
+${tileBar.join('')}
+이동 ${moveCount}회
+
+킬링타임천국에서 도전해봐!
+https://killingtimeheaven.pages.dev`;
+
+  if (navigator.share) {
+    navigator.share({ title: '2048', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('📋 결과가 복사됐어요! 친구에게 공유해보세요.');
+    });
+  } else {
+    prompt('아래 텍스트를 복사하세요:', text);
+  }
+}
+
+// ==================== RESIZE HANDLER ====================
+window.addEventListener('resize', () => {
+  if (document.getElementById('s-game').classList.contains('active')) {
+    renderGrid(null, null);
+  }
+});
+
+// ==================== INIT ====================
+window.addEventListener('load', () => {
+  renderRanks();
+  document.addEventListener('touchstart', () => getAudioCtx(), { once: true });
+  document.addEventListener('click', () => getAudioCtx(), { once: true });
+});
+</script>
+</body>
+</html>

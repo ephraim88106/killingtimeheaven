@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⌨️ 타자 레이서 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}60%{transform:translateX(8px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.6}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px 16px;width:100%;margin-bottom:24px;font-size:.82em;color:#888;line-height:1.8}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.1em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s;margin-bottom:8px}
+.btn-sub:hover{border-color:#555;color:#ccc}
+
+/* Difficulty */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;margin-bottom:24px}
+.diff-btn{background:#141428;border:2px solid #252545;border-radius:12px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;font-size:.9em;font-weight:700}
+.diff-btn:hover{border-color:#a855f7}
+.diff-btn.sel{border-color:#a855f7;background:#1a1a38;color:#c084fc}
+.diff-icon{font-size:1.5em;display:block;margin-bottom:6px}
+
+/* Rank board */
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
+
+/* Game screen */
+#s-game{padding:0;justify-content:flex-start}
+.game-header{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:480px;padding:12px 16px;background:#0d0d1a;border-bottom:1px solid #1e1e35;z-index:10}
+.g-score{font-size:1.1em;font-weight:800;color:#06b6d4}
+.g-combo{font-size:.9em;font-weight:800;color:#f59e0b;min-width:70px;text-align:center;min-height:22px}
+.g-timer{font-size:1em;font-weight:700;color:#a855f7;min-width:60px;text-align:right}
+
+.game-area{position:relative;width:100%;max-width:480px;flex:1;overflow:hidden;background:#0a0a15;border-bottom:3px solid #ef4444}
+.danger-line{position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ef4444,#f59e0b,#ef4444);animation:pulse 1s infinite;z-index:5}
+
+.falling-word{position:absolute;font-weight:700;padding:6px 14px;border-radius:10px;background:#141428;border:2px solid #252545;cursor:default;white-space:nowrap;transition:color .3s,border-color .3s,text-shadow .3s;z-index:2;font-size:1.05em;user-select:none}
+.falling-word.matched{animation:wordExplode .4s ease forwards;pointer-events:none}
+@keyframes wordExplode{
+  0%{transform:scale(1);opacity:1}
+  30%{transform:scale(1.5);opacity:.8;border-color:#22c55e;color:#22c55e}
+  100%{transform:scale(0);opacity:0}
+}
+
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:3}
+@keyframes particleFly{
+  0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0)}
+}
+
+.input-area{display:flex;gap:8px;width:100%;max-width:480px;padding:10px 14px;background:#0d0d1a;border-top:1px solid #1e1e35}
+.type-input{flex:1;background:#141428;border:2px solid #252545;border-radius:12px;padding:12px 16px;color:#fff;font-size:1em;outline:none;transition:border-color .2s;font-family:inherit}
+.type-input:focus{border-color:#a855f7}
+.type-input::placeholder{color:#444}
+.type-submit{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:12px;padding:12px 18px;color:#fff;font-weight:700;cursor:pointer;font-size:.95em;white-space:nowrap;transition:opacity .2s}
+.type-submit:active{opacity:.8}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0}
+.r-sub{color:#666;font-size:.85em;margin-top:8px}
+.r-best{color:#f59e0b;font-size:.85em;margin-top:10px}
+.stat-row{display:flex;gap:12px;margin-top:18px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 18px;text-align:center}
+.stat-v{font-size:1.3em;font-weight:800;color:#a855f7}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+
+.site-badge{color:#444;font-size:.78em;margin-top:14px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">⌨️</div>
+  <div class="title glow">타자 레이서</div>
+  <div class="sub">떨어지는 단어를 타이핑으로 파괴하라!</div>
+
+  <div style="font-size:.85em;color:#888;margin-bottom:10px;width:100%">난이도 선택</div>
+  <div class="diff-grid">
+    <div class="diff-btn sel" id="d-easy" onclick="selDiff('easy',this)">
+      <span class="diff-icon">🟢</span>쉬움<div style="font-size:.7em;color:#666;margin-top:3px">2~3글자</div>
+    </div>
+    <div class="diff-btn" id="d-normal" onclick="selDiff('normal',this)">
+      <span class="diff-icon">🟡</span>보통<div style="font-size:.7em;color:#666;margin-top:3px">3~4글자</div>
+    </div>
+    <div class="diff-btn" id="d-hard" onclick="selDiff('hard',this)">
+      <span class="diff-icon">🔴</span>어려움<div style="font-size:.7em;color:#666;margin-top:3px">4~5글자</div>
+    </div>
+  </div>
+
+  <div class="tips">
+    ⌨️ 화면에 떨어지는 <b>단어를 입력</b>하고 <b>Enter</b>로 파괴<br>
+    🔥 연속 파괴로 <b>콤보 보너스</b> 획득<br>
+    ⚠️ 단어가 바닥에 닿으면 <b>게임 오버!</b>
+  </div>
+
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <div class="site-badge">킬링타임천국</div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-header">
+    <div class="g-score">점수 <span id="ui-score">0</span></div>
+    <div class="g-combo" id="ui-combo"></div>
+    <div class="g-timer" id="ui-timer">0:00</div>
+  </div>
+  <div class="game-area" id="game-area">
+    <div class="danger-line"></div>
+  </div>
+  <div class="input-area">
+    <input type="text" class="type-input" id="type-input" placeholder="단어를 입력하세요..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="type-submit" id="type-submit" onclick="submitWord()">입력</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🏆</div>
+    <div class="r-title glow" id="r-title">타자 마스터!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="r-sub" id="r-sub"></div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="r-words">0</div><div class="stat-l">파괴한 단어</div></div>
+      <div class="stat"><div class="stat-v" id="r-combo">0</div><div class="stat-l">최대 콤보</div></div>
+    </div>
+    <div class="r-best" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 도전</button>
+  <button class="btn-sub" onclick="captureScreen()">🖼️ 캡처 저장</button>
+  <button class="btn-sub" onclick="shareResultText()">🔗 결과 공유</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<script>
+/* ===== WORD LISTS ===== */
+const WORDS = {
+  easy: [
+    '사과','바다','하늘','구름','나무','별빛','달빛','꽃잎','봄날','여름',
+    '가을','겨울','태양','세계','마음','행복','희망','사랑','친구','가족',
+    '음악','영화','커피','빵집','학교','도서','공원','산책','여행','선물',
+    '강물','바람','눈물','미소','꿈속','노래','춤사','빛깔','안녕','감사',
+    '용기','지혜','평화','자유','기쁨','슬픔','분노','공포','놀람','믿음',
+    '소망','열정','도전','성공','실패','시작','끝날','오늘','내일','어제',
+    '아침','점심','저녁','밤하','새벽','시간','공간','우주','지구','달님',
+    '해님','구슬','모래','파도','비옷','우산','장갑','모자','신발','양말',
+    '연필','지우','책상','의자','창문','거울','시계','열쇠','전화','편지',
+    '토끼','강아','고양','나비','새우','다람','거북','사슴','독수','펭귄',
+    '포도','딸기','수박','참외','복숭','바나','망고','키위','레몬','체리'
+  ],
+  normal: [
+    '무지개','아이스','도서관','컴퓨터','냉장고','자전거','비행기','놀이터','수영장','운동장',
+    '초콜릿','해바라기','선인장','크리스마스','바이올린','피아노','기타리스트','아메리카노',
+    '카페라떼','에스프레소','치즈케이크','딸기우유','바닐라','캐러멜','아이스크림',
+    '인터넷','스마트폰','이어폰','모니터','키보드','마우스','프린터','스피커',
+    '텔레비전','라디오','카메라','드라이버','엘리베이터','에스컬레이터',
+    '자동차','오토바이','헬리콥터','잠수함','기관차','소방차','구급차',
+    '운동화','원피스','청바지','스웨터','목도리','장화신고',
+    '도깨비','용가리','호랑이','코끼리','기린나라','하마폴카',
+    '햄버거','스파게티','카레라이스','돈가스','김치찌개','된장찌개','비빔밥',
+    '떡볶이','순대국','칼국수','냉면집','만두국','삼겹살','불고기',
+    '미술관','박물관','천문대','동물원','식물원','수족관','놀이공원',
+    '도서실','연구소','발전소','정류장','주차장','휴게소','전망대'
+  ],
+  hard: [
+    '프로그래밍','인공지능','블록체인','메타버스','가상현실','증강현실','딥러닝',
+    '머신러닝','빅데이터','사물인터넷','클라우드컴퓨팅','사이버보안',
+    '양자컴퓨터','자율주행차','전기자동차','재생에너지','탄소중립',
+    '지속가능발전','생명공학','나노기술','우주탐사선','로봇공학',
+    '반도체산업','디지털전환','플랫폼경제','공유경제학','핀테크산업',
+    '크라우드펀딩','디지털노마드','원격근무제','화상회의실',
+    '가상화폐거래','스마트팩토리','자동화시스템','데이터사이언스',
+    '알고리즘설계','네트워크보안','정보통신기술','소프트웨어개발',
+    '오픈소스커뮤니티','애자일방법론','스크럼마스터',
+    '프론트엔드개발','백엔드서버','데이터베이스','운영체제관리',
+    '컨테이너기술','마이크로서비스','서버리스컴퓨팅'
+  ]
+};
+
+/* ===== STATE ===== */
+let difficulty = 'easy';
+let score, combo, maxCombo, wordsDestroyed, gameTime, gameOver;
+let fallingWords = [];
+let animId, timerInterval;
+let spawnInterval, fallSpeed;
+let gameStartTime;
+let wordIdCounter = 0;
+
+/* ===== DIFFICULTY CONFIG ===== */
+const CONFIG = {
+  easy:   { fallSpeed: 0.4, spawnMin: 2200, spawnMax: 3200, speedRamp: 0.003 },
+  normal: { fallSpeed: 0.55, spawnMin: 1800, spawnMax: 2800, speedRamp: 0.004 },
+  hard:   { fallSpeed: 0.7, spawnMin: 1500, spawnMax: 2500, speedRamp: 0.005 }
+};
+
+/* ===== HELPERS ===== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-home'){renderRanks();}
+}
+
+function selDiff(d,el){
+  difficulty=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  renderRanks();
+}
+
+function getRanks(){
+  return JSON.parse(localStorage.getItem('tr_ranks_'+difficulty)||'[]');
+}
+function saveRank(s){
+  let ranks=getRanks();
+  ranks.push({score:s,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('tr_ranks_'+difficulty,JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
+
+function randomWord(){
+  const list=WORDS[difficulty];
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+/* ===== GAME ===== */
+function startGame(){
+  // Reset
+  score=0; combo=0; maxCombo=0; wordsDestroyed=0; gameOver=false;
+  fallingWords=[]; wordIdCounter=0;
+  gameStartTime=Date.now(); gameTime=0;
+
+  const cfg=CONFIG[difficulty];
+  fallSpeed=cfg.fallSpeed;
+
+  // Clear area
+  const area=document.getElementById('game-area');
+  area.querySelectorAll('.falling-word, .particle').forEach(e=>e.remove());
+
+  // UI
+  document.getElementById('ui-score').textContent='0';
+  document.getElementById('ui-combo').textContent='';
+  document.getElementById('ui-timer').textContent='0:00';
+
+  show('s-game');
+
+  const input=document.getElementById('type-input');
+  input.value='';
+  setTimeout(()=>input.focus(),100);
+
+  // Start spawning
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInterval) clearInterval(timerInterval);
+  if(spawnInterval) clearTimeout(spawnInterval);
+
+  scheduleSpawn();
+  timerInterval=setInterval(updateTimer,1000);
+  animId=requestAnimationFrame(gameLoop);
+}
+
+function scheduleSpawn(){
+  if(gameOver) return;
+  const cfg=CONFIG[difficulty];
+  const elapsed=(Date.now()-gameStartTime)/1000;
+  // Decrease spawn time over elapsed time
+  const minT=Math.max(cfg.spawnMin*0.4, cfg.spawnMin - elapsed*15);
+  const maxT=Math.max(cfg.spawnMax*0.4, cfg.spawnMax - elapsed*15);
+  const delay=minT+Math.random()*(maxT-minT);
+  spawnInterval=setTimeout(()=>{
+    spawnWord();
+    scheduleSpawn();
+  },delay);
+}
+
+function spawnWord(){
+  if(gameOver) return;
+  const area=document.getElementById('game-area');
+  const areaW=area.offsetWidth;
+  const word=randomWord();
+  const id='fw-'+(wordIdCounter++);
+
+  const el=document.createElement('div');
+  el.className='falling-word';
+  el.textContent=word;
+  el.id=id;
+
+  // Temp append to measure
+  el.style.visibility='hidden';
+  area.appendChild(el);
+  const elW=el.offsetWidth;
+  el.style.visibility='';
+
+  const maxX=Math.max(0, areaW-elW-10);
+  const x=10+Math.random()*maxX;
+  el.style.left=x+'px';
+  el.style.top='-40px';
+
+  fallingWords.push({id, word, el, y:-40, x});
+}
+
+function updateTimer(){
+  if(gameOver) return;
+  gameTime=Math.floor((Date.now()-gameStartTime)/1000);
+  const m=Math.floor(gameTime/60);
+  const s=gameTime%60;
+  document.getElementById('ui-timer').textContent=m+':'+(s<10?'0':'')+s;
+}
+
+let lastFrame=0;
+function gameLoop(ts){
+  if(gameOver) return;
+  if(!lastFrame) lastFrame=ts;
+  const dt=Math.min(ts-lastFrame,50); // cap at 50ms
+  lastFrame=ts;
+
+  const area=document.getElementById('game-area');
+  const areaH=area.offsetHeight;
+  const elapsed=(Date.now()-gameStartTime)/1000;
+  const cfg=CONFIG[difficulty];
+  const currentSpeed=cfg.fallSpeed + elapsed*cfg.speedRamp;
+
+  for(let i=fallingWords.length-1;i>=0;i--){
+    const fw=fallingWords[i];
+    fw.y+=currentSpeed*dt*0.06;
+    fw.el.style.top=fw.y+'px';
+
+    // Color based on danger (distance to bottom)
+    const progress=fw.y/areaH;
+    if(progress>0.7){
+      const danger=Math.min(1,(progress-0.7)/0.3);
+      const r=Math.floor(200+55*danger);
+      const g=Math.floor(200*(1-danger));
+      const b=Math.floor(200*(1-danger));
+      fw.el.style.color=`rgb(${r},${g},${b})`;
+      fw.el.style.borderColor=`rgba(${r},${g*0.5},${b*0.5},0.7)`;
+      fw.el.style.textShadow=`0 0 ${8+danger*12}px rgba(239,68,68,${danger*0.6})`;
+    }
+
+    // Check if touched bottom
+    const elH=fw.el.offsetHeight||30;
+    if(fw.y+elH>=areaH){
+      endGame();
+      return;
+    }
+  }
+
+  animId=requestAnimationFrame(gameLoop);
+}
+
+function submitWord(){
+  if(gameOver) return;
+  const input=document.getElementById('type-input');
+  const typed=input.value.trim();
+  if(!typed){input.focus();return;}
+
+  // Find matching word (first match closest to bottom)
+  let matchIdx=-1;
+  let matchY=-1;
+  for(let i=0;i<fallingWords.length;i++){
+    if(fallingWords[i].word===typed && fallingWords[i].y>matchY){
+      matchIdx=i;
+      matchY=fallingWords[i].y;
+    }
+  }
+
+  if(matchIdx>=0){
+    const fw=fallingWords[matchIdx];
+    destroyWord(fw);
+    fallingWords.splice(matchIdx,1);
+
+    // Scoring
+    combo++;
+    if(combo>maxCombo) maxCombo=combo;
+    wordsDestroyed++;
+    const lengthBonus=fw.word.length*5;
+    const comboBonus=Math.floor(combo*10);
+    const pts=50+lengthBonus+comboBonus;
+    score+=pts;
+
+    document.getElementById('ui-score').textContent=score;
+    if(combo>1){
+      document.getElementById('ui-combo').textContent=combo+'콤보! +'+pts;
+      document.getElementById('ui-combo').style.animation='none';
+      void document.getElementById('ui-combo').offsetWidth;
+      document.getElementById('ui-combo').style.animation='pop .3s ease';
+    } else {
+      document.getElementById('ui-combo').textContent='+'+pts;
+    }
+  } else {
+    // Wrong word - break combo, shake input
+    combo=0;
+    document.getElementById('ui-combo').textContent='';
+    input.style.animation='none';
+    void input.offsetWidth;
+    input.style.animation='shake .3s ease';
+  }
+
+  input.value='';
+  input.focus();
+}
+
+function destroyWord(fw){
+  const el=fw.el;
+  el.classList.add('matched');
+
+  // Spawn particles
+  const area=document.getElementById('game-area');
+  const rect=el.getBoundingClientRect();
+  const areaRect=area.getBoundingClientRect();
+  const cx=rect.left-areaRect.left+rect.width/2;
+  const cy=rect.top-areaRect.top+rect.height/2;
+
+  const colors=['#a855f7','#06b6d4','#22c55e','#f59e0b','#ec4899','#fff'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const angle=Math.random()*Math.PI*2;
+    const dist=40+Math.random()*60;
+    const px=Math.cos(angle)*dist;
+    const py=Math.sin(angle)*dist;
+    p.style.cssText=`left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};--px:${px}px;--py:${py}px;animation:particleFly .6s ease forwards;width:${4+Math.random()*6}px;height:${4+Math.random()*6}px`;
+    area.appendChild(p);
+    setTimeout(()=>p.remove(),600);
+  }
+
+  setTimeout(()=>el.remove(),400);
+}
+
+function endGame(){
+  gameOver=true;
+  if(animId) cancelAnimationFrame(animId);
+  if(timerInterval) clearInterval(timerInterval);
+  if(spawnInterval) clearTimeout(spawnInterval);
+  lastFrame=0;
+
+  // Save rank
+  saveRank(score);
+  const ranks=getRanks();
+  const isNew=ranks.length>0&&ranks[0].score===score;
+
+  // Result screen
+  let emoji,title;
+  if(score>=3000){emoji='🏆';title='타자의 신!';}
+  else if(score>=2000){emoji='🔥';title='타자 마스터!';}
+  else if(score>=1000){emoji='⚡';title='빠른 손가락!';}
+  else if(score>=500){emoji='👍';title='좋은 실력!';}
+  else if(score>=200){emoji='💪';title='좋은 시작!';}
+  else{emoji='🌱';title='연습이 필요해요';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-sub').textContent=
+    `난이도: ${difficulty==='easy'?'쉬움':difficulty==='normal'?'보통':'어려움'} | 시간: ${document.getElementById('ui-timer').textContent}`;
+  document.getElementById('r-words').textContent=wordsDestroyed;
+  document.getElementById('r-combo').textContent=maxCombo;
+  document.getElementById('r-best').textContent=isNew?'🎉 새로운 최고 기록!':'';
+
+  show('s-result');
+}
+
+/* ===== INPUT HANDLING ===== */
+document.getElementById('type-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();submitWord();}
+});
+
+/* ===== CAPTURE / SHARE ===== */
+function captureScreen(){
+  const target=document.getElementById('s-result');
+  html2canvas(target,{backgroundColor:'#0a0a15'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='타자레이서_결과.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+function shareResultText(){
+  const diffName=difficulty==='easy'?'쉬움':difficulty==='normal'?'보통':'어려움';
+  const text=`⌨️ 타자 레이서\n🏆 ${score}점 | 파괴: ${wordsDestroyed}단어 | 최대콤보: ${maxCombo}\n난이도: ${diffName}\n\n킬링타임천국에서 도전해봐!\nhttps://killingtimeheaven.pages.dev`;
+  if(navigator.share){navigator.share({title:'타자 레이서',text,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
+}
+
+/* ===== INIT ===== */
+window.addEventListener('load',()=>{
+  renderRanks();
+});
+</script>
+</body>
+</html>

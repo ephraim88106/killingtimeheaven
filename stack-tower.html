@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🏗️ 타일 쌓기 - 킬링타임천국</title>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation}
+.screen{display:none;width:100%;max-width:440px;padding:24px 16px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s;margin-bottom:8px}
+.btn-sub:active{background:#1a1a38;border-color:#a855f7}
+
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:30px 22px;text-align:center;width:100%;margin-bottom:20px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-rank{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;margin:10px 0}
+.r-stats{display:flex;gap:8px;margin-top:14px}
+.rs{flex:1;background:#1e1e35;border-radius:10px;padding:9px 4px;text-align:center}
+.rs-v{font-size:1.2em;font-weight:800;color:#a855f7}
+.rs-l{font-size:.68em;color:#666;margin-top:2px}
+
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
+
+/* Game screen */
+#s-game{padding:0;background:#0a0a15;justify-content:flex-start;position:relative}
+.g-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;z-index:10;pointer-events:none}
+.g-score-disp{font-size:1.4em;font-weight:800;color:#06b6d4}
+.g-layer-disp{font-size:.95em;font-weight:700;color:#a855f7}
+.g-perfect-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2em;font-weight:900;pointer-events:none;z-index:20;opacity:0}
+@keyframes perfectPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}30%{transform:translate(-50%,-50%) scale(1.2)}60%{transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
+@keyframes sliceFall{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(200px) rotate(15deg)}}
+canvas{display:block}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="font-size:3em;margin-bottom:8px">🏗️</div>
+  <div style="font-size:2.2em;font-weight:900;margin-bottom:6px" class="glow">타일 쌓기</div>
+  <div style="color:#666;font-size:.9em;margin-bottom:22px;text-align:center;line-height:1.7">
+    움직이는 블록을 타이밍에 맞게 쌓아라!
+  </div>
+
+  <div style="background:#141428;border:1px solid #252545;border-radius:12px;padding:12px;width:100%;margin-bottom:22px;font-size:.8em;color:#888;line-height:1.9">
+    ⌨️ <b>PC</b>: 스페이스바 / 클릭으로 블록 배치<br>
+    👆 <b>모바일</b>: 화면 탭으로 블록 배치
+  </div>
+
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <div style="color:#555;font-size:.8em;margin-top:6px">최고: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="g-hud">
+    <div class="g-score-disp" id="g-score">0점</div>
+    <div class="g-layer-disp" id="g-layer">0층</div>
+  </div>
+  <div class="g-perfect-text" id="g-perfect">PERFECT!</div>
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="r-emoji">🏗️</div>
+    <div class="r-rank glow" id="r-rank">대단해요!</div>
+    <div class="r-score glow" id="r-score">0점</div>
+    <div class="r-stats">
+      <div class="rs"><div class="rs-v" id="r-layers">0</div><div class="rs-l">쌓은 층수</div></div>
+      <div class="rs"><div class="rs-v" id="r-perfects">0</div><div class="rs-l">PERFECT</div></div>
+      <div class="rs"><div class="rs-v" id="r-maxcombo">0</div><div class="rs-l">연속 퍼펙트</div></div>
+    </div>
+    <div style="color:#f59e0b;font-size:.85em;margin-top:12px" id="r-best"></div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="captureScreen()">🖼️ 캡처 저장</button>
+  <button class="btn-sub" onclick="shareResultText()">🔗 결과 공유</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 처음으로</button>
+</div>
+
+<script>
+// ===== SCREEN =====
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-home'){updateBestDisp();renderRanks();}
+}
+
+// ===== RANKS =====
+function getRanks(){return JSON.parse(localStorage.getItem('st_ranks')||'[]')}
+function saveRank(s){
+  let ranks=getRanks();
+  ranks.push({score:s,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('st_ranks',JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
+function getBest(){return parseInt(localStorage.getItem('st_best')||'0',10)}
+function setBest(v){if(v>getBest()){localStorage.setItem('st_best',v);return true}return false}
+function updateBestDisp(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+// ===== SOUND =====
+let actx=null;
+function getCtx(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}return actx}
+
+function playPlace(){
+  try{
+    const c=getCtx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='sine';o.frequency.value=520;
+    g.gain.setValueAtTime(.15,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);
+    o.start();o.stop(c.currentTime+.12);
+  }catch(e){}
+}
+
+function playPerfect(){
+  try{
+    const c=getCtx();if(!c)return;
+    // Two-tone chime
+    [880,1100].forEach((f,i)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.type='sine';o.frequency.value=f;
+      const t=c.currentTime+i*0.08;
+      g.gain.setValueAtTime(.18,t);
+      g.gain.exponentialRampToValueAtTime(.001,t+.2);
+      o.start(t);o.stop(t+.2);
+    });
+  }catch(e){}
+}
+
+function playFail(){
+  try{
+    const c=getCtx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='sawtooth';o.frequency.value=180;
+    o.frequency.exponentialRampToValueAtTime(80,c.currentTime+.3);
+    g.gain.setValueAtTime(.15,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.35);
+    o.start();o.stop(c.currentTime+.35);
+  }catch(e){}
+}
+
+function playSlice(){
+  try{
+    const c=getCtx();if(!c)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type='triangle';o.frequency.value=300;
+    o.frequency.exponentialRampToValueAtTime(150,c.currentTime+.15);
+    g.gain.setValueAtTime(.1,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.15);
+    o.start();o.stop(c.currentTime+.15);
+  }catch(e){}
+}
+
+// ===== GAME =====
+const BLOCK_COLORS=[
+  '#ef4444','#f97316','#f59e0b','#eab308','#84cc16',
+  '#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1',
+  '#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e'
+];
+
+const BLOCK_HEIGHT=28;
+const BASE_SPEED=2.5;
+const SPEED_INCREMENT=0.12;
+const PERFECT_THRESHOLD=3; // px tolerance for perfect
+const START_WIDTH_RATIO=0.45;
+
+let canvas,ctx;
+let gameActive=false;
+let animId=0;
+let score,layers,perfects,perfectCombo,maxPerfectCombo;
+let stack=[];       // placed blocks {x, w, color}
+let moving=null;    // current moving block {x, w, dir, speed, color}
+let fallingPieces=[]; // animated falling slices
+let cameraY=0;
+let targetCameraY=0;
+let canvasW,canvasH;
+let shakeAmount=0;
+let perfectFlash=0;
+
+function resizeCanvas(){
+  const wrap=document.getElementById('s-game');
+  canvasW=Math.min(440,window.innerWidth);
+  canvasH=window.innerHeight;
+  canvas.width=canvasW;
+  canvas.height=canvasH;
+}
+
+function getBlockColor(idx){
+  return BLOCK_COLORS[idx%BLOCK_COLORS.length];
+}
+
+function startGame(){
+  canvas=document.getElementById('gameCanvas');
+  ctx=canvas.getContext('2d');
+  resizeCanvas();
+
+  score=0;layers=0;perfects=0;perfectCombo=0;maxPerfectCombo=0;
+  stack=[];fallingPieces=[];
+  cameraY=0;targetCameraY=0;shakeAmount=0;perfectFlash=0;
+
+  // Base platform
+  const baseW=canvasW*START_WIDTH_RATIO;
+  const baseX=(canvasW-baseW)/2;
+  stack.push({x:baseX,w:baseW,color:'#555'});
+
+  // Spawn first moving block
+  spawnMovingBlock();
+  gameActive=true;
+
+  updateHUD();
+  show('s-game');
+  if(animId)cancelAnimationFrame(animId);
+  let lastTime=null;
+  function loop(ts){
+    if(!gameActive){return;}
+    if(!lastTime)lastTime=ts;
+    const dt=Math.min((ts-lastTime)/1000,0.05);
+    lastTime=ts;
+    update(dt);
+    render();
+    animId=requestAnimationFrame(loop);
+  }
+  animId=requestAnimationFrame(loop);
+}
+
+function spawnMovingBlock(){
+  const top=stack[stack.length-1];
+  const speed=BASE_SPEED+layers*SPEED_INCREMENT;
+  const color=getBlockColor(layers);
+  // Start from left or right alternately
+  const dir=layers%2===0?1:-1;
+  const startX=dir===1?-top.w:canvasW;
+  moving={x:startX,w:top.w,dir,speed,color};
+}
+
+function placeBlock(){
+  if(!gameActive||!moving)return;
+
+  const top=stack[stack.length-1];
+  const m=moving;
+
+  const mLeft=m.x;
+  const mRight=m.x+m.w;
+  const tLeft=top.x;
+  const tRight=top.x+top.w;
+
+  // Calculate overlap
+  const overlapLeft=Math.max(mLeft,tLeft);
+  const overlapRight=Math.min(mRight,tRight);
+  const overlapW=overlapRight-overlapLeft;
+
+  if(overlapW<=0){
+    // Complete miss - game over
+    // The block falls away
+    fallingPieces.push({x:m.x,w:m.w,y:getBlockY(stack.length),vy:0,color:m.color,rot:0,rv:(m.dir>0?1:-1)*2});
+    playFail();
+    moving=null;
+    gameActive=false;
+    setTimeout(endGame,800);
+    return;
+  }
+
+  // Check for perfect placement
+  const offset=Math.abs(mLeft-tLeft);
+  const isPerfect=offset<=PERFECT_THRESHOLD;
+
+  if(isPerfect){
+    // Perfect - keep same width as top
+    stack.push({x:top.x,w:top.w,color:m.color});
+    perfects++;
+    perfectCombo++;
+    if(perfectCombo>maxPerfectCombo)maxPerfectCombo=perfectCombo;
+    score+=10+perfectCombo*2; // bonus for consecutive perfects
+    layers++;
+    playPerfect();
+    showPerfectText();
+    perfectFlash=1;
+  }else{
+    // Trimmed placement
+    perfectCombo=0;
+    stack.push({x:overlapLeft,w:overlapW,color:m.color});
+    layers++;
+    score+=10;
+    playSlice();
+
+    // Create falling piece for the sliced-off part
+    if(mLeft<tLeft){
+      // Excess on the left
+      const exW=tLeft-mLeft;
+      fallingPieces.push({x:mLeft,w:exW,y:getBlockY(stack.length-1),vy:0,color:m.color,rot:0,rv:-2});
+    }
+    if(mRight>tRight){
+      // Excess on the right
+      const exW=mRight-tRight;
+      fallingPieces.push({x:tRight,w:exW,y:getBlockY(stack.length-1),vy:0,color:m.color,rot:0,rv:2});
+    }
+    playPlace();
+  }
+
+  // Camera
+  const blockY=getBlockY(stack.length-1);
+  const viewThreshold=canvasH*0.4;
+  if(canvasH-blockY+cameraY<viewThreshold){
+    targetCameraY+= BLOCK_HEIGHT;
+  }
+
+  shakeAmount=isPerfect?0:3;
+  updateHUD();
+  spawnMovingBlock();
+}
+
+function getBlockY(stackIdx){
+  // Block 0 is at bottom, each subsequent block is stacked above
+  return canvasH-60-(stackIdx)*BLOCK_HEIGHT;
+}
+
+function showPerfectText(){
+  const el=document.getElementById('g-perfect');
+  el.style.animation='none';
+  void el.offsetWidth;
+  const texts=['PERFECT!','PERFECT! ✨','AMAZING! 🔥','INCREDIBLE! 💎'];
+  el.textContent=perfectCombo>=8?texts[3]:perfectCombo>=5?texts[2]:perfectCombo>=2?texts[1]:texts[0];
+  el.style.color=perfectCombo>=5?'#f59e0b':'#22c55e';
+  el.style.animation='perfectPop .7s ease forwards';
+}
+
+function update(dt){
+  // Move current block
+  if(moving){
+    moving.x+=moving.dir*moving.speed*(dt*60);
+    // Bounce off walls
+    if(moving.x+moving.w>canvasW+moving.w*0.5){moving.dir=-1;}
+    if(moving.x<-moving.w*0.5){moving.dir=1;}
+  }
+
+  // Camera smooth scroll
+  cameraY+=(targetCameraY-cameraY)*0.1;
+
+  // Shake decay
+  if(shakeAmount>0)shakeAmount*=0.9;
+  if(shakeAmount<0.1)shakeAmount=0;
+
+  // Perfect flash decay
+  if(perfectFlash>0)perfectFlash*=0.92;
+  if(perfectFlash<0.01)perfectFlash=0;
+
+  // Update falling pieces
+  for(let i=fallingPieces.length-1;i>=0;i--){
+    const p=fallingPieces[i];
+    p.vy+=600*dt; // gravity
+    p.y+=p.vy*dt;
+    p.rot+=p.rv*dt;
+    if(p.y>canvasH+200){
+      fallingPieces.splice(i,1);
+    }
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,canvasW,canvasH);
+
+  // Background gradient
+  const bgGrad=ctx.createLinearGradient(0,0,0,canvasH);
+  bgGrad.addColorStop(0,'#0a0a15');
+  bgGrad.addColorStop(1,'#0f0f25');
+  ctx.fillStyle=bgGrad;
+  ctx.fillRect(0,0,canvasW,canvasH);
+
+  // Perfect flash overlay
+  if(perfectFlash>0){
+    ctx.fillStyle=`rgba(168,85,247,${perfectFlash*0.15})`;
+    ctx.fillRect(0,0,canvasW,canvasH);
+  }
+
+  ctx.save();
+
+  // Camera + shake
+  const shakeX=shakeAmount*(Math.random()-.5)*2;
+  const shakeY=shakeAmount*(Math.random()-.5)*2;
+  ctx.translate(shakeX,cameraY+shakeY);
+
+  // Draw stacked blocks
+  for(let i=0;i<stack.length;i++){
+    const b=stack[i];
+    const y=getBlockY(i);
+    drawBlock(b.x,y,b.w,BLOCK_HEIGHT,b.color,i===0);
+  }
+
+  // Draw moving block
+  if(moving){
+    const y=getBlockY(stack.length);
+    drawBlock(moving.x,y,moving.w,BLOCK_HEIGHT,moving.color,false);
+
+    // Draw guide line (subtle)
+    const top=stack[stack.length-1];
+    ctx.strokeStyle='rgba(255,255,255,0.08)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(top.x,y);
+    ctx.lineTo(top.x,y+BLOCK_HEIGHT);
+    ctx.moveTo(top.x+top.w,y);
+    ctx.lineTo(top.x+top.w,y+BLOCK_HEIGHT);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Draw falling pieces
+  for(const p of fallingPieces){
+    ctx.save();
+    ctx.translate(p.x+p.w/2,p.y+BLOCK_HEIGHT/2);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha=Math.max(0,1-(p.y-canvasH)/200);
+    drawBlock(-p.w/2,-BLOCK_HEIGHT/2,p.w,BLOCK_HEIGHT,p.color,false);
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // Draw ground line
+  ctx.save();
+  ctx.translate(0,cameraY);
+  const groundY=canvasH-58;
+  ctx.fillStyle='#252545';
+  ctx.fillRect(0,groundY,canvasW,2);
+  ctx.restore();
+}
+
+function drawBlock(x,y,w,h,color,isBase){
+  // Main block
+  ctx.fillStyle=color;
+  ctx.fillRect(x,y,w,h);
+
+  // Highlight (top edge)
+  ctx.fillStyle='rgba(255,255,255,0.2)';
+  ctx.fillRect(x,y,w,3);
+
+  // Shadow (bottom edge)
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.fillRect(x,y+h-2,w,2);
+
+  // Left highlight
+  ctx.fillStyle='rgba(255,255,255,0.08)';
+  ctx.fillRect(x,y,2,h);
+
+  // Right shadow
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fillRect(x+w-2,y,2,h);
+}
+
+function updateHUD(){
+  document.getElementById('g-score').textContent=score+'점';
+  document.getElementById('g-layer').textContent=layers+'층';
+}
+
+function endGame(){
+  gameActive=false;
+  cancelAnimationFrame(animId);
+
+  const isNewBest=setBest(score);
+  saveRank(score);
+
+  let emoji,rank;
+  if(layers>=50){emoji='💎';rank='전설의 건축가!';}
+  else if(layers>=35){emoji='🏆';rank='마스터 빌더!';}
+  else if(layers>=25){emoji='⭐';rank='숙련된 빌더!';}
+  else if(layers>=15){emoji='🏗️';rank='괜찮은 실력!';}
+  else if(layers>=8){emoji='🧱';rank='초보 빌더';}
+  else{emoji='😅';rank='다시 도전!';}
+
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-rank').textContent=rank;
+  document.getElementById('r-score').textContent=score+'점';
+  document.getElementById('r-layers').textContent=layers;
+  document.getElementById('r-perfects').textContent=perfects;
+  document.getElementById('r-maxcombo').textContent=maxPerfectCombo;
+  document.getElementById('r-best').textContent=isNewBest?'🎉 최고 기록!':'';
+  show('s-result');
+}
+
+// ===== INPUT =====
+function handleInput(e){
+  if(!gameActive)return;
+  e.preventDefault();
+  placeBlock();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'&&gameActive){e.preventDefault();placeBlock();}
+});
+document.addEventListener('click',e=>{
+  if(document.getElementById('s-game').classList.contains('active')&&gameActive){
+    placeBlock();
+  }
+});
+document.addEventListener('touchstart',e=>{
+  if(document.getElementById('s-game').classList.contains('active')&&gameActive){
+    e.preventDefault();
+    placeBlock();
+  }
+},{passive:false});
+
+window.addEventListener('resize',()=>{
+  if(canvas)resizeCanvas();
+});
+
+// ===== CAPTURE & SHARE =====
+function captureScreen(){
+  const target=document.getElementById('s-result');
+  html2canvas(target,{backgroundColor:'#0a0a15'}).then(canvas=>{
+    const link=document.createElement('a');
+    link.download='타일쌓기_결과.png';
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+function shareResultText(){
+  const text=`🏗️ 타일 쌓기\n🏆 ${score}점 | ${layers}층\nPERFECT: ${perfects} | 연속: ${maxPerfectCombo}\n\n킬링타임천국에서 도전해봐!\nhttps://killingtimeheaven.pages.dev`;
+  if(navigator.share){navigator.share({title:'타일 쌓기',text,url:location.href}).catch(()=>{});}
+  else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
+}
+
+// ===== INIT =====
+window.addEventListener('load',()=>{
+  updateBestDisp();
+  renderRanks();
+  document.addEventListener('click',()=>getCtx(),{once:true});
+  document.addEventListener('touchstart',()=>getCtx(),{once:true});
+});
+</script>
+</body>
+</html>
