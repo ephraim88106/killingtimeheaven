@@ -48,6 +48,13 @@ canvas#gc{display:block;border-radius:12px;cursor:pointer}
 .r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
 .r-score{font-size:3em;font-weight:900;margin:8px 0}
 .r-sub{color:#666;font-size:.85em}
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -61,6 +68,10 @@ canvas#gc{display:block;border-radius:12px;cursor:pointer}
     🟢 <b>초록 칸</b>: 시작점 &nbsp;|&nbsp; 🔴 <b>빨간 칸</b>: 출구<br>
     👆 칸을 드래그하거나 클릭해서 경로를 그려요<br>
     ✅ 모든 칸을 밟고 출구에 도착하면 클리어!
+  </div>
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
   </div>
   <button class="btn-main" onclick="show('s-levels')">▶ 레벨 선택</button>
   <div style="color:#555;font-size:.8em;margin-top:6px">클리어: <span style="color:#22c55e;font-weight:700" id="clear-disp">0</span> / 16</div>
@@ -137,11 +148,27 @@ let curLevel=0,path=[],moves=0,dragging=false;
 const cleared=JSON.parse(localStorage.getItem('hb_cleared')||'[]');
 let totalScore=parseInt(localStorage.getItem('hb_score')||'0',10);
 
+function getRanks(){return JSON.parse(localStorage.getItem('hb_ranks')||'[]')}
+function saveRank(sc,lvCount){
+  let ranks=getRanks();
+  ranks.push({score:sc,levels:lvCount,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('hb_ranks',JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점 (${r.levels}레벨)</span></div>`).join('');
+}
+
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(id==='s-levels')buildLevelGrid();
-  if(id==='s-home')updateHomeStats();
+  if(id==='s-home'){updateHomeStats();renderRanks();}
 }
 
 function updateHomeStats(){
@@ -343,6 +370,7 @@ function levelClear(){
   const pts=100+bonus;
   totalScore+=pts;
   localStorage.setItem('hb_score',totalScore);
+  saveRank(totalScore,cleared.length);
 
   let emoji,title;
   if(moves<=totalCells(LEVELS[curLevel])+2){emoji='🏆';title='완벽한 탈출!';}
@@ -373,7 +401,7 @@ gc.addEventListener('touchstart',e=>{e.preventDefault();const pos=getPos(e);cons
 gc.addEventListener('touchmove',e=>{e.preventDefault();if(!dragging)return;const pos=getPos(e);const cell=cellFromXY(pos.x,pos.y);if(cell)tryMove(cell[0],cell[1])},{passive:false});
 gc.addEventListener('touchend',()=>dragging=false);
 
-window.addEventListener('load',()=>updateHomeStats());
+window.addEventListener('load',()=>{updateHomeStats();renderRanks();});
 </script>
 </body>
 </html>

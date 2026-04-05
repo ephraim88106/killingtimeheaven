@@ -47,6 +47,13 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 .r-rank{font-size:1.5em;font-weight:900;margin-bottom:6px}
 .r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0}
 .r-sub{color:#666;font-size:.88em;margin-top:8px}
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -56,6 +63,10 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
   <div style="font-size:3em;margin-bottom:8px">🧠</div>
   <div class="title glow">기억력 달인</div>
   <div class="sub">순서를 기억하고<br>그대로 따라 눌러라!</div>
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
   <button class="btn-main" onclick="goStart()">▶ 게임 시작</button>
   <div class="best-row">최고 레벨: <span class="best-val" id="best-disp">-</span></div>
 </div>
@@ -108,6 +119,22 @@ function setBest(v){if(v>getBest()){localStorage.setItem('mm_best',v);return tru
 function updateBest(){
   const b=getBest();
   document.getElementById('best-disp').textContent=b?b+'레벨':'-';
+}
+
+function getRanks(){return JSON.parse(localStorage.getItem('mm_ranks')||'[]')}
+function saveRank(sc,lv){
+  let ranks=getRanks();
+  ranks.push({score:sc,level:lv,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('mm_ranks',JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점 (Lv.${r.level})</span></div>`).join('');
 }
 
 function goStart(){
@@ -179,6 +206,7 @@ function setStatus(msg,interactive){
 
 function showResult(){
   const best=setBest(level);
+  saveRank(score,level);
   let emoji,rank;
   if(level>=15){emoji='👑';rank='전설의 기억력 달인!';}
   else if(level>=10){emoji='🏆';rank='기억력 마스터!';}
@@ -232,6 +260,7 @@ function shareResultText(){
 
 window.addEventListener('load',()=>{
   updateBest();
+  renderRanks();
   document.addEventListener('click',()=>getCtx(),{once:true});
   document.addEventListener('touchstart',()=>getCtx(),{once:true});
 });

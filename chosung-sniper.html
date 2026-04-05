@@ -428,6 +428,14 @@ body {
   .q-chosung { font-size:2.4em; }
   .choice-btn { font-size:0.88em; }
 }
+
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -449,6 +457,11 @@ body {
       <div class="mc-name">서바이벌</div>
       <div class="mc-desc">목숨 3개<br>끝까지 버텨라!</div>
     </div>
+  </div>
+
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
   </div>
 
   <div class="best-score-row">
@@ -718,6 +731,22 @@ function setBest(mode, val) {
   }
   return false;
 }
+function getRanks(mode){return JSON.parse(localStorage.getItem('cs_ranks_'+(mode||gameMode||'speed'))||'[]')}
+function saveRank(sc,mode){
+  let ranks=getRanks(mode);
+  ranks.push({score:sc,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('cs_ranks_'+mode,JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
+
 function updateBestDisplay() {
   const bs = getBest('speed');
   const bsv = getBest('survival');
@@ -753,6 +782,7 @@ function showScreen(name) {
 
 function selectMode(mode) {
   gameMode = mode;
+  renderRanks();
   showScreen('category');
 }
 
@@ -1030,6 +1060,7 @@ function endGame() {
   document.getElementById('r-maxcombo').textContent = maxCombo;
 
   const isNew = setBest(gameMode, score);
+  saveRank(score, gameMode);
   document.getElementById('r-best-msg').textContent =
     isNew ? '🎉 신기록 달성!' : '';
 
@@ -1082,6 +1113,7 @@ document.getElementById('type-input').addEventListener('keydown', e => {
 // ==================== INIT ====================
 window.addEventListener('load', () => {
   updateBestDisplay();
+  renderRanks();
   // Wake up audio on first interaction
   document.addEventListener('touchstart', () => getAudioCtx(), { once: true });
   document.addEventListener('click',      () => getAudioCtx(), { once: true });
