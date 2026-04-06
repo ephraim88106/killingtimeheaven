@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🚀 피하기 게임 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.6}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px 16px;width:100%;margin-bottom:28px;font-size:.82em;color:#888;line-height:1.8}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.1em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+.btn-sub:active{opacity:.8}
+
+/* Canvas game */
+#s-game{padding:0;position:relative}
+#gc{display:block;touch-action:none}
+.game-ui{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}
+.ui-score{font-size:1.4em;font-weight:800;color:#06b6d4}
+.ui-time{font-size:1em;color:#a855f7;font-weight:700}
+.ui-best{font-size:.85em;color:#555}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0;background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.r-sub{color:#666;font-size:.85em;margin-top:4px}
+.r-best{color:#f59e0b;font-size:.9em;margin-top:12px;font-weight:700}
+.stat-row{display:flex;gap:12px;margin-top:18px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 20px;text-align:center}
+.stat-v{font-size:1.3em;font-weight:800;color:#a855f7}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🚀</div>
+  <div class="title glow">피하기 게임</div>
+  <div class="sub">쏟아지는 장애물을 최대한 피해라!</div>
+  <div class="tips">
+    🖱️ <b>PC</b>: 마우스로 우주선 이동<br>
+    👆 <b>모바일</b>: 손가락으로 드래그<br>
+    ⚡ 시간이 지날수록 <b>더 빠르고 많아짐</b><br>
+    💫 최대한 오래 버텨보자!
+  </div>
+  <button class="btn-main" id="startBtn">▶ 게임 시작</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-ui">
+    <div class="ui-score" id="scoreDisp">0.0s</div>
+    <div class="ui-time" id="levelDisp">LEVEL 1</div>
+    <div class="ui-best" id="bestDisp"></div>
+  </div>
+  <canvas id="gc"></canvas>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="rEmoji">💫</div>
+    <div class="r-title">게임 오버!</div>
+    <div class="r-score" id="rScore">0.0s</div>
+    <div class="r-sub">생존 시간</div>
+    <div class="r-best" id="rBest"></div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="rDodged">0</div><div class="stat-l">피한 장애물</div></div>
+      <div class="stat"><div class="stat-v" id="rLevel">1</div><div class="stat-l">도달 레벨</div></div>
+    </div>
+  </div>
+  <button class="btn-main" id="retryBtn">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+let player, obstacles, particles;
+let startTime, elapsed, animId;
+let dodged, gameOver, level;
+let mouseX, mouseY, touchActive;
+let best = parseFloat(localStorage.getItem('dg_best') || '0');
+let spawnTimer = 0;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's-game') resizeCanvas();
+}
+
+function resizeCanvas() {
+  const maxW = Math.min(480, window.innerWidth);
+  const maxH = window.innerHeight;
+  canvas.width = maxW;
+  canvas.height = maxH;
+  W = canvas.width;
+  H = canvas.height;
+}
+
+// Player ship
+function makePlayer() {
+  return {
+    x: W / 2,
+    y: H * 0.75,
+    r: 18,
+    tx: W / 2,
+    ty: H * 0.75,
+    trail: [],
+  };
+}
+
+// Obstacle types
+const OBS_TYPES = [
+  { emoji: '☄️', r: 20, color: '#ef4444' },
+  { emoji: '🌑', r: 18, color: '#6b7280' },
+  { emoji: '💥', r: 16, color: '#f59e0b' },
+  { emoji: '⚡', r: 14, color: '#a855f7' },
+];
+
+function spawnObstacle() {
+  const type = OBS_TYPES[Math.floor(Math.random() * OBS_TYPES.length)];
+  const x = type.r + Math.random() * (W - type.r * 2);
+  const speed = 2.5 + level * 0.6 + Math.random() * 1.5;
+  const angle = (Math.random() - 0.5) * 0.4; // slight angle
+  return {
+    x, y: -type.r - 10,
+    vx: Math.sin(angle) * speed,
+    vy: speed,
+    r: type.r,
+    emoji: type.emoji,
+    color: type.color,
+    opacity: 1,
+  };
+}
+
+function makeParticle(x, y, color) {
+  const angle = Math.random() * Math.PI * 2;
+  const speed = 2 + Math.random() * 4;
+  return {
+    x, y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    r: 3 + Math.random() * 4,
+    color,
+    life: 1,
+    decay: 0.04 + Math.random() * 0.04,
+  };
+}
+
+function startGame() {
+  show('s-game');
+  resizeCanvas();
+
+  player = makePlayer();
+  mouseX = player.x;
+  mouseY = player.y;
+  obstacles = [];
+  particles = [];
+  dodged = 0;
+  level = 1;
+  gameOver = false;
+  spawnTimer = 0;
+  startTime = performance.now();
+  elapsed = 0;
+
+  best = parseFloat(localStorage.getItem('dg_best') || '0');
+  document.getElementById('bestDisp').textContent = best > 0 ? `최고 ${best.toFixed(1)}s` : '';
+
+  if (animId) cancelAnimationFrame(animId);
+  loop();
+}
+
+function loop() {
+  if (gameOver) return;
+  animId = requestAnimationFrame(loop);
+
+  elapsed = (performance.now() - startTime) / 1000;
+  level = Math.floor(elapsed / 8) + 1;
+
+  document.getElementById('scoreDisp').textContent = elapsed.toFixed(1) + 's';
+  document.getElementById('levelDisp').textContent = 'LEVEL ' + level;
+
+  // Smooth player movement
+  player.x += (mouseX - player.x) * 0.18;
+  player.y += (mouseY - player.y) * 0.18;
+
+  // Clamp
+  player.x = Math.max(player.r, Math.min(W - player.r, player.x));
+  player.y = Math.max(player.r, Math.min(H - player.r, player.y));
+
+  // Trail
+  player.trail.push({ x: player.x, y: player.y });
+  if (player.trail.length > 12) player.trail.shift();
+
+  // Spawn
+  spawnTimer++;
+  const spawnInterval = Math.max(18, 55 - level * 5);
+  if (spawnTimer >= spawnInterval) {
+    spawnTimer = 0;
+    obstacles.push(spawnObstacle());
+    if (level >= 3 && Math.random() < 0.3) obstacles.push(spawnObstacle());
+    if (level >= 5 && Math.random() < 0.2) obstacles.push(spawnObstacle());
+  }
+
+  // Update obstacles
+  obstacles = obstacles.filter(o => {
+    o.x += o.vx;
+    o.y += o.vy;
+
+    // Wall bounce
+    if (o.x < o.r || o.x > W - o.r) o.vx *= -1;
+
+    // Off screen
+    if (o.y > H + o.r * 2) {
+      dodged++;
+      return false;
+    }
+
+    // Collision
+    const dx = player.x - o.x;
+    const dy = player.y - o.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < player.r + o.r - 6) {
+      // Explosion particles
+      for (let i = 0; i < 18; i++) particles.push(makeParticle(player.x, player.y, o.color));
+      for (let i = 0; i < 10; i++) particles.push(makeParticle(player.x, player.y, '#ffffff'));
+      gameOver = true;
+      setTimeout(showResult, 600);
+      return false;
+    }
+    return true;
+  });
+
+  // Particles
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.15;
+    p.life -= p.decay;
+    return p.life > 0;
+  });
+
+  draw();
+}
+
+function draw() {
+  // Background
+  ctx.fillStyle = '#0a0a15';
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars (static pattern)
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  for (let i = 0; i < 40; i++) {
+    const sx = ((i * 137 + 50) % W);
+    const sy = ((i * 97 + 30) % H);
+    ctx.fillRect(sx, sy, 1, 1);
+  }
+
+  // Player trail
+  for (let i = 0; i < player.trail.length; i++) {
+    const t = player.trail[i];
+    const alpha = (i / player.trail.length) * 0.4;
+    const size = (i / player.trail.length) * player.r * 0.8;
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(6,182,212,${alpha})`;
+    ctx.fill();
+  }
+
+  // Particles
+  particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // Obstacles
+  obstacles.forEach(o => {
+    ctx.font = `${o.r * 2}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(o.emoji, o.x, o.y);
+  });
+
+  if (!gameOver) {
+    // Player ship glow
+    const gradient = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, player.r * 2);
+    gradient.addColorStop(0, 'rgba(168,85,247,0.35)');
+    gradient.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r * 2, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Player emoji
+    ctx.font = `${player.r * 2.2}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🚀', player.x, player.y);
+  }
+}
+
+function showResult() {
+  cancelAnimationFrame(animId);
+  draw(); // final frame
+
+  const isNew = elapsed > best;
+  if (isNew) { best = elapsed; localStorage.setItem('dg_best', best.toFixed(2)); }
+
+  document.getElementById('rScore').textContent = elapsed.toFixed(1) + 's';
+  document.getElementById('rDodged').textContent = dodged;
+  document.getElementById('rLevel').textContent = level;
+  document.getElementById('rBest').textContent = isNew ? '🎉 신기록!' : `최고기록: ${best.toFixed(1)}s`;
+
+  let emoji = '😵';
+  if (elapsed >= 60) emoji = '🏆';
+  else if (elapsed >= 30) emoji = '🥇';
+  else if (elapsed >= 15) emoji = '🥈';
+  else if (elapsed >= 8) emoji = '🥉';
+  document.getElementById('rEmoji').textContent = emoji;
+
+  setTimeout(() => show('s-result'), 200);
+}
+
+// Input handlers
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.clientX - rect.left;
+  mouseY = e.clientY - rect.top;
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.touches[0].clientX - rect.left;
+  mouseY = e.touches[0].clientY - rect.top;
+}, { passive: false });
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.touches[0].clientX - rect.left;
+  mouseY = e.touches[0].clientY - rect.top;
+}, { passive: false });
+
+document.getElementById('startBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  startGame();
+});
+document.getElementById('retryBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  startGame();
+});
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('s-game').classList.contains('active')) {
+    resizeCanvas();
+  }
+});
+</script>
+</body>
+</html>

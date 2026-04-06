@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🐹 두더지 잡기 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation}
+.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.6}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px 16px;width:100%;margin-bottom:28px;font-size:.82em;color:#888;line-height:1.8}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.1em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s}
+.btn-sub:active{opacity:.8}
+
+/* Game UI */
+.game-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px 0 20px;max-width:380px}
+.ui-score{font-size:1.6em;font-weight:900;color:#06b6d4}
+.ui-timer{font-size:1.6em;font-weight:900;color:#a855f7}
+.ui-label{font-size:.7em;color:#555;text-align:center}
+
+/* Timer bar */
+.timer-bar-wrap{width:100%;max-width:380px;background:#1a1a30;border-radius:8px;height:8px;margin-bottom:24px;overflow:hidden}
+.timer-bar{height:100%;background:linear-gradient(90deg,#a855f7,#06b6d4);border-radius:8px;transition:width .2s linear;width:100%}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:380px;padding:10px 0}
+.hole{position:relative;aspect-ratio:1;background:#141428;border-radius:50%;border:3px solid #252545;overflow:hidden;cursor:pointer;user-select:none;transition:transform .1s}
+.hole:active{transform:scale(.95)}
+.hole-inner{position:absolute;bottom:0;left:0;right:0;height:100%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.mole{font-size:2.8em;transform:translateY(110%);transition:transform .12s cubic-bezier(.34,1.56,.64,1);pointer-events:none;filter:drop-shadow(0 -2px 6px rgba(168,85,247,.4))}
+.mole.up{transform:translateY(0)}
+.mole.bonked{transform:translateY(110%) scale(.8);filter:drop-shadow(0 0 12px #f59e0b)}
+.hit-flash{position:absolute;inset:0;border-radius:50%;background:rgba(245,158,11,.3);opacity:0;pointer-events:none}
+.hit-flash.flash{animation:flash .2s ease}
+@keyframes flash{0%{opacity:1}100%{opacity:0}}
+.score-pop{position:absolute;top:10%;left:50%;transform:translateX(-50%);font-size:1.4em;font-weight:900;color:#f59e0b;pointer-events:none;opacity:0}
+.score-pop.show{animation:pop .6s ease forwards}
+@keyframes pop{0%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.3)}100%{opacity:0;transform:translateX(-50%) translateY(-40px) scale(1)}}
+
+/* Miss flash */
+.miss-pop{position:absolute;top:10%;left:50%;transform:translateX(-50%);font-size:1em;font-weight:700;color:#ef4444;pointer-events:none;opacity:0}
+.miss-pop.show{animation:pop .5s ease forwards}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0;background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.r-sub{color:#666;font-size:.85em;margin-top:8px}
+.r-best{color:#f59e0b;font-size:.9em;margin-top:12px;font-weight:700}
+.stat-row{display:flex;gap:12px;margin-top:18px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 20px;text-align:center}
+.stat-v{font-size:1.3em;font-weight:800;color:#a855f7}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🐹</div>
+  <div class="title glow">두더지 잡기</div>
+  <div class="sub">두더지가 나타나면 빠르게 잡아라!</div>
+  <div class="tips">
+    👆 <b>두더지가 올라오면 탭/클릭</b>으로 잡기<br>
+    ⚡ 시간이 지날수록 <b>더 빠르게</b> 움직임<br>
+    ⏱️ <b>30초</b> 동안 최대한 많이 잡아보자!
+  </div>
+  <button class="btn-main" onclick="show('s-game');startGame()">▶ 게임 시작</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-header">
+    <div><div class="ui-label">점수</div><div class="ui-score" id="scoreDisp">0</div></div>
+    <div style="text-align:center"><div class="ui-label">남은 시간</div><div class="ui-timer" id="timerDisp">30</div></div>
+    <div style="text-align:right"><div class="ui-label">최고</div><div class="ui-score" id="bestDisp">0</div></div>
+  </div>
+  <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="rEmoji">🏆</div>
+    <div class="r-title">게임 종료!</div>
+    <div class="r-score" id="rScore">0</div>
+    <div class="r-sub">마리 잡음</div>
+    <div class="r-best" id="rBest"></div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="rMiss">0</div><div class="stat-l">놓침</div></div>
+      <div class="stat"><div class="stat-v" id="rAccuracy">0%</div><div class="stat-l">정확도</div></div>
+    </div>
+  </div>
+  <button class="btn-main" onclick="show('s-game');startGame()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<script>
+const TOTAL_TIME = 30;
+const HOLES = 9;
+
+let score = 0, missed = 0, timeLeft = TOTAL_TIME;
+let activeHoles = [];
+let timers = [];
+let gameInterval = null;
+let moleTimeout = null;
+let best = parseInt(localStorage.getItem('wm_best') || '0');
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Build grid
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < HOLES; i++) {
+    const hole = document.createElement('div');
+    hole.className = 'hole';
+    hole.innerHTML = `
+      <div class="hole-inner">
+        <div class="mole" id="mole${i}">🐹</div>
+      </div>
+      <div class="hit-flash" id="flash${i}"></div>
+      <div class="score-pop" id="pop${i}">+1</div>
+      <div class="miss-pop" id="miss${i}">💨</div>
+    `;
+    hole.addEventListener('click', () => whack(i));
+    hole.addEventListener('touchstart', (e) => { e.preventDefault(); whack(i); }, { passive: false });
+    grid.appendChild(hole);
+  }
+}
+
+function whack(i) {
+  const mole = document.getElementById(`mole${i}`);
+  if (!mole.classList.contains('up')) return;
+
+  score++;
+  document.getElementById('scoreDisp').textContent = score;
+
+  // Bonk animation
+  mole.classList.remove('up');
+  mole.classList.add('bonked');
+  setTimeout(() => mole.classList.remove('bonked'), 300);
+
+  // Flash
+  const flash = document.getElementById(`flash${i}`);
+  flash.classList.remove('flash');
+  void flash.offsetWidth;
+  flash.classList.add('flash');
+
+  // Score pop
+  const pop = document.getElementById(`pop${i}`);
+  pop.classList.remove('show');
+  void pop.offsetWidth;
+  pop.classList.add('show');
+
+  // Mark hole inactive
+  activeHoles[i] = false;
+  if (timers[i]) { clearTimeout(timers[i]); timers[i] = null; }
+}
+
+function popMole(i) {
+  if (timeLeft <= 0) return;
+  const mole = document.getElementById(`mole${i}`);
+  activeHoles[i] = true;
+  mole.classList.remove('bonked');
+  mole.classList.add('up');
+
+  // Auto-hide after duration (decreases with difficulty)
+  const progress = 1 - timeLeft / TOTAL_TIME;
+  const duration = Math.max(600, 1400 - progress * 900);
+
+  timers[i] = setTimeout(() => {
+    if (activeHoles[i]) {
+      // Mole escaped
+      missed++;
+      mole.classList.remove('up');
+      activeHoles[i] = false;
+
+      const missEl = document.getElementById(`miss${i}`);
+      missEl.classList.remove('show');
+      void missEl.offsetWidth;
+      missEl.classList.add('show');
+    }
+  }, duration);
+}
+
+function scheduleNext() {
+  if (timeLeft <= 0) return;
+  const progress = 1 - timeLeft / TOTAL_TIME;
+  const interval = Math.max(300, 900 - progress * 600);
+
+  moleTimeout = setTimeout(() => {
+    // Pick random inactive hole
+    const inactive = [];
+    for (let i = 0; i < HOLES; i++) if (!activeHoles[i]) inactive.push(i);
+    if (inactive.length > 0) {
+      const pick = inactive[Math.floor(Math.random() * inactive.length)];
+      popMole(pick);
+      // Sometimes pop 2 moles at once (late game)
+      if (progress > 0.6 && inactive.length > 2 && Math.random() < 0.35) {
+        const pick2 = inactive.filter(x => x !== pick)[Math.floor(Math.random() * (inactive.length - 1))];
+        if (pick2 !== undefined) setTimeout(() => popMole(pick2), 150);
+      }
+    }
+    scheduleNext();
+  }, interval);
+}
+
+function startGame() {
+  score = 0; missed = 0; timeLeft = TOTAL_TIME;
+  activeHoles = new Array(HOLES).fill(false);
+  timers = new Array(HOLES).fill(null);
+  best = parseInt(localStorage.getItem('wm_best') || '0');
+
+  document.getElementById('scoreDisp').textContent = '0';
+  document.getElementById('bestDisp').textContent = best;
+  document.getElementById('timerDisp').textContent = TOTAL_TIME;
+  document.getElementById('timerBar').style.width = '100%';
+
+  buildGrid();
+
+  if (gameInterval) clearInterval(gameInterval);
+  if (moleTimeout) clearTimeout(moleTimeout);
+
+  // Small delay before first mole
+  setTimeout(scheduleNext, 500);
+
+  gameInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timerDisp').textContent = timeLeft;
+    document.getElementById('timerBar').style.width = (timeLeft / TOTAL_TIME * 100) + '%';
+
+    if (timeLeft <= 5) {
+      document.getElementById('timerBar').style.background = 'linear-gradient(90deg,#ef4444,#f59e0b)';
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(gameInterval);
+      clearTimeout(moleTimeout);
+      timers.forEach(t => t && clearTimeout(t));
+      // Hide all moles
+      for (let i = 0; i < HOLES; i++) {
+        const mole = document.getElementById(`mole${i}`);
+        if (mole) { mole.classList.remove('up', 'bonked'); }
+        activeHoles[i] = false;
+      }
+      showResult();
+    }
+  }, 1000);
+}
+
+function showResult() {
+  const total = score + missed;
+  const accuracy = total > 0 ? Math.round(score / total * 100) : 0;
+  const isNew = score > best;
+  if (isNew) { best = score; localStorage.setItem('wm_best', best); }
+
+  document.getElementById('rScore').textContent = score;
+  document.getElementById('rMiss').textContent = missed;
+  document.getElementById('rAccuracy').textContent = accuracy + '%';
+
+  let emoji = '😅';
+  if (score >= 30) emoji = '🏆';
+  else if (score >= 20) emoji = '🥇';
+  else if (score >= 12) emoji = '🥈';
+  else if (score >= 6) emoji = '🥉';
+  document.getElementById('rEmoji').textContent = emoji;
+
+  document.getElementById('rBest').textContent = isNew ? '🎉 신기록!' : `최고기록: ${best}마리`;
+
+  setTimeout(() => show('s-result'), 300);
+}
+</script>
+</body>
+</html>
