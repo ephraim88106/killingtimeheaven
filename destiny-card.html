@@ -80,6 +80,13 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 .r-stat{background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center}
 .r-sv{font-size:1.3em;font-weight:800;color:#a855f7}
 .r-sl{font-size:.7em;color:#666;margin-top:2px}
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -95,6 +102,10 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
     ⚔️ 공격: 적에게 데미지 &nbsp;|&nbsp; 🛡️ 방어: 다음 공격 막기<br>
     💚 회복: HP 회복 &nbsp;|&nbsp; ⚡ 번개: 강력한 데미지<br>
     🔥 작열: 지속 데미지 &nbsp;|&nbsp; ×2: 다음 카드 2배!
+  </div>
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
   </div>
   <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
   <div style="color:#555;font-size:.8em;margin-top:6px">최고 기록: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
@@ -204,10 +215,27 @@ let actionLocked=false;
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if(id==='s-home'){updateBestDisp();renderRanks();}
 }
 function getBest(){return parseInt(localStorage.getItem('dc_best')||'0',10)}
 function setBest(v){if(v>getBest()){localStorage.setItem('dc_best',v);return true}return false}
 function updateBestDisp(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function getRanks(){return JSON.parse(localStorage.getItem('dc_ranks')||'[]')}
+function saveRank(s){
+  let ranks=getRanks();
+  ranks.push({score:s,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('dc_ranks',JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
 
 function buildDeck(){
   const d=[];
@@ -393,6 +421,7 @@ function enemyKilled(){
 
 function gameOver(){
   const best=setBest(score);
+  saveRank(score);
   let emoji,title;
   if(wave>=8){emoji='👑';title='전설의 용사!';}
   else if(wave>=5){emoji='🏆';title='영웅의 전투!';}
@@ -437,7 +466,7 @@ function shareResultText(){
   else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
 }
 
-window.addEventListener('load',updateBestDisp);
+window.addEventListener('load',()=>{updateBestDisp();renderRanks();});
 </script>
 </body>
 </html>

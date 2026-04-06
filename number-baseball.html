@@ -69,6 +69,13 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 .r-stat{background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center}
 .r-sv{font-size:1.3em;font-weight:800;color:#a855f7}
 .r-sl{font-size:.7em;color:#666;margin-top:2px}
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -100,6 +107,10 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
     ❌ <b>아웃</b>: 해당 숫자가 없음
   </div>
 
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
   <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
   <div style="color:#555;font-size:.8em;margin-top:6px">최고: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
 </div>
@@ -152,6 +163,8 @@ function selDiff(d,el){
   digits=d;
   document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
+  updateBestDisp();
+  renderRanks();
 }
 
 function show(id){
@@ -163,6 +176,23 @@ function show(id){
 function getBest(){return parseInt(localStorage.getItem('nb_best_'+digits)||'0',10)}
 function setBest(v){if(v>getBest()){localStorage.setItem('nb_best_'+digits,v);return true}return false}
 function updateBestDisp(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function getRanks(){return JSON.parse(localStorage.getItem('nb_ranks_'+digits)||'[]')}
+function saveRank(score){
+  let ranks=getRanks();
+  ranks.push({score,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('nb_ranks_'+digits,JSON.stringify(ranks));
+  return ranks;
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
 
 function generateAnswer(){
   const nums=[0,1,2,3,4,5,6,7,8,9];
@@ -377,6 +407,7 @@ function giveUp(){
 
 function showResult(won,score){
   const best=won?setBest(score):false;
+  if(won)saveRank(score);
   document.getElementById('r-emoji').textContent=won?getWinEmoji():'😢';
   document.getElementById('r-title').textContent=won?getWinTitle():'다음엔 꼭!';
   document.getElementById('r-answer').textContent=answer.join('');
@@ -436,7 +467,7 @@ function shareResultText(){
   else{navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('📋 결과가 복사되었습니다!')):prompt('아래 텍스트를 복사하세요:',text);}
 }
 
-window.addEventListener('load',updateBestDisp);
+window.addEventListener('load',()=>{updateBestDisp();renderRanks()});
 </script>
 </body>
 </html>

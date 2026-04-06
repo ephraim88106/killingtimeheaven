@@ -43,6 +43,13 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 .stat{background:#1e1e35;border-radius:10px;padding:10px 18px;text-align:center}
 .stat-v{font-size:1.3em;font-weight:800;color:#a855f7}
 .stat-l{font-size:.7em;color:#666;margin-top:2px}
+.rank-board{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px;width:100%;margin-bottom:20px}
+.rank-title{font-size:.9em;font-weight:700;color:#a855f7;margin-bottom:10px;text-align:center}
+.rank-list{display:flex;flex-direction:column;gap:4px}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#1e1e35;border-radius:8px;font-size:.82em}
+.rank-pos{font-weight:800;min-width:28px}
+.rank-score{color:#06b6d4;font-weight:700}
+.rank-empty{text-align:center;color:#555;font-size:.82em;padding:8px}
 </style>
 </head>
 <body>
@@ -56,6 +63,10 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
     🖱️ <b>PC</b>: 스페이스바 또는 클릭으로 점프<br>
     👆 <b>모바일</b>: 화면 탭으로 점프<br>
     ✌️ 공중에서 한 번 더 누르면 <b>이단 점프!</b>
+  </div>
+  <div class="rank-board">
+    <div class="rank-title">🏆 TOP 5</div>
+    <div class="rank-list" id="rank-list"></div>
   </div>
   <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
   <div style="color:#555;font-size:.8em;margin-top:6px">최고: <span style="color:#a855f7;font-weight:700" id="best-disp">-</span></div>
@@ -118,6 +129,22 @@ function show(id){
 function getBest(){return parseInt(localStorage.getItem('wr_best')||'0',10)}
 function setBest(v){if(v>getBest()){localStorage.setItem('wr_best',v);return true}return false}
 function updateBest(){const b=getBest();document.getElementById('best-disp').textContent=b?b+'점':'-'}
+
+function getRanks(){return JSON.parse(localStorage.getItem('wr_ranks')||'[]')}
+function saveRank(s){
+  let ranks=getRanks();
+  ranks.push({score:s,date:Date.now()});
+  ranks.sort((a,b)=>b.score-a.score);
+  ranks=ranks.slice(0,5);
+  localStorage.setItem('wr_ranks',JSON.stringify(ranks));
+}
+function renderRanks(){
+  const ranks=getRanks();
+  const el=document.getElementById('rank-list');
+  if(!ranks.length){el.innerHTML='<div class="rank-empty">아직 기록이 없습니다</div>';return;}
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  el.innerHTML=ranks.map((r,i)=>`<div class="rank-row"><span class="rank-pos">${medals[i]}</span><span class="rank-score">${r.score}점</span></div>`).join('');
+}
 
 function resize(){
   const maxW=Math.min(window.innerWidth,480);
@@ -375,6 +402,7 @@ function triggerGameOver(){
 
 function showResult(){
   const best=setBest(score);
+  saveRank(score);
   let emoji,title;
   if(score>=5000){emoji='👑';title='파도 전설!';}
   else if(score>=3000){emoji='🏆';title='파도 마스터!';}
@@ -437,6 +465,7 @@ function shareResultText(){
 
 window.addEventListener('load',()=>{
   updateBest();
+  renderRanks();
   resize();
   document.addEventListener('click',()=>getActx(),{once:true});
   document.addEventListener('touchstart',()=>getActx(),{once:true});
