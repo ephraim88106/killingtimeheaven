@@ -270,7 +270,7 @@ function loop() {
 function update() {
   if (!movBlock) return;
   // 이동 (dir: 1→왼쪽진행, -1→오른쪽진행)
-  movBlock.x -= movBlock.dir * speed;
+  movBlock.x += movBlock.dir * speed;
 
   // 카메라 부드럽게 따라가기
   const topBlock = blocks[blocks.length - 1];
