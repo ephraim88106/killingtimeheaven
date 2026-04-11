@@ -490,6 +490,21 @@ body {
   }
 }
 
+/* Kakao Ad - Top Banner */
+.kakao-ad-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 0;
+}
+
+@media (max-width: 728px) {
+  .kakao-ad-top {
+    display: none;
+  }
+}
+
 /* Kakao Ad - Right Sidebar */
 .kakao-ad-sidebar {
   position: fixed;
