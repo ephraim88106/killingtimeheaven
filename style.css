@@ -490,6 +490,23 @@ body {
   }
 }
 
+/* Kakao Ad - Right Sidebar */
+.kakao-ad-sidebar {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  width: 160px;
+  height: 600px;
+}
+
+@media (max-width: 1200px) {
+  .kakao-ad-sidebar {
+    display: none;
+  }
+}
+
 @media (max-width: 400px) {
   .game-grid {
     gap: 8px;
