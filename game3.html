@@ -155,7 +155,7 @@ body{
 .record-flash{animation:newRecord 0.6s ease 3;}
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -164,6 +164,7 @@ body{
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
 
 <div id="stars"></div>
 
@@ -425,7 +426,7 @@ function handleClick(e){
   art.appendChild(ripple);setTimeout(()=>ripple.remove(),600);
   const p=document.createElement('div');p.className='gold-particle';
   p.textContent='+'+fmt(power);p.style.left=e.clientX+'px';p.style.top=(e.clientY-10)+'px';
-  document.body.appendChild(p);setTimeout(()=>p.remove(),1000);
+  document.querySelector('.game-wrapper').appendChild(p);setTimeout(()=>p.remove(),1000);
   const svg=document.getElementById('kingdom-svg');svg.classList.add('kingdom-glow');setTimeout(()=>svg.classList.remove('kingdom-glow'),300);
   updateHUD();renderBuildings();renderUpgrades();
 }
@@ -511,6 +512,7 @@ function makeStars(){
 }
 makeStars();loadState();render();requestAnimationFrame(tick);
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"

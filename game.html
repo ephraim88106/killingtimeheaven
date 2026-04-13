@@ -54,7 +54,7 @@
         .btn-sub { background: #1f2833; color: #66fcf1; border: 1px solid #45a29e; font-size: 16px; }
     </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -63,6 +63,7 @@
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
     <div id="start-screen" class="overlay">
         <h1 style="color:#66fcf1; font-size:50px; margin-bottom:10px;">TIER CHALLENGE</h1>
         <input type="text" id="nick-field" placeholder="닉네임을 입력하세요" maxlength="8" id="nick-input">
@@ -130,7 +131,7 @@
         camera.position.set(30, 30, 30); camera.lookAt(0,0,0);
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        document.querySelector('.game-wrapper').appendChild(renderer.domElement);
         scene.add(new THREE.AmbientLight(0xffffff, 3));
 
         const hero = new THREE.Sprite(new THREE.SpriteMaterial({ map: await createTex(), fog: false }));
@@ -252,6 +253,7 @@
             }
         }
     </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"

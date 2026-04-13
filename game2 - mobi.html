@@ -67,7 +67,7 @@
         #guide-msg { position: absolute; bottom: 120px; width: 100%; text-align: center; color: #66fcf1; font-size: 12px; opacity: 0.8; }
     </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -76,6 +76,7 @@
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
     <div id="start-screen" class="overlay">
         <div id="game-title">SSS등급(신급)에<br>도전하세요!</div>
         <input type="text" id="nick-input" placeholder="닉네임 입력" maxlength="10">
@@ -171,7 +172,7 @@
         const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
+        document.querySelector('.game-wrapper').appendChild(renderer.domElement);
         scene.add(new THREE.AmbientLight(0xffffff, 2.5));
 
         const car = new THREE.Sprite(new THREE.SpriteMaterial({ map: createTex('car') }));
@@ -298,6 +299,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"

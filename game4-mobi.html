@@ -115,7 +115,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;di
 #toast.show{opacity:1;}
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -124,6 +124,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;di
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
 
 <div id="ach-popup">
   <div class="ach-popup-title">🏅 업적 달성!</div>
@@ -722,6 +723,7 @@ function resizeCanvas(){
 }
 window.addEventListener('resize',resizeCanvas);
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"

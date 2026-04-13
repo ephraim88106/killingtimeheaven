@@ -135,7 +135,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;he
 #toast.show{opacity:1;}
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -144,6 +144,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;he
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
 
 <!-- ACHIEVEMENT POPUP -->
 <div id="ach-popup">
@@ -1093,6 +1094,7 @@ window.addEventListener('resize',resizeCanvas);
 window.addEventListener('load',resizeCanvas);
 setTimeout(resizeCanvas,100);
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"

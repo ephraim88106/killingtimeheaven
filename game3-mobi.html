@@ -154,7 +154,7 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Noto Serif KR',ser
 .record-flash{animation:newRecord 0.6s ease 3;}
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -163,6 +163,7 @@ body{background:var(--bg-dark);color:var(--text);font-family:'Noto Serif KR',ser
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-wrapper">
 
 <!-- OFFLINE -->
 <div id="offline-popup" class="overlay">
@@ -412,7 +413,7 @@ function spawnEffects(cx,cy){
   art.appendChild(ripple);setTimeout(()=>ripple.remove(),600);
   const p=document.createElement('div');p.className='gold-particle';
   p.textContent='+'+fmt(power);p.style.left=cx+'px';p.style.top=(cy-10)+'px';
-  document.body.appendChild(p);setTimeout(()=>p.remove(),1000);
+  document.querySelector('.game-wrapper').appendChild(p);setTimeout(()=>p.remove(),1000);
   const svg=document.getElementById('kingdom-svg');svg.classList.add('kingdom-glow');setTimeout(()=>svg.classList.remove('kingdom-glow'),300);
   updateHUD();if(currentTab==='build')renderBuildings();if(currentTab==='upgrade')renderUpgrades();
 }
@@ -486,6 +487,7 @@ function tick(){
 
 loadState();updateHUD();renderHof();requestAnimationFrame(tick);
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"
