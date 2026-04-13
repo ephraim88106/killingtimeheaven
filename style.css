@@ -538,6 +538,7 @@ body.game-page {
   align-items: stretch !important;
   justify-content: flex-start !important;
   height: 100vh;
+  margin: 0 !important;
 }
 
 body.game-page .kakao-ad-top {
@@ -545,18 +546,43 @@ body.game-page .kakao-ad-top {
   flex-shrink: 0;
 }
 
+/* Game + Sidebar horizontal layout */
+.game-content-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .game-wrapper {
   position: relative;
-  width: 100%;
   flex: 1;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+}
+
+/* Sidebar inside game layout (not floating) */
+body.game-page .kakao-ad-sidebar {
+  position: relative !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: 180px;
+  height: auto;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: auto;
 }
 
 body.game-page .screen {
-  min-height: calc(100vh - 110px) !important;
+  min-height: 100% !important;
 }
 
 body.game-page .overlay {
@@ -565,6 +591,12 @@ body.game-page .overlay {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
+}
+
+@media (max-width: 900px) {
+  body.game-page .kakao-ad-sidebar {
+    display: none !important;
+  }
 }
 
 @media (max-width: 728px) {
