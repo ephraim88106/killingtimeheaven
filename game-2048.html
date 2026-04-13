@@ -286,7 +286,7 @@ body {
 }
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -295,6 +295,8 @@ body {
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-content-area">
+  <div class="game-wrapper">
 
 <!-- ===== HOME ===== -->
 <div id="s-home" class="screen active">
@@ -880,6 +882,7 @@ window.addEventListener('load', () => {
   document.addEventListener('click', () => getAudioCtx(), { once: true });
 });
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"
@@ -887,6 +890,7 @@ window.addEventListener('load', () => {
       data-ad-width="160"
       data-ad-height="600"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+  </div>
   </div>
 </body>
 </html>

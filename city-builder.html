@@ -70,7 +70,7 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 @keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0}}
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -79,6 +79,8 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-content-area">
+  <div class="game-wrapper">
 <div class="wrap">
   <!-- Header -->
   <div class="hdr">
@@ -282,14 +284,14 @@ function spawnCoinFloat(x,y,txt){
   el.textContent=txt;
   el.style.left=x+'px';
   el.style.top=y+'px';
-  document.body.appendChild(el);
+  document.querySelector('.game-wrapper').appendChild(el);
   setTimeout(()=>el.remove(),850);
 }
 
 function showToast(msg){
   const t=document.createElement('div');
   t.className='toast';t.textContent=msg;
-  document.body.appendChild(t);
+  document.querySelector('.game-wrapper').appendChild(t);
   setTimeout(()=>t.remove(),2600);
 }
 
@@ -318,6 +320,7 @@ setInterval(tick,100);
 setInterval(()=>{renderBuildings();},2000);
 setInterval(save,5000);
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"
@@ -325,6 +328,7 @@ setInterval(save,5000);
       data-ad-width="160"
       data-ad-height="600"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+  </div>
   </div>
 </body>
 </html>

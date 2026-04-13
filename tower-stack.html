@@ -128,7 +128,7 @@
   }
 </style>
 </head>
-<body>
+<body class="game-page">
   <!-- Kakao Top Banner Ad -->
   <div class="kakao-ad-top">
     <ins class="kakao_ad_area" style="display:none;"
@@ -137,6 +137,8 @@
       data-ad-height="90"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
   </div>
+  <div class="game-content-area">
+  <div class="game-wrapper">
 
 <!-- Home -->
 <div id="homeScreen">
@@ -410,7 +412,7 @@ function showPop(perfect) {
   pop.style.top   = '42%';
   pop.style.transform = 'translateX(-50%)';
   if (perfect) { pop.style.color = '#fbbf24'; pop.style.fontSize = '1.9rem'; }
-  document.body.appendChild(pop);
+  document.querySelector('.game-wrapper').appendChild(pop);
   setTimeout(() => pop.remove(), 900);
 }
 
@@ -471,6 +473,7 @@ window.addEventListener('load', () => {
   }
 });
 </script>
+  </div>
   <!-- Kakao Ad Right Sidebar -->
   <div class="kakao-ad-sidebar">
     <ins class="kakao_ad_area" style="display:none;"
@@ -478,6 +481,7 @@ window.addEventListener('load', () => {
       data-ad-width="160"
       data-ad-height="600"></ins>
     <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+  </div>
   </div>
 </body>
 </html>
