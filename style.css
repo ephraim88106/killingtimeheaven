@@ -583,6 +583,29 @@ body.game-page .kakao-ad-sidebar {
 
 body.game-page .screen {
   min-height: 100% !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+}
+
+body.game-page .wrap {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.game-page #homeScreen,
+body.game-page #gameScreen,
+body.game-page #resultScreen {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+body.game-page .game-container,
+body.game-page .container {
+  max-width: 100% !important;
+  width: 100% !important;
 }
 
 body.game-page .overlay {

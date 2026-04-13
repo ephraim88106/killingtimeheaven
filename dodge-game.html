@@ -7,7 +7,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
-.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen{display:none;width:100%;max-width:100%;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
 .screen.active{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -23,7 +23,7 @@ body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans
 /* Canvas game */
 #s-game{padding:0;position:relative}
 #gc{display:block;touch-action:none}
-.game-ui{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}
+.game-ui{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:100%;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}
 .ui-score{font-size:1.4em;font-weight:800;color:#06b6d4}
 .ui-time{font-size:1em;color:#a855f7;font-weight:700}
 .ui-best{font-size:.85em;color:#555}
