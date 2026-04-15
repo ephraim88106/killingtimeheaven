@@ -109,6 +109,8 @@ body {
   padding: 20px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 20px;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   position: sticky;
@@ -138,6 +140,38 @@ body {
 
 .nav-links a:hover {
   color: var(--text-primary);
+}
+
+.lang-toggle {
+  background: linear-gradient(135deg, oklch(65% 0.22 280), oklch(60% 0.22 220));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.lang-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+.lang-toggle:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+@media (max-width: 600px) {
+  .main-nav {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .lang-toggle {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
 }
 
 .app-container {
@@ -646,4 +680,62 @@ body.game-page .overlay {
   .card-name {
     font-size: 0.8rem;
   }
+}
+
+/* ========== Game Description Section ========== */
+.game-description {
+  max-width: 720px;
+  margin: 32px auto 24px;
+  padding: 22px 24px;
+  background: rgba(20, 20, 40, 0.75);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 16px;
+  color: #d0d0e0;
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.7;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+.game-description h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #c084fc;
+  margin: 0 0 10px;
+}
+.game-description h4 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #06b6d4;
+  margin: 16px 0 8px;
+}
+.game-description p {
+  font-size: 0.92rem;
+  color: #c8c8d8;
+  margin: 0 0 6px;
+}
+.game-description ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.game-description ul li {
+  font-size: 0.88rem;
+  color: #b0b0c0;
+  padding: 4px 0 4px 18px;
+  position: relative;
+}
+.game-description ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #a855f7;
+}
+@media (max-width: 600px) {
+  .game-description {
+    margin: 24px 12px 20px;
+    padding: 18px 16px;
+  }
+  .game-description h3 { font-size: 1.05rem; }
+  .game-description h4 { font-size: 0.92rem; }
+  .game-description p { font-size: 0.85rem; }
+  .game-description ul li { font-size: 0.82rem; }
 }
