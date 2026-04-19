@@ -264,6 +264,22 @@ function draw() {
     ctx.stroke();
   }
 
+  // Wall border
+  if (wallMode) {
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 10;
+    ctx.strokeRect(offsetX, offsetY, W, H);
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.strokeStyle = 'rgba(16,185,129,0.25)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8,6]);
+    ctx.strokeRect(offsetX, offsetY, W, H);
+    ctx.setLineDash([]);
+  }
+
   // Particles
   particles = particles.filter(p => {
     p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= p.decay;
