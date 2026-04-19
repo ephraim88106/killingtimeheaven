@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🫧 버블 슈터 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.screen{display:none;width:100%;max-width:480px;padding:24px 20px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#f59e0b,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:10px;text-align:center;line-height:1.6}
+.tips{background:#141428;border:1px solid #252545;border-radius:12px;padding:14px 16px;width:100%;margin-bottom:28px;font-size:.82em;color:#888;line-height:1.8}
+.btn-main{background:linear-gradient(135deg,#f59e0b,#ec4899);border:none;border-radius:14px;padding:16px;color:#fff;font-size:1.1em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:14px;color:#999;font-size:.95em;cursor:pointer;width:100%;margin-bottom:10px;transition:all .2s}
+.btn-sub:active{opacity:.8}
+
+/* Game */
+#s-game{padding:0;background:#0a0a15}
+.game-ui{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}
+.ui-score{font-size:1.4em;font-weight:800;color:#f59e0b}
+.ui-combo{font-size:1em;color:#ec4899;font-weight:700;min-width:60px;text-align:center}
+.ui-best{font-size:.85em;color:#555}
+#gc{display:block;touch-action:none;cursor:crosshair}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:32px 24px;text-align:center;width:100%;margin-bottom:22px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.5em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:3.5em;font-weight:900;line-height:1;margin:10px 0;background:linear-gradient(135deg,#f59e0b,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.r-sub{color:#666;font-size:.85em}
+.r-best{color:#f59e0b;font-size:.9em;margin-top:12px;font-weight:700}
+.stat-row{display:flex;gap:12px;margin-top:18px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 20px;text-align:center}
+.stat-v{font-size:1.3em;font-weight:800;color:#f59e0b}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🫧</div>
+  <div class="title glow">버블 슈터</div>
+  <div class="sub">같은 색 3개 이상 연결해서 터뜨려라!</div>
+  <div class="tips">
+    🖱️ <b>PC</b>: 마우스 클릭으로 발사 방향 지정<br>
+    👆 <b>모바일</b>: 터치로 발사 방향 지정<br>
+    🎯 연속 콤보로 <b>보너스 점수</b> 획득<br>
+    ⚠️ 버블이 바닥 라인에 닿으면 게임 오버!
+  </div>
+  <button class="btn-main" id="startBtn">▶ 게임 시작</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-ui">
+    <div class="ui-score" id="scoreDisp">0</div>
+    <div class="ui-combo" id="comboDisp"></div>
+    <div class="ui-best" id="bestDisp"></div>
+  </div>
+  <canvas id="gc"></canvas>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="rEmoji">🫧</div>
+    <div class="r-title" id="rTitle">게임 오버!</div>
+    <div class="r-score" id="rScore">0</div>
+    <div class="r-sub">점수</div>
+    <div class="r-best" id="rBest"></div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="rPopped">0</div><div class="stat-l">터진 버블</div></div>
+      <div class="stat"><div class="stat-v" id="rMaxCombo">0</div><div class="stat-l">최대 콤보</div></div>
+    </div>
+  </div>
+  <button class="btn-main" id="retryBtn">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<script>
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+
+// Grid config
+const COLS = 10;
+const COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#ec4899','#8b5cf6'];
+const COLOR_NAMES = ['빨강','파랑','초록','노랑','분홍','보라'];
+
+let W, H, R, ROWS_VISIBLE;
+let grid = []; // grid[row][col] = color or null
+let cannon = { angle: -Math.PI/2, x:0, y:0 };
+let bullet = null;
+let nextColor = null;
+let particles = [];
+let score = 0, combo = 0, maxCombo = 0, totalPopped = 0;
+let shooting = false;
+let gameOver = false;
+let animId;
+let best = parseInt(localStorage.getItem('bs_best') || '0');
+let aimX = 0, aimY = 0, hasAim = false;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's-game') resizeAndStart();
+}
+
+function resizeAndStart() {
+  const vw = Math.min(480, window.innerWidth);
+  const vh = window.innerHeight;
+  canvas.width = vw;
+  canvas.height = vh;
+  W = vw; H = vh;
+  R = Math.floor(W / (COLS * 2 + 1));
+  ROWS_VISIBLE = Math.floor((H * 0.72) / (R * 1.72));
+  cannon.x = W / 2;
+  cannon.y = H - R * 2.5;
+}
+
+function startGame() {
+  show('s-game');
+  score = 0; combo = 0; maxCombo = 0; totalPopped = 0;
+  shooting = false; gameOver = false; bullet = null; particles = [];
+  hasAim = false;
+
+  grid = [];
+  const startRows = 6;
+  const colors = COLORS.slice(0, 5);
+  for (let row = 0; row < startRows; row++) {
+    grid.push([]);
+    for (let col = 0; col < COLS; col++) {
+      grid[row].push(colors[Math.floor(Math.random() * colors.length)]);
+    }
+  }
+
+  nextColor = randomColor();
+  best = parseInt(localStorage.getItem('bs_best') || '0');
+  document.getElementById('scoreDisp').textContent = '0';
+  document.getElementById('comboDisp').textContent = '';
+  document.getElementById('bestDisp').textContent = best > 0 ? `최고 ${best}` : '';
+
+  if (animId) cancelAnimationFrame(animId);
+  gameLoop();
+}
+
+function randomColor() {
+  const active = new Set();
+  grid.forEach(row => row.forEach(c => { if(c) active.add(c); }));
+  const pool = active.size > 0 ? [...active] : COLORS.slice(0,5);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function cellPos(row, col) {
+  const isOdd = row % 2 === 1;
+  const x = R + col * R * 2 + (isOdd ? R : 0);
+  const y = R + row * R * 1.73;
+  return {x, y};
+}
+
+function gameLoop() {
+  if (gameOver) return;
+  animId = requestAnimationFrame(gameLoop);
+  update();
+  draw();
+}
+
+function update() {
+  // Update bullet
+  if (bullet) {
+    bullet.x += bullet.vx;
+    bullet.y += bullet.vy;
+
+    // Wall bounce
+    if (bullet.x - R < 0) { bullet.x = R; bullet.vx = Math.abs(bullet.vx); }
+    if (bullet.x + R > W) { bullet.x = W - R; bullet.vx = -Math.abs(bullet.vx); }
+
+    // Top wall
+    if (bullet.y - R < 0) {
+      bullet.y = R;
+      placeBullet();
+      return;
+    }
+
+    // Check collision with grid
+    for (let row = 0; row < grid.length; row++) {
+      for (let col = 0; col < grid[row].length; col++) {
+        if (!grid[row][col]) continue;
+        const pos = cellPos(row, col);
+        const dx = bullet.x - pos.x;
+        const dy = bullet.y - pos.y;
+        if (Math.sqrt(dx*dx+dy*dy) < R * 1.85) {
+          placeBullet();
+          return;
+        }
+      }
+    }
+  }
+
+  // Particles
+  particles = particles.filter(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= p.decay;
+    return p.life > 0;
+  });
+}
+
+function placeBullet() {
+  // Find closest empty cell near bullet
+  let bestRow = -1, bestCol = -1, bestDist = Infinity;
+
+  // Extend grid if needed
+  const targetRow = Math.round((bullet.y - R) / (R * 1.73));
+  while (grid.length <= targetRow + 1) grid.push(new Array(COLS).fill(null));
+
+  for (let row = Math.max(0, targetRow-1); row <= Math.min(grid.length-1, targetRow+1); row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (grid[row][col]) continue;
+      const pos = cellPos(row, col);
+      const dx = bullet.x - pos.x;
+      const dy = bullet.y - pos.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      if (d < bestDist) { bestDist = d; bestRow = row; bestCol = col; }
+    }
+  }
+
+  if (bestRow < 0) { bestRow = 0; bestCol = 0; }
+  if (!grid[bestRow]) grid[bestRow] = new Array(COLS).fill(null);
+  grid[bestRow][bestCol] = bullet.color;
+  bullet = null;
+  shooting = false;
+
+  // Check matches
+  const matched = findMatches(bestRow, bestCol);
+  if (matched.length >= 3) {
+    combo++;
+    if (combo > maxCombo) maxCombo = combo;
+    popBubbles(matched);
+    removeFloating();
+    const pts = matched.length * 10 * combo;
+    score += pts;
+    totalPopped += matched.length;
+    document.getElementById('scoreDisp').textContent = score;
+    if (combo > 1) document.getElementById('comboDisp').textContent = `${combo}x COMBO!`;
+    else document.getElementById('comboDisp').textContent = '';
+  } else {
+    combo = 0;
+    document.getElementById('comboDisp').textContent = '';
+    // Add new row at top
+    addRow();
+  }
+
+  // Check game over: any bubble below cannon
+  checkGameOver();
+
+  nextColor = randomColor();
+}
+
+function getNeighbors(row, col) {
+  const isOdd = row % 2 === 1;
+  const offsets = isOdd
+    ? [[-1,0],[-1,1],[0,-1],[0,1],[1,0],[1,1]]
+    : [[-1,-1],[-1,0],[0,-1],[0,1],[1,-1],[1,0]];
+  return offsets.map(([dr,dc]) => [row+dr, col+dc])
+    .filter(([r,c]) => r>=0 && r<grid.length && c>=0 && c<COLS && grid[r]?.[c]);
+}
+
+function findMatches(startRow, startCol) {
+  const color = grid[startRow][startCol];
+  const visited = new Set();
+  const queue = [[startRow, startCol]];
+  visited.add(`${startRow},${startCol}`);
+  const result = [];
+
+  while (queue.length) {
+    const [row, col] = queue.shift();
+    result.push([row, col]);
+    for (const [nr, nc] of getNeighbors(row, col)) {
+      const key = `${nr},${nc}`;
+      if (!visited.has(key) && grid[nr]?.[nc] === color) {
+        visited.add(key);
+        queue.push([nr, nc]);
+      }
+    }
+  }
+  return result;
+}
+
+function removeFloating() {
+  // BFS from top row to find connected bubbles
+  const connected = new Set();
+  const queue = [];
+  for (let col = 0; col < COLS; col++) {
+    if (grid[0]?.[col]) {
+      const key = `0,${col}`;
+      if (!connected.has(key)) { connected.add(key); queue.push([0, col]); }
+    }
+  }
+  while (queue.length) {
+    const [row, col] = queue.shift();
+    for (const [nr, nc] of getNeighbors(row, col)) {
+      const key = `${nr},${nc}`;
+      if (!connected.has(key) && grid[nr]?.[nc]) {
+        connected.add(key);
+        queue.push([nr, nc]);
+      }
+    }
+  }
+  // Remove floating
+  const floating = [];
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (grid[row]?.[col] && !connected.has(`${row},${col}`)) {
+        floating.push([row, col]);
+      }
+    }
+  }
+  if (floating.length > 0) {
+    popBubbles(floating);
+    const bonus = floating.length * 5 * Math.max(1, combo);
+    score += bonus;
+    totalPopped += floating.length;
+    document.getElementById('scoreDisp').textContent = score;
+  }
+}
+
+function popBubbles(cells) {
+  cells.forEach(([row, col]) => {
+    const pos = cellPos(row, col);
+    const color = grid[row][col];
+    for (let i = 0; i < 8; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 3;
+      particles.push({
+        x: pos.x, y: pos.y,
+        vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+        r: R*0.4, color, life: 1, decay: 0.04+Math.random()*0.04
+      });
+    }
+    grid[row][col] = null;
+  });
+}
+
+function addRow() {
+  const colors = COLORS.slice(0, 5);
+  const newRow = Array(COLS).fill(null).map(() =>
+    Math.random() < 0.85 ? colors[Math.floor(Math.random()*colors.length)] : null
+  );
+  grid.unshift(newRow);
+}
+
+function checkGameOver() {
+  const dangerY = cannon.y - R * 3;
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (grid[row][col]) {
+        const pos = cellPos(row, col);
+        if (pos.y > dangerY) {
+          endGame();
+          return;
+        }
+      }
+    }
+  }
+}
+
+function shoot(tx, ty) {
+  if (shooting || gameOver) return;
+  const dx = tx - cannon.x;
+  const dy = ty - cannon.y;
+  if (dy > -10) return; // must shoot upward
+  const len = Math.sqrt(dx*dx+dy*dy);
+  const speed = 14;
+  bullet = {
+    x: cannon.x, y: cannon.y,
+    vx: dx/len*speed, vy: dy/len*speed,
+    color: nextColor
+  };
+  shooting = true;
+}
+
+function draw() {
+  ctx.fillStyle = '#0a0a15';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid bubbles
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (!grid[row][col]) continue;
+      const pos = cellPos(row, col);
+      drawBubble(pos.x, pos.y, R * 0.92, grid[row][col]);
+    }
+  }
+
+  // Danger line
+  const dangerY = cannon.y - R * 3;
+  ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, dangerY);
+  ctx.lineTo(W, dangerY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Aim line
+  if (hasAim && !shooting) {
+    const dx = aimX - cannon.x;
+    const dy = aimY - cannon.y;
+    if (dy < -10) {
+      const len = Math.sqrt(dx*dx+dy*dy);
+      const vx = dx/len * 14;
+      const vy = dy/len * 14;
+      let ax = cannon.x, ay = cannon.y;
+      let avx = vx, avy = vy;
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 8]);
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      for (let i = 0; i < 25; i++) {
+        ax += avx * 3; ay += avy * 3;
+        if (ax - R < 0) { ax = R; avx = Math.abs(avx); }
+        if (ax + R > W) { ax = W - R; avx = -Math.abs(avx); }
+        if (ay < 0) break;
+        ctx.lineTo(ax, ay);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Particles
+  particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // Bullet
+  if (bullet) drawBubble(bullet.x, bullet.y, R*0.92, bullet.color);
+
+  // Cannon area
+  ctx.fillStyle = 'rgba(10,10,21,0.85)';
+  ctx.fillRect(0, cannon.y - R*1.2, W, H - (cannon.y - R*1.2));
+
+  // Next bubble preview
+  ctx.fillStyle = '#252545';
+  ctx.font = '0.7em sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('다음', 12, cannon.y + R*0.2);
+  drawBubble(14 + R*2.5, cannon.y + R*0.2, R*0.7, nextColor);
+
+  // Cannon
+  const dx2 = hasAim ? aimX - cannon.x : 0;
+  const dy2 = hasAim ? aimY - cannon.y : -1;
+  const alen = Math.sqrt(dx2*dx2+dy2*dy2);
+  const ang = Math.atan2(dy2/alen, dx2/alen);
+  ctx.save();
+  ctx.translate(cannon.x, cannon.y);
+  ctx.rotate(ang + Math.PI/2);
+  const cg = ctx.createLinearGradient(-R*0.5, -R*1.8, R*0.5, 0);
+  cg.addColorStop(0, '#a855f7');
+  cg.addColorStop(1, '#06b6d4');
+  ctx.fillStyle = cg;
+  ctx.beginPath();
+  ctx.roundRect(-R*0.5, -R*1.8, R, R*1.8, [R*0.4]);
+  ctx.fill();
+  ctx.restore();
+
+  // Cannon base
+  ctx.beginPath();
+  ctx.arc(cannon.x, cannon.y, R*1.1, 0, Math.PI*2);
+  const bg = ctx.createRadialGradient(cannon.x, cannon.y, 0, cannon.x, cannon.y, R*1.1);
+  bg.addColorStop(0, '#2a1a4a');
+  bg.addColorStop(1, '#141428');
+  ctx.fillStyle = bg;
+  ctx.fill();
+  ctx.strokeStyle = '#a855f7';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Current bubble on cannon
+  if (!shooting) drawBubble(cannon.x, cannon.y, R*0.8, nextColor);
+}
+
+function drawBubble(x, y, r, color) {
+  const grad = ctx.createRadialGradient(x-r*0.3, y-r*0.3, r*0.1, x, y, r);
+  grad.addColorStop(0, lighten(color, 50));
+  grad.addColorStop(0.6, color);
+  grad.addColorStop(1, darken(color, 30));
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI*2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Shine
+  ctx.beginPath();
+  ctx.arc(x - r*0.28, y - r*0.28, r*0.22, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fill();
+}
+
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, (n>>16)+amt);
+  const g = Math.min(255, ((n>>8)&0xff)+amt);
+  const b = Math.min(255, (n&0xff)+amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+function darken(hex, amt) {
+  return lighten(hex, -amt);
+}
+
+function endGame() {
+  gameOver = true;
+  cancelAnimationFrame(animId);
+  const isNew = score > best;
+  if (isNew) { best = score; localStorage.setItem('bs_best', best); }
+
+  document.getElementById('rScore').textContent = score;
+  document.getElementById('rPopped').textContent = totalPopped;
+  document.getElementById('rMaxCombo').textContent = maxCombo + 'x';
+  document.getElementById('rBest').textContent = isNew ? '🎉 신기록!' : `최고기록: ${best}점`;
+
+  let emoji = '🫧';
+  if (score >= 1000) emoji = '🏆';
+  else if (score >= 500) emoji = '🥇';
+  else if (score >= 200) emoji = '🥈';
+  else if (score >= 80) emoji = '🥉';
+  document.getElementById('rEmoji').textContent = emoji;
+
+  setTimeout(() => show('s-result'), 400);
+}
+
+// Input
+canvas.addEventListener('click', e => {
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  shoot(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const tx = e.touches[0].clientX - rect.left;
+  const ty = e.touches[0].clientY - rect.top;
+  aimX = tx; aimY = ty; hasAim = true;
+}, {passive:false});
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const tx = e.changedTouches[0].clientX - rect.left;
+  const ty = e.changedTouches[0].clientY - rect.top;
+  shoot(tx, ty);
+  hasAim = false;
+}, {passive:false});
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  aimX = e.clientX - rect.left;
+  aimY = e.clientY - rect.top;
+  hasAim = true;
+});
+
+canvas.addEventListener('mouseleave', () => { hasAim = false; });
+
+document.getElementById('startBtn').addEventListener('click', e => { e.stopPropagation(); startGame(); });
+document.getElementById('retryBtn').addEventListener('click', e => { e.stopPropagation(); startGame(); });
+</script>
+</body>
+</html>

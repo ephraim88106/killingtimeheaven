@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🔢 스도쿠 - 킬링타임천국</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0a15;color:#fff;font-family:'Noto Sans KR',-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:manipulation}
+.screen{display:none;width:100%;max-width:420px;padding:20px 16px;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.glow{background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo{font-size:3em;margin-bottom:6px}
+.title{font-size:2em;font-weight:900;margin-bottom:6px}
+.sub{color:#666;font-size:.9em;margin-bottom:16px;text-align:center;line-height:1.6}
+.btn-main{background:linear-gradient(135deg,#a855f7,#06b6d4);border:none;border-radius:14px;padding:15px;color:#fff;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-main:active{opacity:.85;transform:scale(.98)}
+.btn-sub{background:#141428;border:2px solid #252545;border-radius:14px;padding:13px;color:#999;font-size:.95em;cursor:pointer;width:100%;transition:all .2s;margin-bottom:10px}
+.btn-sub:active{opacity:.8}
+
+/* Difficulty picker */
+.diff-row{display:flex;gap:10px;width:100%;margin-bottom:28px}
+.diff-btn{flex:1;padding:12px 6px;border-radius:12px;border:2px solid #252545;background:#141428;color:#888;font-size:.85em;cursor:pointer;transition:all .2s;text-align:center}
+.diff-btn.active{border-color:#a855f7;color:#a855f7;background:#1a1030}
+.diff-btn:active{transform:scale(.96)}
+
+/* Game header */
+.game-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:0 0 12px;max-width:380px}
+.ui-timer{font-size:1.2em;font-weight:800;color:#06b6d4;font-variant-numeric:tabular-nums}
+.ui-mistakes{font-size:.9em;color:#ef4444}
+.ui-hints{font-size:.9em;color:#f59e0b}
+
+/* Sudoku grid */
+.sudoku-wrap{width:100%;max-width:380px;margin-bottom:16px}
+.sudoku-grid{display:grid;grid-template-columns:repeat(9,1fr);border:3px solid #a855f7;border-radius:8px;overflow:hidden;width:100%;aspect-ratio:1}
+.cell{display:flex;align-items:center;justify-content:center;font-size:clamp(14px,4vw,20px);font-weight:600;cursor:pointer;border-right:1px solid #252545;border-bottom:1px solid #252545;aspect-ratio:1;transition:background .15s;position:relative;user-select:none}
+.cell:nth-child(3n){border-right:2px solid #444}
+.cell:nth-child(9n){border-right:none}
+.cell.row-3n{border-bottom:2px solid #444}
+.cell.row-9n{border-bottom:none}
+.cell.given{color:#06b6d4;font-weight:800}
+.cell.selected{background:#2a1a4a}
+.cell.highlight{background:#1a1a30}
+.cell.error{color:#ef4444 !important;background:#2a0a0a}
+.cell.error.selected{background:#3a1010}
+.cell.complete{color:#10b981}
+.cell.note-mode{font-size:clamp(8px,2vw,11px)}
+.note-grid{display:grid;grid-template-columns:repeat(3,1fr);width:100%;height:100%;padding:1px;gap:0}
+.note-num{display:flex;align-items:center;justify-content:center;font-size:clamp(6px,1.8vw,9px);color:#666;line-height:1}
+
+/* Number pad */
+.numpad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;max-width:380px;margin-bottom:12px}
+.num-btn{aspect-ratio:1;border-radius:10px;border:2px solid #252545;background:#141428;color:#fff;font-size:1.2em;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.num-btn:active{transform:scale(.92);background:#252545}
+.num-btn.note-active{border-color:#f59e0b;color:#f59e0b}
+.num-btn.erase{color:#ef4444;font-size:1em}
+.num-btn.hint-btn{color:#f59e0b;font-size:.9em}
+.num-btn.note-btn{color:#888;font-size:.85em}
+.num-btn.used{opacity:.35}
+
+/* Action row */
+.action-row{display:flex;gap:8px;width:100%;max-width:380px;margin-bottom:8px}
+.action-row .btn-sub{margin-bottom:0;flex:1;padding:11px 6px;font-size:.82em}
+
+/* Result */
+.result-box{background:#141428;border:2px solid #252545;border-radius:22px;padding:28px 20px;text-align:center;width:100%;margin-bottom:20px}
+.r-emoji{font-size:3em;margin-bottom:10px}
+.r-title{font-size:1.4em;font-weight:900;margin-bottom:6px}
+.r-score{font-size:2.8em;font-weight:900;background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:10px 0}
+.r-sub{color:#666;font-size:.85em}
+.stat-row{display:flex;gap:10px;margin-top:16px;justify-content:center}
+.stat{background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center}
+.stat-v{font-size:1.2em;font-weight:800;color:#a855f7}
+.stat-l{font-size:.7em;color:#666;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo">🔢</div>
+  <div class="title glow">스도쿠</div>
+  <div class="sub">1~9를 가로·세로·3×3 박스에 채워라</div>
+  <div style="width:100%;max-width:380px;margin-bottom:8px;font-size:.8em;color:#555;text-align:center">난이도 선택</div>
+  <div class="diff-row" style="max-width:380px">
+    <div class="diff-btn active" id="d-easy" onclick="setDiff('easy')">😊<br>쉬움</div>
+    <div class="diff-btn" id="d-medium" onclick="setDiff('medium')">🤔<br>보통</div>
+    <div class="diff-btn" id="d-hard" onclick="setDiff('hard')">🔥<br>어려움</div>
+  </div>
+  <button class="btn-main" onclick="startGame()">▶ 게임 시작</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-header">
+    <div>⏱️ <span id="timerDisp" class="ui-timer">00:00</span></div>
+    <div class="ui-mistakes">❌ <span id="mistakesDisp">0</span>/3</div>
+    <div class="ui-hints">💡 <span id="hintsDisp">3</span></div>
+  </div>
+  <div class="sudoku-wrap"><div class="sudoku-grid" id="grid"></div></div>
+  <div class="numpad" id="numpad"></div>
+  <div class="action-row">
+    <button class="btn-sub" id="noteToggle" onclick="toggleNote()">✏️ 메모</button>
+    <button class="btn-sub" onclick="useHint()">💡 힌트</button>
+    <button class="btn-sub" onclick="show('s-home')">🏠 홈</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="result-box">
+    <div class="r-emoji" id="rEmoji">🏆</div>
+    <div class="r-title" id="rTitle">퍼즐 완성!</div>
+    <div class="r-score" id="rScore">00:00</div>
+    <div class="r-sub" id="rSub">클리어 시간</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-v" id="rMistakes">0</div><div class="stat-l">실수</div></div>
+      <div class="stat"><div class="stat-v" id="rDiff">쉬움</div><div class="stat-l">난이도</div></div>
+    </div>
+  </div>
+  <button class="btn-main" onclick="startGame()">🔄 다시 하기</button>
+  <button class="btn-sub" onclick="show('s-home')">🏠 홈으로</button>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+let board = [], solution = [], given = [], notes = [];
+let selected = -1, mistakes = 0, hints = 3;
+let timerInterval, elapsed = 0;
+let noteMode = false;
+let difficulty = 'easy';
+const REMOVE = { easy: 35, medium: 45, hard: 52 };
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setDiff(d) {
+  difficulty = d;
+  ['easy','medium','hard'].forEach(x => document.getElementById('d-'+x).classList.remove('active'));
+  document.getElementById('d-'+d).classList.add('active');
+}
+
+// ── Sudoku Generator ──────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isValid(b, pos, num) {
+  const row = Math.floor(pos / 9), col = pos % 9;
+  for (let c = 0; c < 9; c++) if (b[row*9+c] === num) return false;
+  for (let r = 0; r < 9; r++) if (b[r*9+col] === num) return false;
+  const br = Math.floor(row/3)*3, bc = Math.floor(col/3)*3;
+  for (let r = br; r < br+3; r++) for (let c = bc; c < bc+3; c++) if (b[r*9+c] === num) return false;
+  return true;
+}
+
+function fillBoard(b, pos = 0) {
+  if (pos === 81) return true;
+  if (b[pos] !== 0) return fillBoard(b, pos+1);
+  const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+  for (const n of nums) {
+    if (isValid(b, pos, n)) {
+      b[pos] = n;
+      if (fillBoard(b, pos+1)) return true;
+      b[pos] = 0;
+    }
+  }
+  return false;
+}
+
+function countSolutions(b, limit = 2) {
+  let count = 0;
+  function solve(pos) {
+    if (count >= limit) return;
+    if (pos === 81) { count++; return; }
+    if (b[pos] !== 0) { solve(pos+1); return; }
+    for (let n = 1; n <= 9; n++) {
+      if (isValid(b, pos, n)) {
+        b[pos] = n;
+        solve(pos+1);
+        b[pos] = 0;
+      }
+    }
+  }
+  solve(0);
+  return count;
+}
+
+function generatePuzzle() {
+  const sol = new Array(81).fill(0);
+  fillBoard(sol);
+  solution = [...sol];
+
+  const puzzle = [...sol];
+  let removed = 0;
+  const target = REMOVE[difficulty];
+  const cells = shuffle([...Array(81).keys()]);
+
+  for (const i of cells) {
+    if (removed >= target) break;
+    const val = puzzle[i];
+    puzzle[i] = 0;
+    const copy = [...puzzle];
+    if (countSolutions(copy) === 1) removed++;
+    else puzzle[i] = val;
+  }
+  return puzzle;
+}
+
+// ── Game Logic ─────────────────────────────────────────────────────────────
+function startGame() {
+  show('s-game');
+  clearInterval(timerInterval);
+  elapsed = 0; mistakes = 0; hints = 3; selected = -1; noteMode = false;
+
+  const puzzle = generatePuzzle();
+  board = [...puzzle];
+  given = puzzle.map(v => v !== 0);
+  notes = Array(81).fill(null).map(() => new Set());
+
+  document.getElementById('mistakesDisp').textContent = '0';
+  document.getElementById('hintsDisp').textContent = '3';
+  document.getElementById('noteToggle').classList.remove('note-active');
+  document.getElementById('timerDisp').textContent = '00:00';
+
+  buildGrid();
+  buildNumpad();
+
+  timerInterval = setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    document.getElementById('timerDisp').textContent = m+':'+s;
+  }, 1000);
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 81; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const row = Math.floor(i/9), col = i%9;
+    if ((row+1) % 3 === 0 && row < 8) cell.classList.add('row-3n');
+    if (row === 8) cell.classList.add('row-9n');
+    if (given[i]) cell.classList.add('given');
+    cell.addEventListener('click', () => selectCell(i));
+    grid.appendChild(cell);
+  }
+  renderGrid();
+}
+
+function renderGrid() {
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach((cell, i) => {
+    const row = Math.floor(i/9), col = i%9;
+    const selRow = selected >= 0 ? Math.floor(selected/9) : -1;
+    const selCol = selected >= 0 ? selected%9 : -1;
+    const selBox = selected >= 0 ? Math.floor(selRow/3)*3+Math.floor(selCol/3) : -1;
+    const myBox = Math.floor(row/3)*3+Math.floor(col/3);
+
+    cell.classList.remove('selected','highlight','error','complete');
+
+    if (i === selected) cell.classList.add('selected');
+    else if (selRow >= 0 && (row===selRow || col===selCol || myBox===selBox)) cell.classList.add('highlight');
+
+    const val = board[i];
+    if (notes[i].size > 0 && val === 0) {
+      cell.classList.add('note-mode');
+      const ng = document.createElement('div');
+      ng.className = 'note-grid';
+      for (let n = 1; n <= 9; n++) {
+        const nn = document.createElement('div');
+        nn.className = 'note-num';
+        nn.textContent = notes[i].has(n) ? n : '';
+        ng.appendChild(nn);
+      }
+      cell.innerHTML = '';
+      cell.appendChild(ng);
+    } else {
+      cell.classList.remove('note-mode');
+      cell.textContent = val || '';
+      if (val && !given[i] && val !== solution[i]) cell.classList.add('error');
+      if (val && val === solution[i] && !given[i]) cell.classList.add('complete');
+    }
+  });
+  updateNumpad();
+}
+
+function selectCell(i) {
+  selected = i;
+  renderGrid();
+}
+
+function inputNum(n) {
+  if (selected < 0 || given[selected]) return;
+  if (noteMode) {
+    if (n === 0) { notes[selected].clear(); }
+    else if (notes[selected].has(n)) notes[selected].delete(n);
+    else notes[selected].add(n);
+    board[selected] = 0;
+  } else {
+    notes[selected].clear();
+    if (n === 0) { board[selected] = 0; }
+    else {
+      if (board[selected] === n) { board[selected] = 0; }
+      else {
+        board[selected] = n;
+        if (n !== solution[selected]) {
+          mistakes++;
+          document.getElementById('mistakesDisp').textContent = mistakes;
+          if (mistakes >= 3) {
+            clearInterval(timerInterval);
+            setTimeout(() => showResult(false), 400);
+            return;
+          }
+        }
+      }
+    }
+  }
+  renderGrid();
+  checkWin();
+}
+
+function checkWin() {
+  if (board.every((v, i) => v === solution[i])) {
+    clearInterval(timerInterval);
+    setTimeout(() => showResult(true), 400);
+  }
+}
+
+function toggleNote() {
+  noteMode = !noteMode;
+  const btn = document.getElementById('noteToggle');
+  btn.classList.toggle('note-active', noteMode);
+  btn.textContent = noteMode ? '✏️ 메모 ON' : '✏️ 메모';
+}
+
+function useHint() {
+  if (hints <= 0) return;
+  // Find an empty or wrong cell near selected
+  let candidates = [];
+  for (let i = 0; i < 81; i++) {
+    if (!given[i] && board[i] !== solution[i]) candidates.push(i);
+  }
+  if (candidates.length === 0) return;
+  // Prefer selected cell if wrong
+  let target = candidates.includes(selected) ? selected : candidates[Math.floor(Math.random()*candidates.length)];
+  board[target] = solution[target];
+  notes[target].clear();
+  selected = target;
+  hints--;
+  document.getElementById('hintsDisp').textContent = hints;
+  renderGrid();
+  checkWin();
+}
+
+function buildNumpad() {
+  const pad = document.getElementById('numpad');
+  pad.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.id = 'nb-'+n;
+    btn.textContent = n;
+    btn.addEventListener('click', () => inputNum(n));
+    pad.appendChild(btn);
+  }
+  // Erase + note + empty
+  const erase = document.createElement('button');
+  erase.className = 'num-btn erase';
+  erase.textContent = '⌫';
+  erase.addEventListener('click', () => inputNum(0));
+  pad.appendChild(erase);
+}
+
+function updateNumpad() {
+  // Grey out numbers that are fully placed (9 times)
+  const count = new Array(10).fill(0);
+  board.forEach(v => { if (v) count[v]++; });
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.getElementById('nb-'+n);
+    if (btn) btn.classList.toggle('used', count[n] >= 9);
+  }
+}
+
+// Keyboard support
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('s-game').classList.contains('active')) return;
+  const k = e.key;
+  if (k >= '1' && k <= '9') inputNum(parseInt(k));
+  else if (k === 'Backspace' || k === 'Delete' || k === '0') inputNum(0);
+  else if (k === 'ArrowRight' && selected >= 0) selectCell(Math.min(80, selected+1));
+  else if (k === 'ArrowLeft' && selected >= 0) selectCell(Math.max(0, selected-1));
+  else if (k === 'ArrowDown' && selected >= 0) selectCell(Math.min(80, selected+9));
+  else if (k === 'ArrowUp' && selected >= 0) selectCell(Math.max(0, selected-9));
+  else if (k === 'n' || k === 'N') toggleNote();
+});
+
+function showResult(win) {
+  const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s = String(elapsed%60).padStart(2,'0');
+  document.getElementById('rScore').textContent = m+':'+s;
+  document.getElementById('rMistakes').textContent = mistakes;
+  document.getElementById('rDiff').textContent = {easy:'쉬움',medium:'보통',hard:'어려움'}[difficulty];
+
+  if (win) {
+    document.getElementById('rEmoji').textContent = elapsed < 300 ? '🏆' : elapsed < 600 ? '🥇' : '🥈';
+    document.getElementById('rTitle').textContent = '퍼즐 완성!';
+    document.getElementById('rSub').textContent = '클리어 시간';
+  } else {
+    document.getElementById('rEmoji').textContent = '💀';
+    document.getElementById('rTitle').textContent = '실패...';
+    document.getElementById('rSub').textContent = '실수 3회 초과';
+  }
+  show('s-result');
+}
+</script>
+</body>
+</html>
